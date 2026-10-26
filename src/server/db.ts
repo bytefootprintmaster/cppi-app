@@ -19,6 +19,7 @@ export const ddb = DynamoDBDocumentClient.from(base, {
 /** Table names (single prefix, several purpose-built tables). */
 export const T = {
   users: `${env.TABLE_PREFIX}users`,
+  credentials: `${env.TABLE_PREFIX}credentials`,
   invites: `${env.TABLE_PREFIX}invites`,
   sites: `${env.TABLE_PREFIX}sites`,
   stages: `${env.TABLE_PREFIX}stages`,

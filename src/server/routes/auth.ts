@@ -5,10 +5,13 @@ import { T, putItem, scanAll, updateFields } from '../db'
 import { HttpError, asyncHandler, str } from '../lib/http'
 import {
   applyPendingInvites,
+  ensureBootstrapAdmin,
+  findPasswordCredential,
   findUserByEmail,
   requireAuth,
   signSession,
   toSession,
+  verifyPassword,
   verifyGoogleCredential
 } from '../auth'
 import type { UserRecord } from '../types'
@@ -20,7 +23,8 @@ authRouter.get('/config', (_req, res) => {
   res.json({
     appName: 'CPPI',
     googleClientId: env.GOOGLE_CLIENT_ID,
-    appUrl: env.APP_URL
+    appUrl: env.APP_URL,
+    passwordLoginEnabled: true
   })
 })
 
@@ -57,6 +61,31 @@ authRouter.post('/auth/google', asyncHandler(async (req, res) => {
   }
 
   user = await applyPendingInvites(user)
+  await updateFields(T.users, { userId: user.userId }, { lastLoginAt: now })
+
+  res.json({ token: signSession(user), user: toSession(user) })
+}))
+
+authRouter.post('/auth/password', asyncHandler(async (req, res) => {
+  const email = str(req.body?.email, 'email', 320).toLowerCase()
+  const password = str(req.body?.password, 'password', 200)
+
+  await ensureBootstrapAdmin()
+
+  let user = await findUserByEmail(email)
+  const credential = await findPasswordCredential(email)
+  if (!user || !credential || credential.userId !== user.userId) {
+    throw new HttpError(401, 'Invalid email or password')
+  }
+  if (user.status === 'disabled') {
+    throw new HttpError(403, 'Your account has been disabled by an administrator')
+  }
+  if (!(await verifyPassword(password, credential.passwordHash))) {
+    throw new HttpError(401, 'Invalid email or password')
+  }
+
+  user = await applyPendingInvites(user)
+  const now = new Date().toISOString()
   await updateFields(T.users, { userId: user.userId }, { lastLoginAt: now })
 
   res.json({ token: signSession(user), user: toSession(user) })

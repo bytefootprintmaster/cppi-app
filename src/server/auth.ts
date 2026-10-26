@@ -1,18 +1,55 @@
+import { randomBytes, scrypt, timingSafeEqual } from 'node:crypto'
+import { randomUUID } from 'node:crypto'
 import { OAuth2Client } from 'google-auth-library'
 import jwt from 'jsonwebtoken'
 import type { NextFunction, Request, RequestHandler, Response } from 'express'
 import { env } from './env'
-import { T, getItem, queryAll, updateFields } from './db'
+import { T, getItem, putItem, queryAll, updateFields } from './db'
 import { HttpError } from './lib/http'
 import type { InviteRecord, Role, SessionUser, UserRecord } from './types'
 
 const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID)
+
+interface PasswordCredentialRecord {
+  email: string
+  userId: string
+  passwordHash: string
+  createdAt: string
+  updatedAt: string
+}
 
 export interface GoogleProfile {
   sub: string
   email: string
   name: string
   picture: string
+}
+
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase()
+}
+
+function deriveKey(password: string, salt: string): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    scrypt(password, salt, 64, (err, derivedKey) => {
+      if (err) reject(err)
+      else resolve(derivedKey as Buffer)
+    })
+  })
+}
+
+export async function hashPassword(password: string): Promise<string> {
+  const salt = randomBytes(16).toString('hex')
+  const derived = await deriveKey(password, salt)
+  return `scrypt$${salt}$${derived.toString('hex')}`
+}
+
+export async function verifyPassword(password: string, passwordHash: string): Promise<boolean> {
+  const [scheme, salt, expectedHex] = passwordHash.split('$')
+  if (scheme !== 'scrypt' || !salt || !expectedHex) return false
+  const expected = Buffer.from(expectedHex, 'hex')
+  const actual = await deriveKey(password, salt)
+  return expected.length === actual.length && timingSafeEqual(expected, actual)
 }
 
 /** Verify a Google ID token (from Google Identity Services) and return its profile. */
@@ -53,13 +90,66 @@ export async function findUserByEmail(email: string): Promise<UserRecord | undef
   const rows = await queryAll<UserRecord>(T.users, {
     IndexName: 'email-index',
     KeyConditionExpression: 'email = :e',
-    ExpressionAttributeValues: { ':e': email.toLowerCase() }
+    ExpressionAttributeValues: { ':e': normalizeEmail(email) }
   })
   return rows[0]
 }
 
+export async function findPasswordCredential(email: string): Promise<PasswordCredentialRecord | undefined> {
+  return getItem<PasswordCredentialRecord>(T.credentials, { email: normalizeEmail(email) })
+}
+
+export async function upsertPasswordCredential(email: string, userId: string, password: string): Promise<void> {
+  const normalizedEmail = normalizeEmail(email)
+  const now = new Date().toISOString()
+  const existing = await findPasswordCredential(normalizedEmail)
+  await putItem(T.credentials, {
+    email: normalizedEmail,
+    userId,
+    passwordHash: await hashPassword(password),
+    createdAt: existing?.createdAt ?? now,
+    updatedAt: now
+  })
+}
+
 export async function loadUser(userId: string): Promise<UserRecord | undefined> {
   return getItem<UserRecord>(T.users, { userId })
+}
+
+export async function ensureBootstrapAdmin(): Promise<void> {
+  const email = env.BOOTSTRAP_ADMIN_EMAIL
+  const password = env.BOOTSTRAP_ADMIN_PASSWORD
+  if (!email || !password) return
+
+  const now = new Date().toISOString()
+  let user = await findUserByEmail(email)
+
+  if (!user) {
+    user = {
+      userId: randomUUID(),
+      email,
+      name: env.BOOTSTRAP_ADMIN_NAME || email,
+      role: 'admin',
+      status: 'active',
+      siteIds: [],
+      createdAt: now
+    }
+    await putItem(T.users, user)
+  } else {
+    const patch: Partial<UserRecord> = {}
+    if (user.role !== 'admin') patch.role = 'admin'
+    if (user.status !== 'active') patch.status = 'active'
+    if (!user.name && env.BOOTSTRAP_ADMIN_NAME) patch.name = env.BOOTSTRAP_ADMIN_NAME
+    if (Object.keys(patch).length > 0) {
+      await updateFields(T.users, { userId: user.userId }, patch)
+      user = { ...user, ...patch }
+    }
+  }
+
+  const credential = await findPasswordCredential(email)
+  if (!credential || credential.userId !== user.userId || !(await verifyPassword(password, credential.passwordHash))) {
+    await upsertPasswordCredential(email, user.userId, password)
+  }
 }
 
 /** Pending, non-expired invites addressed to this email address. */

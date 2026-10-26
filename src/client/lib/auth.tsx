@@ -6,6 +6,7 @@ export interface AppConfig {
   appName: string
   googleClientId: string
   appUrl: string
+  passwordLoginEnabled?: boolean
 }
 
 interface AuthValue {
@@ -13,6 +14,7 @@ interface AuthValue {
   config: AppConfig | null
   loading: boolean
   signInWithGoogle: (credential: string) => Promise<SessionUser>
+  signInWithPassword: (email: string, password: string) => Promise<SessionUser>
   signOut: () => void
   refresh: () => Promise<void>
 }
@@ -60,14 +62,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return res.user
   }, [])
 
+  const signInWithPassword = useCallback(async (email: string, password: string) => {
+    const res = await api<{ token: string; user: SessionUser }>('/auth/password', {
+      method: 'POST',
+      body: { email, password }
+    })
+    setToken(res.token)
+    setUser(res.user)
+    return res.user
+  }, [])
+
   const signOut = useCallback(() => {
     setToken(null)
     setUser(null)
   }, [])
 
   const value = useMemo<AuthValue>(
-    () => ({ user, config, loading, signInWithGoogle, signOut, refresh }),
-    [user, config, loading, signInWithGoogle, signOut, refresh]
+    () => ({ user, config, loading, signInWithGoogle, signInWithPassword, signOut, refresh }),
+    [user, config, loading, signInWithGoogle, signInWithPassword, signOut, refresh]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

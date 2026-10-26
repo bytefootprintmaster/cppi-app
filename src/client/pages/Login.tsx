@@ -1,16 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import { GoogleButton } from '../components/GoogleButton'
-import { Loading } from '../components/ui'
+import { Button, Field, Loading } from '../components/ui'
 import { IconLayers, IconTarget, IconTrend, IconUsers } from '../components/icons'
 
 export function LoginPage() {
-  const { user, loading, signInWithGoogle } = useAuth()
+  const { user, loading, signInWithGoogle, signInWithPassword, config } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
 
   const from = (location.state as { from?: string } | null)?.from ?? '/'
 
@@ -26,6 +28,20 @@ export function LoginPage() {
     setError(null)
     try {
       await signInWithGoogle(credential)
+      navigate(from, { replace: true })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Sign in failed')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handlePasswordSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setBusy(true)
+    setError(null)
+    try {
+      await signInWithPassword(email, password)
       navigate(from, { replace: true })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign in failed')
@@ -109,15 +125,53 @@ export function LoginPage() {
         <div className="login-card">
           <h2 style={{ fontSize: 24 }}>Sign in</h2>
           <p className="muted" style={{ marginTop: 6, marginBottom: 24 }}>
-            Continue with the Google account your administrator invited.
+            Sign in with email and password, or continue with Google if your team uses invite-based access.
           </p>
 
           {error ? <div className="alert alert-error" style={{ marginBottom: 16 }}>{error}</div> : null}
 
-          {busy ? <Loading label="Signing you in…" /> : <GoogleButton onCredential={handleCredential} />}
+          {busy ? <Loading label="Signing you in…" /> : (
+            <>
+              <form onSubmit={handlePasswordSubmit}>
+                <Field label="Email">
+                  <input
+                    className="input"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@company.com"
+                    autoComplete="username"
+                    required
+                  />
+                </Field>
+                <Field label="Password">
+                  <input
+                    className="input"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    autoComplete="current-password"
+                    required
+                  />
+                </Field>
+                <Button type="submit" style={{ width: '100%', justifyContent: 'center' }}>
+                  Sign in with password
+                </Button>
+              </form>
+
+              <div className="small muted" style={{ margin: '18px 0', textAlign: 'center' }}>
+                or
+              </div>
+
+              <GoogleButton onCredential={handleCredential} />
+            </>
+          )}
 
           <p className="small muted" style={{ marginTop: 22, textAlign: 'center' }}>
-            No password to remember — access is granted by invitation.
+            {config?.passwordLoginEnabled
+              ? 'Password login is enabled for provisioned accounts. Google sign-in still works for invited users.'
+              : 'Access is granted by invitation.'}
           </p>
         </div>
       </section>

@@ -187,7 +187,7 @@ export function AdminUsersPage() {
           {users.filter((u) => u.role === 'contractor').length} contractor(s)
         </p>
 
-        <p className="small muted">Accounts are created on first Google sign-in; last login {formatDate(users[0]?.lastLoginAt)}.</p>
+        <p className="small muted">Accounts can come from Google sign-in or provisioned password login; last login {formatDate(users[0]?.lastLoginAt)}.</p>
       </PageBody>
 
       {editingAccess ? (

@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { randomUUID } from 'node:crypto'
 import { env } from '../env'
 import { T, deleteItem, getItem, putItem, scanAll, updateFields } from '../db'
-import { HttpError, asyncHandler, oneOf, optStr, str } from '../lib/http'
+import { HttpError, asyncHandler, oneOf, optStr } from '../lib/http'
 import { requireAdmin } from '../auth'
 import type { InviteRecord, Role, UserRecord } from '../types'
 
@@ -45,6 +45,7 @@ adminRouter.delete('/users/:userId', asyncHandler(async (req, res) => {
   const target = await getItem<UserRecord>(T.users, { userId: req.params.userId })
   if (!target) throw new HttpError(404, 'User not found')
   await deleteItem(T.users, { userId: req.params.userId })
+  await deleteItem(T.credentials, { email: target.email }).catch(() => undefined)
   res.json({ ok: true })
 }))
 

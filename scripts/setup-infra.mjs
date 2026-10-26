@@ -39,6 +39,7 @@ const s3 = new S3Client({ region })
 
 const TABLE_DEFS = [
   { name: `${prefix}users`, hash: 'userId', gsis: [{ name: 'email-index', hash: 'email' }] },
+  { name: `${prefix}credentials`, hash: 'email' },
   { name: `${prefix}invites`, hash: 'token', gsis: [{ name: 'email-index', hash: 'email' }] },
   { name: `${prefix}sites`, hash: 'siteId' },
   { name: `${prefix}stages`, hash: 'siteId', range: 'stageId' },

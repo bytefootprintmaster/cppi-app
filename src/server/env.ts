@@ -29,6 +29,9 @@ export const env = {
     .split(',')
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean),
+  BOOTSTRAP_ADMIN_EMAIL: (process.env.BOOTSTRAP_ADMIN_EMAIL ?? '').trim().toLowerCase(),
+  BOOTSTRAP_ADMIN_PASSWORD: process.env.BOOTSTRAP_ADMIN_PASSWORD ?? '',
+  BOOTSTRAP_ADMIN_NAME: (process.env.BOOTSTRAP_ADMIN_NAME ?? 'Harikrishnan Midhun').trim(),
   TABLE_PREFIX: process.env.TABLE_PREFIX ?? 'cppi_'
 }
 
