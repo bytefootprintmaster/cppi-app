@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import { GoogleButton } from '../components/GoogleButton'
-import { Button, Field, Loading } from '../components/ui'
+import { Button, Field, Loading, PasswordInput } from '../components/ui'
 import { IconLayers, IconTarget, IconTrend, IconUsers } from '../components/icons'
 
 export function LoginPage() {
@@ -145,9 +145,7 @@ export function LoginPage() {
                   />
                 </Field>
                 <Field label="Password">
-                  <input
-                    className="input"
-                    type="password"
+                  <PasswordInput
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"

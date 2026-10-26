@@ -357,51 +357,51 @@ function FrameworkTab({
               {stageMilestones.length === 0 ? (
                 <div className="card-body small muted">No milestones yet.</div>
               ) : (
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>Milestone</th>
-                      <th>Due</th>
-                      <th>Status</th>
-                      {isAdmin ? <th /> : null}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {stageMilestones.map((m) => (
-                      <tr key={m.milestoneId}>
-                        <td>
-                          <div style={{ fontWeight: 600 }}>{m.name}</div>
-                          {m.description ? <div className="small muted">{m.description}</div> : null}
-                        </td>
-                        <td className="small">{formatDate(m.dueDate)}</td>
-                        <td>
-                          {isAdmin ? (
-                            <select
-                              className="select"
-                              style={{ width: 150 }}
-                              value={m.status}
-                              disabled={busyId === m.milestoneId}
-                              onChange={(e) =>
-                                void run(
-                                  () =>
-                                    api(`/sites/${siteId}/milestones/${m.milestoneId}`, {
-                                      method: 'PATCH',
-                                      body: { status: e.target.value }
-                                    }),
-                                  m.milestoneId
-                                )
-                              }
-                            >
-                              {MILESTONE_STATUS_OPTIONS.map((s) => (
-                                <option key={s} value={s}>
-                                  {s.replace('_', ' ')}
-                                </option>
-                              ))}
-                            </select>
-                          ) : (
-                            <MilestoneStatusBadge status={m.status} />
-                          )}
-                        </td>
+                <div className="table-wrap">
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>Milestone</th>
+                        <th>Due</th>
+                        <th>Status</th>
+                        {isAdmin ? <th /> : null}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {stageMilestones.map((m) => (
+                        <tr key={m.milestoneId}>
+                          <td>
+                            <div style={{ fontWeight: 600 }}>{m.name}</div>
+                            {m.description ? <div className="small muted">{m.description}</div> : null}
+                          </td>
+                          <td className="small">{formatDate(m.dueDate)}</td>
+                          <td>
+                            {isAdmin ? (
+                              <select
+                                className="select status-select"
+                                value={m.status}
+                                disabled={busyId === m.milestoneId}
+                                onChange={(e) =>
+                                  void run(
+                                    () =>
+                                      api(`/sites/${siteId}/milestones/${m.milestoneId}`, {
+                                        method: 'PATCH',
+                                        body: { status: e.target.value }
+                                      }),
+                                    m.milestoneId
+                                  )
+                                }
+                              >
+                                {MILESTONE_STATUS_OPTIONS.map((s) => (
+                                  <option key={s} value={s}>
+                                    {s.replace('_', ' ')}
+                                  </option>
+                                ))}
+                              </select>
+                            ) : (
+                              <MilestoneStatusBadge status={m.status} />
+                            )}
+                          </td>
                         {isAdmin ? (
                           <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                             <Button
@@ -432,6 +432,7 @@ function FrameworkTab({
                     ))}
                   </tbody>
                 </table>
+                </div>
               )}
             </Card>
           )

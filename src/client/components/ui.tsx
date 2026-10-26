@@ -1,5 +1,6 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import { useState, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode } from 'react'
 import { initials } from '../lib/format'
+import { IconEye, IconEyeOff } from './icons'
 
 /* --------------------------------- button -------------------------------- */
 
@@ -159,6 +160,32 @@ export function Field({ label, hint, children }: { label: string; hint?: string;
       {children}
       {hint ? <span className="hint">{hint}</span> : null}
     </label>
+  )
+}
+
+/* ------------------------------ password input --------------------------- */
+
+export function PasswordInput({ className = '', ...rest }: InputHTMLAttributes<HTMLInputElement>) {
+  const [visible, setVisible] = useState(false)
+
+  return (
+    <div className="password-wrap">
+      <input
+        className={`input ${className}`.trim()}
+        type={visible ? 'text' : 'password'}
+        {...rest}
+      />
+      <button
+        type="button"
+        className="password-toggle"
+        onClick={() => setVisible((value) => !value)}
+        aria-label={visible ? 'Hide password' : 'Show password'}
+        title={visible ? 'Hide password' : 'Show password'}
+        tabIndex={-1}
+      >
+        {visible ? <IconEyeOff size={16} /> : <IconEye size={16} />}
+      </button>
+    </div>
   )
 }
 

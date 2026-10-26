@@ -185,3 +185,19 @@ export const IconClock = makeIcon(
     <path d="M12 7.5V12l3 2" />
   </>
 )
+
+export const IconEye = makeIcon(
+  <>
+    <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
+    <circle cx="12" cy="12" r="3" />
+  </>
+)
+
+export const IconEyeOff = makeIcon(
+  <>
+    <path d="m3 3 18 18" />
+    <path d="M10.6 6.1A9.9 9.9 0 0 1 12 6c6 0 9.5 6 9.5 6a17.2 17.2 0 0 1-3.1 3.7" />
+    <path d="M6.3 7.9A16.7 16.7 0 0 0 2.5 12s3.5 6 9.5 6a9.7 9.7 0 0 0 4-.9" />
+    <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+  </>
+)

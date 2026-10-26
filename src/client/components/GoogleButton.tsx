@@ -43,30 +43,45 @@ export function GoogleButton({
 
   useEffect(() => {
     const clientId = config?.googleClientId
-    if (!clientId || !hostRef.current) return
+    const host = hostRef.current
+    if (!clientId || !host) return
     let cancelled = false
+    let lastWidth = 0
+
+    // Google renders a fixed-width iframe, so size it to the container and
+    // repaint when the viewport changes (phones / orientation changes).
+    const paint = () => {
+      if (cancelled || !window.google?.accounts?.id) return
+      const width = Math.max(200, Math.min(320, Math.round(host.clientWidth || 320)))
+      if (width === lastWidth) return
+      lastWidth = width
+      host.innerHTML = ''
+      window.google.accounts.id.renderButton(host, {
+        theme: 'outline',
+        size: 'large',
+        shape: 'pill',
+        text,
+        logo_alignment: 'left',
+        width
+      })
+    }
 
     loadGsi()
       .then(() => {
-        if (cancelled || !window.google?.accounts?.id || !hostRef.current) return
+        if (cancelled || !window.google?.accounts?.id) return
         window.google.accounts.id.initialize({
           client_id: clientId,
           callback: (response: { credential: string }) => callbackRef.current(response.credential),
           ux_mode: 'popup'
         })
-        window.google.accounts.id.renderButton(hostRef.current, {
-          theme: 'outline',
-          size: 'large',
-          shape: 'pill',
-          text,
-          logo_alignment: 'left',
-          width: 320
-        })
+        paint()
+        window.addEventListener('resize', paint)
       })
       .catch((err: Error) => setError(err.message))
 
     return () => {
       cancelled = true
+      window.removeEventListener('resize', paint)
     }
   }, [config?.googleClientId, text])
 

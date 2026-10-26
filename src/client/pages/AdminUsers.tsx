@@ -4,8 +4,8 @@ import { useApi } from '../lib/useApi'
 import { useAuth } from '../lib/auth'
 import { formatDate, relativeTime } from '../lib/format'
 import { PageBody, PageHeader } from '../components/Layout'
-import { Avatar, Badge, Button, Card, CardHeader, Empty, ErrorNote, Loading, Modal, RoleBadge } from '../components/ui'
-import { IconSearch, IconTrash } from '../components/icons'
+import { Avatar, Badge, Button, Card, CardHeader, Empty, ErrorNote, Field, Loading, Modal, PasswordInput, RoleBadge } from '../components/ui'
+import { IconPlus, IconSearch, IconTrash } from '../components/icons'
 import type { Role, SiteRecord, UserRecord } from '../../server/types'
 
 const ROLES: Role[] = ['admin', 'contractor', 'viewer']
@@ -18,6 +18,8 @@ export function AdminUsersPage() {
   const [actionError, setActionError] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   const [editingAccess, setEditingAccess] = useState<UserRecord | null>(null)
+  const [editingUser, setEditingUser] = useState<UserRecord | null>(null)
+  const [creatingUser, setCreatingUser] = useState(false)
 
   useEffect(() => {
     document.title = 'Users · CPPI'
@@ -67,10 +69,13 @@ export function AdminUsersPage() {
         subtitle="Everyone who can sign in to CPPI, with their role and project access."
         actions={
           <div className="row" style={{ gap: 8 }}>
+            <Button variant="primary" size="sm" onClick={() => setCreatingUser(true)}>
+              <IconPlus size={14} />
+              Add user
+            </Button>
             <IconSearch size={16} />
             <input
-              className="input"
-              style={{ width: 220 }}
+              className="input search-input"
               placeholder="Search name or email"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -87,7 +92,7 @@ export function AdminUsersPage() {
           {loading && !data ? (
             <Loading />
           ) : filtered.length === 0 ? (
-            <Empty title="No users found">Invite people from the Invitations page.</Empty>
+            <Empty title="No users found">Use the Add user button or invite people from the Invitations page.</Empty>
           ) : (
             <div style={{ overflowX: 'auto' }}>
               <table className="table">
@@ -117,19 +122,36 @@ export function AdminUsersPage() {
                         </div>
                       </td>
                       <td>
-                        <select
-                          className="select"
-                          style={{ width: 140 }}
-                          value={u.role}
-                          disabled={busyId === u.userId}
-                          onChange={(e) => void patch(u, { role: e.target.value })}
-                        >
-                          {ROLES.map((r) => (
-                            <option key={r} value={r}>
-                              {r}
-                            </option>
-                          ))}
-                        </select>
+                        {u.role === 'admin' ? (
+                          <div title="Admin roles are locked">
+                            <select className="select" style={{ width: 140 }} value={u.role} disabled>
+                              {ROLES.map((r) => (
+                                <option key={r} value={r}>
+                                  {r}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        ) : (
+                          <select
+                            className="select"
+                            style={{ width: 140 }}
+                            value={u.role}
+                            disabled={busyId === u.userId}
+                            onChange={(e) => void patch(u, { role: e.target.value })}
+                          >
+                            {ROLES.map((r) => (
+                              <option key={r} value={r}>
+                                {r}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                        {u.role === 'admin' ? (
+                          <div className="small muted" style={{ marginTop: 4 }}>
+                            Locked
+                          </div>
+                        ) : null}
                       </td>
                       <td className="small">
                         {u.role === 'admin' ? (
@@ -147,7 +169,10 @@ export function AdminUsersPage() {
                       </td>
                       <td className="small muted">{relativeTime(u.lastLoginAt)}</td>
                       <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                        <Button variant="ghost" size="sm" onClick={() => setEditingAccess(u)}>
+                        <Button variant="ghost" size="sm" onClick={() => setEditingUser(u)}>
+                          Edit
+                        </Button>
+                        <Button variant="ghost" size="sm" style={{ marginLeft: 6 }} onClick={() => setEditingAccess(u)}>
                           Access
                         </Button>
                         <Button
@@ -187,7 +212,9 @@ export function AdminUsersPage() {
           {users.filter((u) => u.role === 'contractor').length} contractor(s)
         </p>
 
-        <p className="small muted">Accounts can come from Google sign-in or provisioned password login; last login {formatDate(users[0]?.lastLoginAt)}.</p>
+        <p className="small muted">
+          Accounts can come from Google sign-in or provisioned password login; last login {formatDate(users[0]?.lastLoginAt)}.
+        </p>
       </PageBody>
 
       {editingAccess ? (
@@ -201,7 +228,169 @@ export function AdminUsersPage() {
           }}
         />
       ) : null}
+
+      {creatingUser ? (
+        <UserModal
+          sites={sites}
+          onClose={() => setCreatingUser(false)}
+          onSaved={() => {
+            setCreatingUser(false)
+            void reload()
+          }}
+        />
+      ) : null}
+
+      {editingUser ? (
+        <UserModal
+          user={editingUser}
+          sites={sites}
+          onClose={() => setEditingUser(null)}
+          onSaved={() => {
+            setEditingUser(null)
+            void reload()
+          }}
+        />
+      ) : null}
     </>
+  )
+}
+
+function UserModal({
+  user,
+  sites,
+  onClose,
+  onSaved
+}: {
+  user?: UserRecord
+  sites: SiteRecord[]
+  onClose: () => void
+  onSaved: () => void
+}) {
+  const isEditing = Boolean(user)
+  const [name, setName] = useState(user?.name ?? '')
+  const [email, setEmail] = useState(user?.email ?? '')
+  const [role, setRole] = useState<Role>(user?.role ?? 'viewer')
+  const [password, setPassword] = useState('')
+  const [siteIds, setSiteIds] = useState<string[]>(user?.siteIds ?? [])
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  function toggle(id: string) {
+    setSiteIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+  }
+
+  async function save() {
+    setBusy(true)
+    setError(null)
+    try {
+      if (!isEditing && !password.trim()) {
+        throw new Error('Password is required for a new user')
+      }
+
+      const body: Record<string, unknown> = {
+        name,
+        email,
+        role,
+        siteIds: role === 'admin' ? [] : siteIds
+      }
+      if (password.trim()) body.password = password
+
+      if (isEditing) await api(`/admin/users/${user!.userId}`, { method: 'PATCH', body })
+      else await api('/admin/users', { method: 'POST', body })
+      onSaved()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : `Could not ${isEditing ? 'update' : 'create'} the user`)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Modal
+      title={isEditing ? `Edit user · ${user!.name}` : 'Add user'}
+      onClose={onClose}
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose} disabled={busy}>
+            Cancel
+          </Button>
+          <Button loading={busy} onClick={save}>
+            {isEditing ? 'Save changes' : 'Create user'}
+          </Button>
+        </>
+      }
+    >
+      {error ? <div className="alert alert-error" style={{ marginBottom: 14 }}>{error}</div> : null}
+
+      <Field label="Full name">
+        <input
+          className="input"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. Site Manager"
+        />
+      </Field>
+
+      <Field label="Email">
+        <input
+          className="input"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="user@company.com"
+        />
+      </Field>
+
+      <Field
+        label="Role"
+        hint={user?.role === 'admin' ? 'Admin roles are locked and cannot be changed.' : undefined}
+      >
+        <select
+          className="select"
+          value={role}
+          disabled={user?.role === 'admin'}
+          onChange={(e) => setRole(e.target.value as Role)}
+        >
+          {ROLES.map((item) => (
+            <option key={item} value={item}>
+              {item}
+            </option>
+          ))}
+        </select>
+      </Field>
+
+      <Field
+        label={isEditing ? 'Reset password' : 'Password'}
+        hint={isEditing ? 'Leave blank to keep the current password.' : 'Minimum 8 characters.'}
+      >
+        <PasswordInput
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder={isEditing ? 'New password (optional)' : 'Create a password'}
+        />
+      </Field>
+
+      <Field
+        label="Project access"
+        hint={role === 'admin' ? 'Admins automatically have access to every project.' : 'Select the projects this user can access.'}
+      >
+        {role === 'admin' ? (
+          <div className="alert alert-info">Admins can open every project.</div>
+        ) : sites.length === 0 ? (
+          <Empty title="No projects yet" />
+        ) : (
+          <div className="stack" style={{ gap: 8 }}>
+            {sites.map((site) => (
+              <label key={site.siteId} className="row small" style={{ gap: 8, cursor: 'pointer' }}>
+                <input type="checkbox" checked={siteIds.includes(site.siteId)} onChange={() => toggle(site.siteId)} />
+                <span style={{ fontWeight: 600 }}>{site.name}</span>
+                <span className="muted">{site.location}</span>
+              </label>
+            ))}
+          </div>
+        )}
+      </Field>
+    </Modal>
   )
 }
 
