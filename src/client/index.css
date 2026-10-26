@@ -637,6 +637,55 @@ p { margin: 0; }
 
 .google-btn-host { display: flex; justify-content: center; min-height: 44px; }
 
+/* --------------------------- install prompt (PWA) --------------------------- */
+
+.install-banner {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: calc(100% - 28px);
+  max-width: 470px;
+  padding: 12px 12px 12px 14px;
+  transform: translateX(-50%);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  animation: install-rise 0.22s ease;
+}
+
+@keyframes install-rise {
+  from { opacity: 0; transform: translate(-50%, 14px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.install-copy { flex: 1; min-width: 0; }
+.install-title { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; }
+.install-sub { font-size: 12.5px; color: var(--muted); line-height: 1.35; }
+.install-sub strong { color: var(--ink-soft); font-weight: 700; }
+
+.install-close {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.install-close:hover { background: var(--green-50); color: var(--green-700); }
+.install-close:focus-visible { outline: none; box-shadow: var(--ring); }
+
 /* ------------------------------ responsive ------------------------------ */
 
 /* Tablets — drop the KPI grid from 4 columns to 2 */

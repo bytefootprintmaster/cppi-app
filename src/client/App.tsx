@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useAuth } from './lib/auth'
 import { Layout } from './components/Layout'
+import { InstallPrompt } from './components/InstallPrompt'
 import { Loading } from './components/ui'
 import { LoginPage } from './pages/Login'
 import { DashboardPage } from './pages/Dashboard'
@@ -23,39 +24,43 @@ function Protected({ children, admin = false }: { children: ReactNode; admin?: b
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/invite/:token" element={<InviteAcceptPage />} />
+    <>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/invite/:token" element={<InviteAcceptPage />} />
 
-      <Route
-        element={
-          <Protected>
-            <Layout />
-          </Protected>
-        }
-      >
-        <Route index element={<DashboardPage />} />
-        <Route path="/sites" element={<SitesPage />} />
-        <Route path="/sites/:siteId" element={<SiteDetailPage />} />
         <Route
-          path="/admin/invites"
           element={
-            <Protected admin>
-              <AdminInvitesPage />
+            <Protected>
+              <Layout />
             </Protected>
           }
-        />
-        <Route
-          path="/admin/users"
-          element={
-            <Protected admin>
-              <AdminUsersPage />
-            </Protected>
-          }
-        />
-      </Route>
+        >
+          <Route index element={<DashboardPage />} />
+          <Route path="/sites" element={<SitesPage />} />
+          <Route path="/sites/:siteId" element={<SiteDetailPage />} />
+          <Route
+            path="/admin/invites"
+            element={
+              <Protected admin>
+                <AdminInvitesPage />
+              </Protected>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <Protected admin>
+                <AdminUsersPage />
+              </Protected>
+            }
+          />
+        </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+
+      <InstallPrompt />
+    </>
   )
 }

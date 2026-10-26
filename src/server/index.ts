@@ -31,7 +31,17 @@ app.use('/api', (_req, res) => {
 
 // Serve the built SPA. In production this bundle lives in dist/ next to index.html.
 const staticDir = typeof __dirname !== 'undefined' ? __dirname : path.resolve(process.cwd(), 'dist')
-app.use(express.static(staticDir))
+app.use(
+  express.static(staticDir, {
+    setHeaders(res, filePath) {
+      // The service worker and manifest must not be cached, otherwise a deploy
+      // can leave clients stuck on an old shell.
+      if (filePath.endsWith('sw.js') || filePath.endsWith('.webmanifest')) {
+        res.setHeader('Cache-Control', 'no-cache')
+      }
+    }
+  })
+)
 
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api')) return next()

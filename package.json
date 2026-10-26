@@ -15,6 +15,7 @@
     "build:server": "node build.mjs",
     "start": "node dist/server.cjs",
     "setup:infra": "node scripts/setup-infra.mjs",
+    "icons": "node scripts/generate-icons.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
