@@ -5,6 +5,8 @@ import { IconAlert, IconCheck, IconUpload } from './icons'
 
 interface UploaderProps {
   siteId: string
+  /** Folder the files land in. Omit to upload to the project root. */
+  folderId?: string
   onUploaded: () => void
 }
 
@@ -180,7 +182,7 @@ const UploadRow = memo(function UploadRow({
   )
 })
 
-export function Uploader({ siteId, onUploaded }: UploaderProps) {
+export function Uploader({ siteId, folderId, onUploaded }: UploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [items, setItems] = useState<UploadItem[]>([])
   const [drag, setDrag] = useState(false)
@@ -243,6 +245,7 @@ export function Uploader({ siteId, onUploaded }: UploaderProps) {
               type,
               contentType,
               size: file.size,
+              folderId,
               category: type === 'image' ? 'progress' : 'other'
             }
           },

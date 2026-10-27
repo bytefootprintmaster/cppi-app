@@ -24,6 +24,7 @@ export const T = {
   sites: `${env.TABLE_PREFIX}sites`,
   stages: `${env.TABLE_PREFIX}stages`,
   milestones: `${env.TABLE_PREFIX}milestones`,
+  folders: `${env.TABLE_PREFIX}folders`,
   assets: `${env.TABLE_PREFIX}assets`,
   remarks: `${env.TABLE_PREFIX}remarks`,
   kpis: `${env.TABLE_PREFIX}kpis`

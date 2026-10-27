@@ -66,6 +66,16 @@ export interface MilestoneRecord {
   updatedAt: string
 }
 
+export interface AssetFolderRecord {
+  siteId: string
+  folderId: string
+  name: string
+  description?: string
+  createdBy: string
+  createdAt: string
+  updatedAt: string
+}
+
 export interface AssetRecord {
   siteId: string
   assetId: string
@@ -76,6 +86,8 @@ export interface AssetRecord {
   contentType?: string
   size?: number
   stageId?: string
+  /** Folder the file lives in. Unset means the project root (unsorted). */
+  folderId?: string
   uploadedBy: string
   uploadedByName: string
   uploadedAt: string

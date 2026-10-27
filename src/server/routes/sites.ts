@@ -14,6 +14,7 @@ import {
 import { buildObjectKey, deleteObject, presignDownload, presignUpload } from '../s3'
 import type {
   AssetCategory,
+  AssetFolderRecord,
   AssetRecord,
   AssetType,
   MilestoneRecord,
@@ -31,6 +32,13 @@ const ASSET_TYPES = ['image', 'document'] as const
 const ASSET_CATEGORIES = ['progress', 'plan', 'permit', 'invoice', 'other'] as const
 
 const nowIso = () => new Date().toISOString()
+
+function listFolders(siteId: string): Promise<AssetFolderRecord[]> {
+  return queryAll<AssetFolderRecord>(T.folders, {
+    KeyConditionExpression: 'siteId = :s',
+    ExpressionAttributeValues: { ':s': siteId }
+  })
+}
 
 function sitePatchFrom(body: Record<string, unknown>): Record<string, unknown> {
   const patch: Record<string, unknown> = { updatedAt: nowIso() }
@@ -98,6 +106,7 @@ siteRouter.delete('/:siteId', requireAdmin, asyncHandler(async (req, res) => {
   const children: Array<[string, string]> = [
     [T.stages, 'stageId'],
     [T.milestones, 'milestoneId'],
+    [T.folders, 'folderId'],
     [T.assets, 'assetId'],
     [T.remarks, 'remarkId']
   ]
@@ -239,6 +248,82 @@ siteRouter.delete('/:siteId/milestones/:milestoneId', requireAdmin, asyncHandler
   res.json({ ok: true })
 }))
 
+/* ------------------------------ folders ------------------------------ */
+
+siteRouter.get('/:siteId/folders', asyncHandler(async (req, res) => {
+  const site = await requireSiteAccess(req.user!, req.params.siteId)
+  const folders = await listFolders(site.siteId)
+  res.json({ folders: folders.sort((a, b) => a.name.localeCompare(b.name)) })
+}))
+
+siteRouter.post('/:siteId/folders', requireAdmin, asyncHandler(async (req, res) => {
+  const site = await requireSiteAccess(req.user!, req.params.siteId)
+  const body = (req.body ?? {}) as Record<string, unknown>
+  const existing = await listFolders(site.siteId)
+  const name = str(body.name, 'name', 120)
+  if (existing.some((f) => f.name.toLowerCase() === name.toLowerCase())) {
+    throw new HttpError(409, 'A folder with this name already exists')
+  }
+
+  const ts = nowIso()
+  const folder: AssetFolderRecord = {
+    siteId: site.siteId,
+    folderId: randomUUID(),
+    name,
+    description: optStr(body.description, 500),
+    createdBy: req.user!.userId,
+    createdAt: ts,
+    updatedAt: ts
+  }
+  await putItem(T.folders, folder)
+  await updateFields(T.sites, { siteId: site.siteId }, { updatedAt: ts })
+  res.json({ folder })
+}))
+
+siteRouter.patch('/:siteId/folders/:folderId', requireAdmin, asyncHandler(async (req, res) => {
+  const site = await requireSiteAccess(req.user!, req.params.siteId)
+  const folder = await getItem<AssetFolderRecord>(T.folders, {
+    siteId: site.siteId,
+    folderId: req.params.folderId
+  })
+  if (!folder) throw new HttpError(404, 'Folder not found')
+
+  const body = (req.body ?? {}) as Record<string, unknown>
+  const patch: Record<string, unknown> = { updatedAt: nowIso() }
+  if (body.name !== undefined) patch.name = str(body.name, 'name', 120)
+  if (body.description !== undefined) patch.description = optStr(body.description, 500)
+
+  await updateFields(T.folders, { siteId: site.siteId, folderId: folder.folderId }, patch)
+  res.json({ ok: true })
+}))
+
+/** Deleting a folder keeps its files: they simply move back to the project root. */
+siteRouter.delete('/:siteId/folders/:folderId', requireAdmin, asyncHandler(async (req, res) => {
+  const site = await requireSiteAccess(req.user!, req.params.siteId)
+  const folder = await getItem<AssetFolderRecord>(T.folders, {
+    siteId: site.siteId,
+    folderId: req.params.folderId
+  })
+  if (!folder) throw new HttpError(404, 'Folder not found')
+
+  const assets = await queryAll<AssetRecord>(T.assets, {
+    KeyConditionExpression: 'siteId = :s',
+    ExpressionAttributeValues: { ':s': site.siteId }
+  })
+  await Promise.all(
+    assets
+      .filter((a) => a.folderId === folder.folderId)
+      .map((a) => {
+        const moved: AssetRecord = { ...a }
+        delete moved.folderId
+        return putItem(T.assets, moved)
+      })
+  )
+
+  await deleteItem(T.folders, { siteId: site.siteId, folderId: folder.folderId })
+  res.json({ ok: true })
+}))
+
 /* ------------------------------ assets ------------------------------- */
 
 siteRouter.get('/:siteId/assets', asyncHandler(async (req, res) => {
@@ -269,6 +354,12 @@ siteRouter.post('/:siteId/assets', asyncHandler(async (req, res) => {
   if (!canWrite(req.user!)) throw new HttpError(403, 'You do not have permission to upload files')
   const body = (req.body ?? {}) as Record<string, unknown>
 
+  const folderId = optStr(body.folderId, 60)
+  if (folderId) {
+    const folder = await getItem<AssetFolderRecord>(T.folders, { siteId: site.siteId, folderId })
+    if (!folder) throw new HttpError(404, 'Folder not found')
+  }
+
   const asset: AssetRecord = {
     siteId: site.siteId,
     assetId: randomUUID(),
@@ -279,6 +370,7 @@ siteRouter.post('/:siteId/assets', asyncHandler(async (req, res) => {
     contentType: optStr(body.contentType, 160),
     size: body.size !== undefined ? Number(body.size) : undefined,
     stageId: optStr(body.stageId, 60),
+    folderId,
     uploadedBy: req.user!.userId,
     uploadedByName: req.user!.name,
     uploadedAt: nowIso()

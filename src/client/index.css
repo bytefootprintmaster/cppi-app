@@ -621,6 +621,72 @@ p { margin: 0; }
 .file-meta { padding: 10px 12px; }
 .file-name { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+/* ------------------------- project file folders ------------------------- */
+
+.folder-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.folder-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 12px;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.folder-chip:hover { border-color: var(--green-300); color: var(--ink); }
+.folder-chip.active {
+  background: var(--green-50);
+  border-color: var(--green-500);
+  color: var(--green-700);
+}
+.folder-chip.active .folder-count { background: var(--green-200); color: var(--green-800); }
+.folder-count {
+  flex-shrink: 0;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--muted);
+  background: var(--green-100);
+  border-radius: 999px;
+  padding: 1px 7px;
+}
+.folder-chip-add {
+  border-style: dashed;
+  color: var(--green-700);
+  box-shadow: none;
+}
+.folder-chip-add:hover { border-color: var(--green-500); background: var(--green-50); }
+.file-folder {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  margin-top: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--green-50);
+  color: var(--green-700);
+  font-size: 11.5px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .timeline { display: flex; flex-direction: column; gap: 14px; }
 .timeline-item { display: flex; gap: 12px; }
 .timeline-dot {

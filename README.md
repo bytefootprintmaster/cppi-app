@@ -43,7 +43,7 @@ Browser (React SPA)  ──►  Express API  ──►  DynamoDB (metadata)
 
 - **Frontend** — React 18 + Vite + TypeScript, hand-written CSS design system (deep greens on white).
 - **Backend** — Express + TypeScript, bundled by esbuild into a single CommonJS file.
-- **Data** — DynamoDB, 9 tables on `PAY_PER_REQUEST`, all in `us-east-2`.
+- **Data** — DynamoDB, 10 tables on `PAY_PER_REQUEST`, all in `us-east-2`.
 - **Storage** — one private S3 bucket; the browser never sees AWS credentials.
 
 ### DynamoDB tables (default prefix `cppi_`)
@@ -56,7 +56,8 @@ Browser (React SPA)  ──►  Express API  ──►  DynamoDB (metadata)
 | `cppi_sites` | `siteId` | — | projects |
 | `cppi_stages` | `siteId` | `stageId` | per-project |
 | `cppi_milestones` | `siteId` | `milestoneId` | per-project |
-| `cppi_assets` | `siteId` | `assetId` | file metadata (S3 key) |
+| `cppi_folders` | `siteId` | `folderId` | file folders within a project (e.g. Construction, Finance) |
+| `cppi_assets` | `siteId` | `assetId` | file metadata (S3 key, optional `folderId`) |
 | `cppi_remarks` | `siteId` | `remarkId` | per-project |
 | `cppi_kpis` | `userId` | — | dashboard KPI selection per user |
 
@@ -277,8 +278,9 @@ All endpoints are under `/api`. Authenticated calls send `Authorization: Bearer 
 | `GET /api/sites/:id` | auth | Site + stages + milestones + progress |
 | `PATCH /api/sites/:id` · `DELETE /api/sites/:id` | admin | Update / delete (cascades files and children) |
 | `…/stages` `…/milestones` (GET/POST/PATCH/DELETE) | admin writes | Development framework |
+| `…/folders` (GET/POST/PATCH/DELETE) | admin writes | File folders inside a project; deleting one moves its files to the project root |
 | `POST /api/sites/:id/assets/presign` | admin, contractor | Get a presigned S3 PUT URL |
-| `POST /api/sites/:id/assets` | admin, contractor | Register the uploaded object |
+| `POST /api/sites/:id/assets` | admin, contractor | Register the uploaded object (optional `folderId`) |
 | `GET /api/sites/:id/assets/:assetId/url` | auth | Presigned download URL |
 | `DELETE /api/sites/:id/assets/:assetId` | uploader or admin | Delete file + S3 object |
 | `…/remarks` (GET/POST/DELETE) | admin, contractor write | Project remarks |

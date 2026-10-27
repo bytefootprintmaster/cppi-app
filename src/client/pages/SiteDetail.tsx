@@ -25,12 +25,15 @@ import {
 } from '../components/ui'
 import {
   IconBuilding,
+  IconEdit,
   IconFile,
+  IconFolder,
   IconImage,
   IconPlus,
   IconTrash
 } from '../components/icons'
 import type {
+  AssetFolderRecord,
   AssetRecord,
   MilestoneRecord,
   MilestoneStatus,
@@ -156,7 +159,7 @@ export function SiteDetailPage() {
         {tab === 'framework' ? (
           <FrameworkTab siteId={site.siteId} stages={stages} milestones={milestones} isAdmin={isAdmin} onChanged={reload} />
         ) : null}
-        {tab === 'files' ? <FilesTab siteId={site.siteId} canWrite={canWrite} /> : null}
+        {tab === 'files' ? <FilesTab siteId={site.siteId} canWrite={canWrite} isAdmin={isAdmin} /> : null}
         {tab === 'remarks' ? <RemarksTab siteId={site.siteId} stages={stages} canWrite={canWrite} /> : null}
       </PageBody>
 
@@ -683,12 +686,108 @@ function MilestoneFormModal({
 /** Signed thumbnail URLs are fetched in small batches to avoid flooding the API. */
 const THUMB_CONCURRENCY = 4
 
-function FilesTab({ siteId, canWrite }: { siteId: string; canWrite: boolean }) {
+/** Sentinel for the "show everything" filter. */
+const ALL_FILES = 'all'
+
+function FolderFormModal({
+  siteId,
+  folder,
+  onClose,
+  onSaved
+}: {
+  siteId: string
+  folder?: AssetFolderRecord
+  onClose: () => void
+  onSaved: (folder: AssetFolderRecord) => void
+}) {
+  const [name, setName] = useState(folder?.name ?? '')
+  const [description, setDescription] = useState(folder?.description ?? '')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function submit(event: FormEvent) {
+    event.preventDefault()
+    if (!name.trim()) {
+      setError('Give the folder a name')
+      return
+    }
+    setBusy(true)
+    setError(null)
+    const body = { name: name.trim(), description: description.trim() || undefined }
+    try {
+      if (folder) {
+        await api(`/sites/${siteId}/folders/${folder.folderId}`, { method: 'PATCH', body })
+        onSaved({ ...folder, name: body.name, description: body.description, updatedAt: new Date().toISOString() })
+      } else {
+        const res = await api<{ folder: AssetFolderRecord }>(`/sites/${siteId}/folders`, { method: 'POST', body })
+        onSaved(res.folder)
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not save the folder')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Modal
+      title={folder ? 'Edit folder' : 'New folder'}
+      onClose={onClose}
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose} disabled={busy}>
+            Cancel
+          </Button>
+          <Button form="folder-form" type="submit" loading={busy}>
+            {folder ? 'Save folder' : 'Create folder'}
+          </Button>
+        </>
+      }
+    >
+      <form id="folder-form" onSubmit={submit}>
+        {error ? <div className="alert alert-error" style={{ marginBottom: 14 }}>{error}</div> : null}
+        <Field label="Folder name">
+          <input
+            className="input"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. Construction, Materials, Finance"
+            autoFocus
+          />
+        </Field>
+        <Field label="Description" hint="Optional. Helps the team know what belongs here.">
+          <textarea
+            className="textarea"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="e.g. Daily site photos and progress reports"
+          />
+        </Field>
+      </form>
+    </Modal>
+  )
+}
+
+function FilesTab({
+  siteId,
+  canWrite,
+  isAdmin
+}: {
+  siteId: string
+  canWrite: boolean
+  isAdmin: boolean
+}) {
   const { data, error, loading, reload } = useApi<{ assets: AssetRecord[] }>(`/sites/${siteId}/assets`)
+  const { data: folderData, reload: reloadFolders } = useApi<{ folders: AssetFolderRecord[] }>(
+    `/sites/${siteId}/folders`
+  )
   const { user } = useAuth()
   const [urls, setUrls] = useState<Record<string, string>>({})
+  const [selected, setSelected] = useState<string>(ALL_FILES)
   const [busyId, setBusyId] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [creatingFolder, setCreatingFolder] = useState(false)
+  const [editingFolder, setEditingFolder] = useState<AssetFolderRecord | null>(null)
 
   // Thumbnails need a signed URL each. Requesting them all at once saturates the
   // browser's connection pool and stalls every other call, so they are fetched by
@@ -747,33 +846,135 @@ function FilesTab({ siteId, canWrite }: { siteId: string; canWrite: boolean }) {
     }
   }
 
+  async function removeFolder(folder: AssetFolderRecord) {
+    if (
+      !window.confirm(
+        `Delete the folder "${folder.name}"? Files inside it move to the project root — no files are deleted.`
+      )
+    ) {
+      return
+    }
+    setBusyId(folder.folderId)
+    setActionError(null)
+    try {
+      await api(`/sites/${siteId}/folders/${folder.folderId}`, { method: 'DELETE' })
+      setSelected(ALL_FILES)
+      await Promise.all([reload(), reloadFolders()])
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Could not delete the folder')
+    } finally {
+      setBusyId(null)
+    }
+  }
+
   const assets = data?.assets ?? []
+  const folders = folderData?.folders ?? []
+  const countIn = (folderId: string) => assets.filter((a) => a.folderId === folderId).length
+  // A folder that vanished (deleted elsewhere) silently falls back to the full list.
+  const activeFolder = folders.find((f) => f.folderId === selected) ?? null
+  const visible = activeFolder ? assets.filter((a) => a.folderId === activeFolder.folderId) : assets
+  const folderName = (folderId?: string) =>
+    folderId ? folders.find((f) => f.folderId === folderId)?.name : undefined
 
   return (
     <div className="stack">
       <ErrorNote message={error ?? actionError} />
 
+      <div className="folder-bar">
+        <button
+          className={`folder-chip${activeFolder ? '' : ' active'}`}
+          onClick={() => setSelected(ALL_FILES)}
+        >
+          <IconFolder size={15} />
+          All files
+          <span className="folder-count">{assets.length}</span>
+        </button>
+        {folders.map((folder) => (
+          <button
+            key={folder.folderId}
+            className={`folder-chip${activeFolder?.folderId === folder.folderId ? ' active' : ''}`}
+            onClick={() => setSelected(folder.folderId)}
+            title={folder.description || folder.name}
+          >
+            <IconFolder size={15} />
+            {folder.name}
+            <span className="folder-count">{countIn(folder.folderId)}</span>
+          </button>
+        ))}
+        {isAdmin ? (
+          <button className="folder-chip folder-chip-add" onClick={() => setCreatingFolder(true)}>
+            <IconPlus size={15} />
+            New folder
+          </button>
+        ) : null}
+      </div>
+
       {canWrite ? (
         <Card>
-          <CardHeader title="Upload files" sub="Photos and documents are stored privately in object storage" />
+          <CardHeader
+            title={activeFolder ? `Upload to ${activeFolder.name}` : 'Upload files'}
+            sub={
+              activeFolder
+                ? activeFolder.description || 'Photos and documents added here stay in this folder'
+                : 'Files without a folder land in the project root'
+            }
+          />
           <div className="card-body">
-            <Uploader siteId={siteId} onUploaded={() => void reload()} />
+            <Uploader
+              siteId={siteId}
+              folderId={activeFolder?.folderId}
+              onUploaded={() => void reload()}
+            />
           </div>
         </Card>
       ) : null}
 
       <Card>
-        <CardHeader title="Project files" sub={`${assets.length} item${assets.length === 1 ? '' : 's'}`} />
+        <CardHeader
+          title={activeFolder ? activeFolder.name : 'Project files'}
+          sub={
+            `${visible.length} item${visible.length === 1 ? '' : 's'}` +
+            (activeFolder ? ` · ${assets.length} in project` : '')
+          }
+          action={
+            activeFolder && isAdmin ? (
+              <div className="row" style={{ gap: 8 }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={busyId === activeFolder.folderId}
+                  onClick={() => setEditingFolder(activeFolder)}
+                >
+                  <IconEdit size={14} />
+                  Edit folder
+                </Button>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  disabled={busyId === activeFolder.folderId}
+                  onClick={() => void removeFolder(activeFolder)}
+                >
+                  <IconTrash size={14} />
+                  Delete folder
+                </Button>
+              </div>
+            ) : undefined
+          }
+        />
         <div className="card-body">
           {loading && !data ? (
             <Loading />
-          ) : assets.length === 0 ? (
-            <Empty title="No files yet">
-              {canWrite ? 'Drop site photos or documents above to get started.' : 'Nothing has been uploaded yet.'}
+          ) : visible.length === 0 ? (
+            <Empty title={activeFolder ? 'This folder is empty' : 'No files yet'}>
+              {canWrite
+                ? activeFolder
+                  ? 'Drop photos or documents above to add them here.'
+                  : 'Drop site photos or documents above to get started.'
+                : 'Nothing has been uploaded yet.'}
             </Empty>
           ) : (
             <div className="file-grid">
-              {assets.map((asset) => (
+              {visible.map((asset) => (
                 <div className="file-card" key={asset.assetId}>
                   <div className="file-thumb">
                     {asset.type === 'image' && urls[asset.assetId] ? (
@@ -794,6 +995,12 @@ function FilesTab({ siteId, canWrite }: { siteId: string; canWrite: boolean }) {
                     <div className="small muted" style={{ marginTop: 2 }}>
                       {asset.uploadedByName}
                     </div>
+                    {!activeFolder && folderName(asset.folderId) ? (
+                      <div className="file-folder">
+                        <IconFolder size={12} />
+                        {folderName(asset.folderId)}
+                      </div>
+                    ) : null}
                     <div className="row" style={{ marginTop: 8, gap: 6 }}>
                       <Button
                         variant="ghost"
@@ -821,6 +1028,30 @@ function FilesTab({ siteId, canWrite }: { siteId: string; canWrite: boolean }) {
           )}
         </div>
       </Card>
+
+      {creatingFolder ? (
+        <FolderFormModal
+          siteId={siteId}
+          onClose={() => setCreatingFolder(false)}
+          onSaved={(folder) => {
+            setCreatingFolder(false)
+            setSelected(folder.folderId)
+            void reloadFolders()
+          }}
+        />
+      ) : null}
+
+      {editingFolder ? (
+        <FolderFormModal
+          siteId={siteId}
+          folder={editingFolder}
+          onClose={() => setEditingFolder(null)}
+          onSaved={() => {
+            setEditingFolder(null)
+            void reloadFolders()
+          }}
+        />
+      ) : null}
     </div>
   )
 }

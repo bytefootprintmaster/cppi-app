@@ -92,6 +92,19 @@ export const IconFile = makeIcon(
   </>
 )
 
+export const IconFolder = makeIcon(
+  <>
+    <path d="M3 7a2 2 0 0 1 2-2h4l2 2.4h8a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+  </>
+)
+
+export const IconEdit = makeIcon(
+  <>
+    <path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17z" />
+    <path d="M14.5 6.5l3 3" />
+  </>
+)
+
 export const IconTrash = makeIcon(
   <>
     <path d="M4 7h16" />

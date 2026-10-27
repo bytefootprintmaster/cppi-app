@@ -44,6 +44,7 @@ const TABLE_DEFS = [
   { name: `${prefix}sites`, hash: 'siteId' },
   { name: `${prefix}stages`, hash: 'siteId', range: 'stageId' },
   { name: `${prefix}milestones`, hash: 'siteId', range: 'milestoneId' },
+  { name: `${prefix}folders`, hash: 'siteId', range: 'folderId' },
   { name: `${prefix}assets`, hash: 'siteId', range: 'assetId' },
   { name: `${prefix}remarks`, hash: 'siteId', range: 'remarkId' },
   { name: `${prefix}kpis`, hash: 'userId' }
