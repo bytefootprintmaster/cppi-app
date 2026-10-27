@@ -17,9 +17,10 @@ export class ApiError extends Error {
   }
 }
 
-interface RequestOptions {
+export interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
   body?: unknown
+  signal?: AbortSignal
 }
 
 export async function api<T>(path: string, options: RequestOptions = {}): Promise<T> {
@@ -33,7 +34,7 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
     body = JSON.stringify(options.body)
   }
 
-  const res = await fetch(`/api${path}`, { method: options.method ?? 'GET', headers, body })
+  const res = await fetch(`/api${path}`, { method: options.method ?? 'GET', headers, body, signal: options.signal })
   const text = await res.text()
   const data = text ? JSON.parse(text) : {}
 

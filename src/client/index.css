@@ -567,6 +567,40 @@ p { margin: 0; }
 }
 .dropzone:hover, .dropzone.drag { border-color: var(--green-400); background: var(--green-100); }
 
+/* ----------------------------- upload list ------------------------------ */
+
+.upload-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+.upload-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+.upload-item.error { border-color: #f6c9c9; background: var(--red-bg); }
+.upload-icon { display: flex; align-items: center; color: var(--green-600); flex-shrink: 0; }
+.upload-item.error .upload-icon { color: var(--red); }
+.upload-icon .spinner { width: 16px; height: 16px; }
+.upload-body { flex: 1; min-width: 0; }
+.upload-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.upload-progress { margin-top: 6px; height: 5px; }
+.upload-error { font-size: 12.5px; color: var(--red); margin-top: 2px; }
+.upload-pct { flex-shrink: 0; min-width: 42px; text-align: right; }
+
 .file-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 14px; }
 .file-card {
   border: 1px solid var(--line);

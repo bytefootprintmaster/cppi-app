@@ -680,6 +680,9 @@ function MilestoneFormModal({
 
 /* --------------------------------- files --------------------------------- */
 
+/** Signed thumbnail URLs are fetched in small batches to avoid flooding the API. */
+const THUMB_CONCURRENCY = 4
+
 function FilesTab({ siteId, canWrite }: { siteId: string; canWrite: boolean }) {
   const { data, error, loading, reload } = useApi<{ assets: AssetRecord[] }>(`/sites/${siteId}/assets`)
   const { user } = useAuth()
@@ -687,24 +690,31 @@ function FilesTab({ siteId, canWrite }: { siteId: string; canWrite: boolean }) {
   const [busyId, setBusyId] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
 
+  // Thumbnails need a signed URL each. Requesting them all at once saturates the
+  // browser's connection pool and stalls every other call, so they are fetched by
+  // a small worker pool and merged in as they arrive.
   useEffect(() => {
     if (!data) return
     let cancelled = false
-    const images = data.assets.filter((a) => a.type === 'image')
+    const queue = data.assets.filter((a) => a.type === 'image').map((a) => a.assetId)
+
     void (async () => {
-      const pairs = await Promise.all(
-        images.map(async (asset) => {
+      const workers = Array.from({ length: THUMB_CONCURRENCY }, async () => {
+        while (queue.length) {
+          const assetId = queue.shift()
+          if (!assetId || cancelled) return
           try {
-            const res = await api<{ url: string }>(`/sites/${siteId}/assets/${asset.assetId}/url`)
-            return [asset.assetId, res.url] as [string, string]
+            const res = await api<{ url: string }>(`/sites/${siteId}/assets/${assetId}/url`)
+            if (cancelled) return
+            setUrls((prev) => ({ ...prev, [assetId]: res.url }))
           } catch {
-            return null
+            /* a thumbnail that can't be signed is simply not shown */
           }
-        })
-      )
-      if (cancelled) return
-      setUrls(Object.fromEntries(pairs.filter((p): p is [string, string] => p !== null)))
+        }
+      })
+      await Promise.all(workers)
     })()
+
     return () => {
       cancelled = true
     }
