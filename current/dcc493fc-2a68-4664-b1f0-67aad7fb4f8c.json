@@ -1,0 +1,25 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "siteId": "dcc493fc-2a68-4664-b1f0-67aad7fb4f8c",
+  "updatedAt": "2026-10-29T01:37:15Z",
+  "dashboard": {
+    "progress": {
+      "stages": 0,
+      "stagesCompleted": 0,
+      "milestones": 0,
+      "milestonesCompleted": 0,
+      "percent": 0
+    },
+    "siteStatus": "in_progress",
+    "stages": [],
+    "milestones": [],
+    "assetCount": 1,
+    "remarkCount": 1,
+    "latestRemark": {
+      "remarkId": "f3684f31-e57b-497e-a5e4-c43eb8dc3693",
+      "text": "Image \"Untitled design.png\" is an illustrated scene of a tiled-roof courtyard house with people gathered around a meal. It shows no construction work, so it provides no evidence of progress on any stage or milestone.",
+      "authorName": "CPPI Agent (AI)",
+      "createdAt": "2026-10-28T18:31:25Z"
+    }
+  }
+}
