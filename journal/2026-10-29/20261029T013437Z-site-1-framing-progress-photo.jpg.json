@@ -1,0 +1,138 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "recordedAt": "2026-10-29T01:34:37Z",
+  "jobId": "67d67e4b4d4b",
+  "trigger": "reconcile",
+  "task": "progress_update_from_file",
+  "agent": "progress",
+  "model": "claude-sonnet-5-5",
+  "source": {
+    "siteId": "site-1",
+    "s3Key": "sites/site-1/image/07a15d4d-1c2b-4e3f-9a10-4c5d6e7f8a9b-framing-progress-photo.jpg",
+    "fileName": "framing-progress-photo.jpg",
+    "kind": "image",
+    "etag": "e2",
+    "size": 5
+  },
+  "summary": "Registered 'framing-progress-photo.jpg' and recorded a progress note.",
+  "confidence": 0.5,
+  "steps": 3,
+  "actions": [
+    {
+      "tool": "get_project_state",
+      "input": {
+        "siteId": "site-1"
+      },
+      "status": "ok"
+    },
+    {
+      "tool": "register_asset",
+      "input": {
+        "siteId": "site-1",
+        "name": "framing-progress-photo.jpg",
+        "s3Key": "sites/site-1/image/07a15d4d-1c2b-4e3f-9a10-4c5d6e7f8a9b-framing-progress-photo.jpg",
+        "type": "image",
+        "category": "progress"
+      },
+      "status": "registered",
+      "result": {
+        "status": "registered",
+        "assetId": "fdcddad9-ae6a-451f-954f-da80f7153f57"
+      }
+    },
+    {
+      "tool": "add_progress_remark",
+      "input": {
+        "siteId": "site-1",
+        "text": "Analysed newly uploaded file 'framing-progress-photo.jpg' and recorded it against the project."
+      },
+      "status": "added",
+      "result": {
+        "status": "added",
+        "remarkId": "39d6bf95-2b9e-4bad-ba68-762ad212dc8e"
+      }
+    },
+    {
+      "tool": "propose_milestone_status",
+      "input": {
+        "siteId": "site-1",
+        "milestoneId": "ms-1",
+        "status": "in_progress",
+        "reason": "Evidence found in 'framing-progress-photo.jpg'."
+      },
+      "status": "pending_approval",
+      "result": {
+        "status": "pending_approval",
+        "action_id": "7146d7b5c765",
+        "preview": "Mark milestone *Grading permit issued* on *27 Mandrake St* as *in_progress*\nReason: Evidence found in 'framing-progress-photo.jpg'.",
+        "note": "Queued for human approval. It has NOT been applied."
+      }
+    },
+    {
+      "tool": "finish",
+      "input": {
+        "summary": "Registered 'framing-progress-photo.jpg' and recorded a progress note.",
+        "confidence": 0.5,
+        "notes": "Offline stub extraction (AGENTS_OFFLINE=1)."
+      },
+      "status": "done",
+      "result": {
+        "status": "done",
+        "summary": "Registered 'framing-progress-photo.jpg' and recorded a progress note.",
+        "confidence": 0.5
+      }
+    }
+  ],
+  "pendingApprovals": [
+    "7146d7b5c765"
+  ],
+  "costUsd": 0.01521,
+  "tokens": {
+    "input": 3600,
+    "output": 540,
+    "cacheWrite": 900,
+    "cacheRead": 1800
+  },
+  "dashboard": {
+    "progress": {
+      "stages": 2,
+      "stagesCompleted": 0,
+      "milestones": 2,
+      "milestonesCompleted": 0,
+      "percent": 0
+    },
+    "siteStatus": "in_progress",
+    "stages": [
+      {
+        "stageId": "stage-1",
+        "name": "Permitting",
+        "status": "in_progress"
+      },
+      {
+        "stageId": "stage-2",
+        "name": "Framing",
+        "status": "not_started"
+      }
+    ],
+    "milestones": [
+      {
+        "milestoneId": "ms-1",
+        "name": "Grading permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "ms-2",
+        "name": "Framing inspection",
+        "status": "pending"
+      }
+    ],
+    "assetCount": 2,
+    "remarkCount": 2,
+    "latestRemark": {
+      "remarkId": "85f70f0b-3abe-4595-b965-eda09795f3f7",
+      "text": "Analysed newly uploaded file 'Permit - Grading - 27 Mandrake St.pdf' and recorded it against the project.",
+      "authorName": "CPPI Agent (AI)",
+      "createdAt": "2026-10-29T01:34:37Z"
+    }
+  }
+}
