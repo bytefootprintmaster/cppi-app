@@ -1,0 +1,47 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "siteId": "site-1",
+  "updatedAt": "2026-10-29T01:34:15Z",
+  "dashboard": {
+    "progress": {
+      "stages": 2,
+      "stagesCompleted": 0,
+      "milestones": 2,
+      "milestonesCompleted": 0,
+      "percent": 0
+    },
+    "siteStatus": "in_progress",
+    "stages": [
+      {
+        "stageId": "stage-1",
+        "name": "Permitting",
+        "status": "in_progress"
+      },
+      {
+        "stageId": "stage-2",
+        "name": "Framing",
+        "status": "not_started"
+      }
+    ],
+    "milestones": [
+      {
+        "milestoneId": "ms-1",
+        "name": "Grading permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "ms-2",
+        "name": "Framing inspection",
+        "status": "pending"
+      }
+    ],
+    "assetCount": 1,
+    "remarkCount": 1,
+    "latestRemark": {
+      "remarkId": "5e331a7d-11ea-4e7a-851e-3a1d32af17ed",
+      "text": "Analysed newly uploaded file 'invoice.txt' and recorded it against the project.",
+      "authorName": "CPPI Agent (AI)",
+      "createdAt": "2026-10-29T01:34:15Z"
+    }
+  }
+}
