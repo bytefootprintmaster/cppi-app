@@ -1,0 +1,138 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "recordedAt": "2026-10-29T01:34:18Z",
+  "jobId": "a15b068cfe3d",
+  "trigger": "s3",
+  "task": "progress_update_from_file",
+  "agent": "progress",
+  "model": "claude-sonnet-5-5",
+  "source": {
+    "siteId": "site-1",
+    "s3Key": "sites/site-1/document/07a15d4d-1c2b-4e3f-9a10-4c5d6e7f8a9b-invoice.txt",
+    "fileName": "invoice.txt",
+    "kind": "document",
+    "etag": "e1",
+    "size": 165
+  },
+  "summary": "Registered 'invoice.txt' and recorded a progress note.",
+  "confidence": 0.5,
+  "steps": 3,
+  "actions": [
+    {
+      "tool": "get_project_state",
+      "input": {
+        "siteId": "site-1"
+      },
+      "status": "ok"
+    },
+    {
+      "tool": "register_asset",
+      "input": {
+        "siteId": "site-1",
+        "name": "invoice.txt",
+        "s3Key": "sites/site-1/document/07a15d4d-1c2b-4e3f-9a10-4c5d6e7f8a9b-invoice.txt",
+        "type": "document",
+        "category": "invoice"
+      },
+      "status": "registered",
+      "result": {
+        "status": "registered",
+        "assetId": "e7cbdd10-d1c0-4bb5-a733-22a6db795e19"
+      }
+    },
+    {
+      "tool": "add_progress_remark",
+      "input": {
+        "siteId": "site-1",
+        "text": "Analysed newly uploaded file 'invoice.txt' and recorded it against the project."
+      },
+      "status": "added",
+      "result": {
+        "status": "added",
+        "remarkId": "04a6f7fb-d831-42cc-88c2-37792ddacb17"
+      }
+    },
+    {
+      "tool": "propose_milestone_status",
+      "input": {
+        "siteId": "site-1",
+        "milestoneId": "ms-1",
+        "status": "in_progress",
+        "reason": "Evidence found in 'invoice.txt'."
+      },
+      "status": "pending_approval",
+      "result": {
+        "status": "pending_approval",
+        "action_id": "c27374850a12",
+        "preview": "Mark milestone *Grading permit issued* on *27 Mandrake St* as *in_progress*\nReason: Evidence found in 'invoice.txt'.",
+        "note": "Queued for human approval. It has NOT been applied."
+      }
+    },
+    {
+      "tool": "finish",
+      "input": {
+        "summary": "Registered 'invoice.txt' and recorded a progress note.",
+        "confidence": 0.5,
+        "notes": "Offline stub extraction (AGENTS_OFFLINE=1)."
+      },
+      "status": "done",
+      "result": {
+        "status": "done",
+        "summary": "Registered 'invoice.txt' and recorded a progress note.",
+        "confidence": 0.5
+      }
+    }
+  ],
+  "pendingApprovals": [
+    "c27374850a12"
+  ],
+  "costUsd": 0.01521,
+  "tokens": {
+    "input": 3600,
+    "output": 540,
+    "cacheWrite": 900,
+    "cacheRead": 1800
+  },
+  "dashboard": {
+    "progress": {
+      "stages": 2,
+      "stagesCompleted": 0,
+      "milestones": 2,
+      "milestonesCompleted": 0,
+      "percent": 0
+    },
+    "siteStatus": "in_progress",
+    "stages": [
+      {
+        "stageId": "stage-1",
+        "name": "Permitting",
+        "status": "in_progress"
+      },
+      {
+        "stageId": "stage-2",
+        "name": "Framing",
+        "status": "not_started"
+      }
+    ],
+    "milestones": [
+      {
+        "milestoneId": "ms-1",
+        "name": "Grading permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "ms-2",
+        "name": "Framing inspection",
+        "status": "pending"
+      }
+    ],
+    "assetCount": 1,
+    "remarkCount": 1,
+    "latestRemark": {
+      "remarkId": "04a6f7fb-d831-42cc-88c2-37792ddacb17",
+      "text": "Analysed newly uploaded file 'invoice.txt' and recorded it against the project.",
+      "authorName": "CPPI Agent (AI)",
+      "createdAt": "2026-10-29T01:34:18Z"
+    }
+  }
+}
