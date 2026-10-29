@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "site-1",
-  "updatedAt": "2026-10-29T01:34:18Z",
+  "updatedAt": "2026-10-29T01:34:21Z",
   "dashboard": {
     "progress": {
       "stages": 2,
@@ -38,10 +38,10 @@
     "assetCount": 1,
     "remarkCount": 1,
     "latestRemark": {
-      "remarkId": "04a6f7fb-d831-42cc-88c2-37792ddacb17",
+      "remarkId": "d68b785b-5fd8-470d-84b6-140b64705ffc",
       "text": "Analysed newly uploaded file 'invoice.txt' and recorded it against the project.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-10-29T01:34:18Z"
+      "createdAt": "2026-10-29T01:34:21Z"
     }
   }
 }
