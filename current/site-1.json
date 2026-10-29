@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "site-1",
-  "updatedAt": "2026-10-29T01:34:21Z",
+  "updatedAt": "2026-10-29T01:34:22Z",
   "dashboard": {
     "progress": {
       "stages": 2,
@@ -38,10 +38,10 @@
     "assetCount": 1,
     "remarkCount": 1,
     "latestRemark": {
-      "remarkId": "d68b785b-5fd8-470d-84b6-140b64705ffc",
-      "text": "Analysed newly uploaded file 'invoice.txt' and recorded it against the project.",
+      "remarkId": "6b83541c-ad5d-455d-92fc-2b347837834e",
+      "text": "Analysed newly uploaded file 'Permit - Grading - 27 Mandrake St.pdf' and recorded it against the project.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-10-29T01:34:21Z"
+      "createdAt": "2026-10-29T01:34:22Z"
     }
   }
 }
