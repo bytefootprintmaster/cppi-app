@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-10-30T21:48:53Z",
+  "updatedAt": "2026-10-30T21:49:11Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 41,
-    "remarkCount": 53,
+    "remarkCount": 54,
     "latestRemark": {
-      "remarkId": "5a7b30e6-af5b-4fd5-83ba-8ab769620397",
-      "text": "Lot grading and servicing plan for 25 Mandrake St, Town of Ajax Building Approvals stamped \"plans review subject to revision\" under permit no. 26 104233 (dated Jul 07, 2026). It is a reviewed design drawing, not evidence of completed work. The file was already on the dashboard.",
+      "remarkId": "c3ef3655-3f58-42b4-bd46-a35ff8319c3e",
+      "text": "Street-level listing image (Zolo.ca) of the vacant grassy lot at 25 Mandrake St, Ajax, with mature trees, sidewalk and a few stakes; it appears to be an undated pre-construction view. It is not evidence of completed work. The file was already on the dashboard.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-10-30T21:48:53Z"
+      "createdAt": "2026-10-30T21:49:08Z"
     }
   }
 }
