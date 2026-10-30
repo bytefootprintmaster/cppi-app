@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-10-30T21:47:39Z",
+  "updatedAt": "2026-10-30T21:47:52Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 41,
-    "remarkCount": 48,
+    "remarkCount": 49,
     "latestRemark": {
-      "remarkId": "09624cff-f413-4e9d-95b7-4e066a0fb46c",
-      "text": "Handwritten cut sheet dated Oct 27, 2026 for 25 and 27 Mandrake St: numbered survey control and layout points, with FFE, BS and USF elevations (No.25 FFE 102.40, No.27 FFE 102.28) noted as verified 1.3 m below finished grade, and a revised setback dated Oct 2, 2026. It is a layout and elevation record, not evidence of completed work. The file was already on the dashboard.",
+      "remarkId": "a9449583-4f83-4040-bce4-2aeacc9ffe13",
+      "text": "WSIB clearance certificate D0000JXBPD for Pennella C. Haulage Inc. (site preparation contractors; waste collection), valid 20-Aug-2026 to 19-Nov-2026, confirming active good standing. It is contractor compliance paperwork, not construction progress. The file was already on the dashboard.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-10-30T21:47:39Z"
+      "createdAt": "2026-10-30T21:47:50Z"
     }
   }
 }
