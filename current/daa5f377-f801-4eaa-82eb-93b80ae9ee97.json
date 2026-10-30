@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-10-30T21:45:37Z",
+  "updatedAt": "2026-10-30T21:45:56Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 41,
-    "remarkCount": 41,
+    "remarkCount": 42,
     "latestRemark": {
-      "remarkId": "17dcc898-93f9-46c2-9178-ea19e11326b8",
-      "text": "Draft Land Registry Transfer of Easement (PIN 26452-0779, 27 Mandrake St) from TT9 Inc. to 1000888722 Ontario Inc. for access/passage, $0 consideration. It is marked \"in preparation\", not submitted or registered, and shows no construction progress. The file was already on the dashboard.",
+      "remarkId": "97dfb39c-08fc-412b-986f-dacea5615e41",
+      "text": "Draft Land Registry Transfer of Easement (PIN 26452-0778, 25 Mandrake St) from 1000888722 Ontario Inc. to TT9 Inc. for access and passage, $0 consideration. It is marked \"in preparation\", not submitted or registered, and shows no construction progress. The file was already on the dashboard.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-10-30T21:45:37Z"
+      "createdAt": "2026-10-30T21:45:54Z"
     }
   }
 }
