@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-10-30T21:49:11Z",
+  "updatedAt": "2026-10-30T21:49:32Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 41,
-    "remarkCount": 54,
+    "remarkCount": 55,
     "latestRemark": {
-      "remarkId": "c3ef3655-3f58-42b4-bd46-a35ff8319c3e",
-      "text": "Street-level listing image (Zolo.ca) of the vacant grassy lot at 25 Mandrake St, Ajax, with mature trees, sidewalk and a few stakes; it appears to be an undated pre-construction view. It is not evidence of completed work. The file was already on the dashboard.",
+      "remarkId": "8cc472b6-aac2-4961-a42a-5815cbe30030",
+      "text": "Structural plans sheet A2.13 for the new 4-unit house at 27 Mandrake St, Ajax (Brian Li Engineering, engineer's stamp dated 06-JUL-2026; revisions 0–3 up to 'BLDG Clarifications'). It is a design drawing, not evidence of completed work. The file was already on the dashboard.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-10-30T21:49:08Z"
+      "createdAt": "2026-10-30T21:49:32Z"
     }
   }
 }
