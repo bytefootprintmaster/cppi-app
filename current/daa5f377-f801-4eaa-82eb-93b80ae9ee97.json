@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-10-30T21:50:01Z",
+  "updatedAt": "2026-10-30T21:50:25Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 41,
-    "remarkCount": 56,
+    "remarkCount": 57,
     "latestRemark": {
-      "remarkId": "ff4df86d-aa87-4c86-8e2a-637186b8fbaa",
-      "text": "Site photo of an excavated pit with formed strip footings, several already poured with concrete, and two workers placing concrete. A mixer truck is parked at the site edge. It shows footing work under way, consistent with the Foundation stage already in progress. The file was already on the dashboard.",
+      "remarkId": "9a60e6b6-3030-417f-8a27-c5151fcc6475",
+      "text": "Site photo of the excavation with formed strip footings, most with concrete placed, and a worker screeding/finishing concrete. It shows footing work under way, consistent with the Foundation stage already in progress. The file was already on the dashboard.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-10-30T21:50:01Z"
+      "createdAt": "2026-10-30T21:50:21Z"
     }
   }
 }
