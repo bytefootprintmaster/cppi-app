@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-10-30T21:48:39Z",
+  "updatedAt": "2026-10-30T21:48:53Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 41,
-    "remarkCount": 52,
+    "remarkCount": 53,
     "latestRemark": {
-      "remarkId": "e142464c-2f54-4f96-8153-276d2fc799c9",
-      "text": "Lot grading and servicing plan for 27 Mandrake St, Town of Ajax Building Approvals stamped \"plans review subject to revision\" under permit no. 26 104235 (dated Jul 07, 2026). It is a reviewed design drawing, not evidence of completed work. The file was already on the dashboard.",
+      "remarkId": "5a7b30e6-af5b-4fd5-83ba-8ab769620397",
+      "text": "Lot grading and servicing plan for 25 Mandrake St, Town of Ajax Building Approvals stamped \"plans review subject to revision\" under permit no. 26 104233 (dated Jul 07, 2026). It is a reviewed design drawing, not evidence of completed work. The file was already on the dashboard.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-10-30T21:48:39Z"
+      "createdAt": "2026-10-30T21:48:53Z"
     }
   }
 }
