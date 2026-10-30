@@ -1,0 +1,309 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "recordedAt": "2026-10-30T21:47:01Z",
+  "jobId": "bf35c6ff9cf9",
+  "trigger": "cli",
+  "task": "progress_update_from_file",
+  "agent": "progress",
+  "model": "claude-sonnet-5-5",
+  "source": {
+    "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+    "s3Key": "sites/daa5f377-f801-4eaa-82eb-93b80ae9ee97/document/d4287bb4-ceee-4843-bd91-67240b9b6c4a-25_Mandrake_St-202640390-Layout.pdf",
+    "fileName": "25_Mandrake_St-202640390-Layout.pdf",
+    "kind": "document",
+    "etag": "f1137781b18e5f6dd29b9913bb2459ae",
+    "size": 588280
+  },
+  "summary": "File was already registered. Added a remark describing the EWP floor and roof joist layout for 25 Mandrake St. Proposed no status changes, since a supplier layout drawing does not show work installed.",
+  "confidence": 0.85,
+  "steps": 3,
+  "actions": [
+    {
+      "tool": "get_project_state",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97"
+      },
+      "status": "ok"
+    },
+    {
+      "tool": "register_asset",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "name": "25_Mandrake_St-202640390-Layout.pdf",
+        "s3Key": "sites/daa5f377-f801-4eaa-82eb-93b80ae9ee97/document/d4287bb4-ceee-4843-bd91-67240b9b6c4a-25_Mandrake_St-202640390-Layout.pdf",
+        "type": "document",
+        "category": "plan",
+        "contentType": "application/pdf",
+        "size": 588280,
+        "stageId": "245c2de5-98b8-43cb-b4af-89f17d55f4bd"
+      },
+      "status": "already_registered",
+      "result": {
+        "status": "already_registered",
+        "assetId": "c6aac1c8-97dc-4372-a823-1025bb68c5b3"
+      }
+    },
+    {
+      "tool": "add_progress_remark",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "stageId": "245c2de5-98b8-43cb-b4af-89f17d55f4bd",
+        "text": "RONA/Simpson EWP Studio placement layout (project 202640390) for 25 Mandrake St: MAX-CORE IB400 I-joist, rim board and hanger layouts for the ground, second and third floors and the roof. It is a supplier installation drawing, not evidence of installed work. The file was already on the dashboard."
+      },
+      "status": "added",
+      "result": {
+        "status": "added",
+        "remarkId": "ddc2d76e-1ec2-4512-b8ac-dfca1e2de140"
+      }
+    },
+    {
+      "tool": "finish",
+      "input": {
+        "summary": "File was already registered. Added a remark describing the EWP floor and roof joist layout for 25 Mandrake St. Proposed no status changes, since a supplier layout drawing does not show work installed.",
+        "confidence": 0.85,
+        "notes": "The layout could support the 'Structural & MEP drawings complete' milestone, but it covers only the engineered wood floor and roof framing, so I left that for a human to decide. It covers 25 Mandrake only, not 27."
+      },
+      "status": "done",
+      "result": {
+        "status": "done",
+        "summary": "File was already registered. Added a remark describing the EWP floor and roof joist layout for 25 Mandrake St. Proposed no status changes, since a supplier layout drawing does not show work installed.",
+        "confidence": 0.85
+      }
+    }
+  ],
+  "pendingApprovals": [],
+  "costUsd": 0.086554,
+  "tokens": {
+    "input": 17234,
+    "output": 1059,
+    "cacheWrite": 13489,
+    "cacheRead": 38867
+  },
+  "dashboard": {
+    "progress": {
+      "stages": 10,
+      "stagesCompleted": 0,
+      "milestones": 31,
+      "milestonesCompleted": 1,
+      "percent": 3
+    },
+    "siteStatus": "in_progress",
+    "stages": [
+      {
+        "stageId": "43d4e0d2-cc81-4912-a186-3ae3a89cd9a2",
+        "name": "Feasibility & Due Diligence",
+        "status": "not_started"
+      },
+      {
+        "stageId": "8e037d3e-3511-4c7e-86d1-111e11c26597",
+        "name": "Design & Permits",
+        "status": "not_started"
+      },
+      {
+        "stageId": "3739c5da-64f6-48a4-886f-7bd24138526d",
+        "name": "Site Preparation & Excavation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "08ded4a9-c0f5-4f46-9e8d-70c7c6209fda",
+        "name": "Foundation",
+        "status": "in_progress"
+      },
+      {
+        "stageId": "245c2de5-98b8-43cb-b4af-89f17d55f4bd",
+        "name": "Structural Framing",
+        "status": "not_started"
+      },
+      {
+        "stageId": "6fa286ae-566d-4da2-927e-20af34b228c1",
+        "name": "Building Envelope",
+        "status": "not_started"
+      },
+      {
+        "stageId": "1f414a15-de86-49d7-af51-39a9f5ab5ac6",
+        "name": "Rough-In Services",
+        "status": "not_started"
+      },
+      {
+        "stageId": "74a52551-4007-4d44-aeb3-9cad6ac26f43",
+        "name": "Interior Finishes",
+        "status": "not_started"
+      },
+      {
+        "stageId": "99083336-f837-4297-9b92-1c0bfa2ca966",
+        "name": "Landscaping & Exterior Works",
+        "status": "not_started"
+      },
+      {
+        "stageId": "2424b179-6eb8-4095-8a17-5a46de64555f",
+        "name": "Handover & Closeout",
+        "status": "not_started"
+      }
+    ],
+    "milestones": [
+      {
+        "milestoneId": "83fa64f5-b1ce-4bbb-a81f-15dce5e871e2",
+        "name": "Site survey & boundary confirmed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9874d4ae-c81a-40f5-b916-cab949a9a0ea",
+        "name": "Zoning & by-law review completed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "d77c7fbe-62ab-45bf-84fc-a1477109157f",
+        "name": "Feasibility budget approved",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "a62b8d24-c2f9-47a9-bb2d-98d5309a2d39",
+        "name": "Architectural drawings issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "7b7014dc-d118-4140-b460-d533d9c8fbf2",
+        "name": "Structural & MEP drawings complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c4d8aac7-142e-48f7-bf53-24e6b3cee321",
+        "name": "Building permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "db7dcb04-9bcc-4754-b868-f40815e04c8d",
+        "name": "Utilities & services located",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "6601fc85-dce7-4b1b-91e6-6414c23b7a57",
+        "name": "Clearing & demolition complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "374ebe09-f209-41a1-b0b1-e74b7dcdec69",
+        "name": "Excavation & shoring inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "d4e01db8-7c90-491d-8421-20839f85bc20",
+        "name": "Footings inspected",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "9a846ed5-a529-4f09-9221-5a2ac30f4d48",
+        "name": "Foundation walls poured & waterproofed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "04c36fa6-0623-4769-bf97-4bd67362d468",
+        "name": "Backfill & drainage complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "85f717e3-4e87-4382-a10b-9f6eecb38473",
+        "name": "Floor structure complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "1402eab7-cff8-4d3e-a1b3-ab5b64ccff42",
+        "name": "Framing erected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "b90105d8-4d61-4bea-a52b-1acba54b2fc2",
+        "name": "Framing inspection passed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "1cc6cc34-2f3f-44e4-a382-1fad92cf4a61",
+        "name": "Roof trusses & sheathing complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "144849e1-3aac-4a3a-b4b3-c77b2742dfbd",
+        "name": "Roofing watertight",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "3ee0d7ef-842e-46d6-9db5-fa77df484a74",
+        "name": "Windows & exterior doors installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "78a2cba7-3b6c-4be8-8c93-7ae07f21c39f",
+        "name": "Cladding & insulation complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9f91afc3-6474-40e8-9a38-63d6fa8e9420",
+        "name": "Electrical rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "066825dd-e916-4600-8e02-cfd21dd62c15",
+        "name": "Plumbing rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "e73f9394-6db6-4700-885c-e594ba02c73f",
+        "name": "HVAC rough-in complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "715d3b61-a6ee-43e5-8c0f-3619a65ede21",
+        "name": "Drywall & plaster complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "50a2d07b-82ef-4ea5-94a0-ef04c1b1b11e",
+        "name": "Cabinetry & millwork installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "47020274-79ca-45da-ad2e-046573160612",
+        "name": "Flooring & paint complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "a2f28c1f-edb0-44d4-95e9-eb224365c1ab",
+        "name": "Grading & drainage certified",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "e2f05da4-b5c9-4d4f-ab05-4e39eaf5dcb7",
+        "name": "Driveway & hardscaping complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c878ab83-bcec-45cf-bdd4-282ae58fae43",
+        "name": "Landscaping planted",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "cffcf10b-77fb-45bc-a91c-0a3fb1afb02e",
+        "name": "Occupancy permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "457d433f-40a6-4d99-a52d-0cf83f1c9511",
+        "name": "Pre-delivery inspection (PDI) complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9d34eaab-9dd4-4e0e-b8ca-05bfbc95b3cc",
+        "name": "Final accounts & warranty documents issued",
+        "status": "pending"
+      }
+    ],
+    "assetCount": 41,
+    "remarkCount": 45,
+    "latestRemark": {
+      "remarkId": "ddc2d76e-1ec2-4512-b8ac-dfca1e2de140",
+      "text": "RONA/Simpson EWP Studio placement layout (project 202640390) for 25 Mandrake St: MAX-CORE IB400 I-joist, rim board and hanger layouts for the ground, second and third floors and the roof. It is a supplier installation drawing, not evidence of installed work. The file was already on the dashboard.",
+      "authorName": "CPPI Agent (AI)",
+      "createdAt": "2026-10-30T21:47:01Z"
+    }
+  }
+}

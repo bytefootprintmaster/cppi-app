@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-10-30T21:46:45Z",
+  "updatedAt": "2026-10-30T21:47:01Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 41,
-    "remarkCount": 44,
+    "remarkCount": 45,
     "latestRemark": {
-      "remarkId": "c409b215-9416-4e9c-a031-74c97a6bb4e6",
-      "text": "Federated Insurance certificate page 2 of 2 (Pennella liability insurance): policy P04096261, effective 2025/11/30 to 2026/11/30, covering legal liability for damage to non-owned automobiles ($100,000 limit, $500 deductible). It is insurance paperwork, not construction progress. The file was already on the dashboard.",
+      "remarkId": "ddc2d76e-1ec2-4512-b8ac-dfca1e2de140",
+      "text": "RONA/Simpson EWP Studio placement layout (project 202640390) for 25 Mandrake St: MAX-CORE IB400 I-joist, rim board and hanger layouts for the ground, second and third floors and the roof. It is a supplier installation drawing, not evidence of installed work. The file was already on the dashboard.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-10-30T21:46:42Z"
+      "createdAt": "2026-10-30T21:47:01Z"
     }
   }
 }
