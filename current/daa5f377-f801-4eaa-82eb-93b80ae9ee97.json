@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-10-30T21:50:25Z",
+  "updatedAt": "2026-10-30T21:50:44Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 41,
-    "remarkCount": 57,
+    "remarkCount": 58,
     "latestRemark": {
-      "remarkId": "9a60e6b6-3030-417f-8a27-c5151fcc6475",
-      "text": "Site photo of the excavation with formed strip footings, most with concrete placed, and a worker screeding/finishing concrete. It shows footing work under way, consistent with the Foundation stage already in progress. The file was already on the dashboard.",
+      "remarkId": "24ffa51e-0205-4d8a-b7c8-555f59632e09",
+      "text": "Site photo of the excavation with formed strip and pad footings that have concrete placed, and one worker finishing concrete. It shows footing work under way, consistent with the Foundation stage already in progress. The file was already on the dashboard.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-10-30T21:50:21Z"
+      "createdAt": "2026-10-30T21:50:40Z"
     }
   }
 }
