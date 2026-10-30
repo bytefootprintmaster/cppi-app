@@ -1,14 +1,14 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-10-30T21:38:08Z",
+  "updatedAt": "2026-10-30T21:45:37Z",
   "dashboard": {
     "progress": {
       "stages": 10,
       "stagesCompleted": 0,
       "milestones": 31,
-      "milestonesCompleted": 0,
-      "percent": 0
+      "milestonesCompleted": 1,
+      "percent": 3
     },
     "siteStatus": "in_progress",
     "stages": [
@@ -30,7 +30,7 @@
       {
         "stageId": "08ded4a9-c0f5-4f46-9e8d-70c7c6209fda",
         "name": "Foundation",
-        "status": "not_started"
+        "status": "in_progress"
       },
       {
         "stageId": "245c2de5-98b8-43cb-b4af-89f17d55f4bd",
@@ -112,7 +112,7 @@
       {
         "milestoneId": "d4e01db8-7c90-491d-8421-20839f85bc20",
         "name": "Footings inspected",
-        "status": "pending"
+        "status": "completed"
       },
       {
         "milestoneId": "9a846ed5-a529-4f09-9221-5a2ac30f4d48",
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 41,
-    "remarkCount": 40,
+    "remarkCount": 41,
     "latestRemark": {
-      "remarkId": "86d80529-fec9-4b4a-9eef-9d63e2e6a09c",
-      "text": "Town of Ajax Building Approvals permit no. 26 104235 for 27 Mandrake St: reviewed Lot Grading and Site Servicing Plan with red-line notes, review stamp dated Jul 07, 2026. It is a grading and servicing plan approval, not a building permit. The file was already on the dashboard.",
+      "remarkId": "17dcc898-93f9-46c2-9178-ea19e11326b8",
+      "text": "Draft Land Registry Transfer of Easement (PIN 26452-0779, 27 Mandrake St) from TT9 Inc. to 1000888722 Ontario Inc. for access/passage, $0 consideration. It is marked \"in preparation\", not submitted or registered, and shows no construction progress. The file was already on the dashboard.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-10-30T21:37:27Z"
+      "createdAt": "2026-10-30T21:45:37Z"
     }
   }
 }
