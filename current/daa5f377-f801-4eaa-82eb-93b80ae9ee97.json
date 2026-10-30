@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-10-30T21:47:15Z",
+  "updatedAt": "2026-10-30T21:47:27Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 41,
-    "remarkCount": 46,
+    "remarkCount": 47,
     "latestRemark": {
-      "remarkId": "0984fc22-9862-44a9-bf24-61c50f2b3f42",
-      "text": "RONA/Simpson EWP Studio placement layout (project 202640391) for 27 Mandrake St: MAX-CORE IB400 I-joist, rim board and hanger layouts for the ground, second and third floors and the roof. It is a supplier installation drawing, not evidence of installed work. The file was already on the dashboard.",
+      "remarkId": "e7a723c5-97c8-416a-86b4-321348e7b85f",
+      "text": "Elexicon Energy Offer to Connect / Service Layout (job ARS261024), issued for construction June 1, 2026, for new 2 x 400A 120/240V services at 25 & 27 Mandrake St via replacement transformer #41382. It is a utility design and cost document, not evidence of installed work. The file was already on the dashboard.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-10-30T21:47:14Z"
+      "createdAt": "2026-10-30T21:47:27Z"
     }
   }
 }
