@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-10-30T21:45:56Z",
+  "updatedAt": "2026-10-30T21:46:14Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 41,
-    "remarkCount": 42,
+    "remarkCount": 43,
     "latestRemark": {
-      "remarkId": "97dfb39c-08fc-412b-986f-dacea5615e41",
-      "text": "Draft Land Registry Transfer of Easement (PIN 26452-0778, 25 Mandrake St) from 1000888722 Ontario Inc. to TT9 Inc. for access and passage, $0 consideration. It is marked \"in preparation\", not submitted or registered, and shows no construction progress. The file was already on the dashboard.",
+      "remarkId": "850ca2af-4dc4-47b6-946d-432ea430dec2",
+      "text": "Reference Plan 40R-33392 (Pearson & Pearson Surveying), plan of survey of Parts of Lots 112 and 113 and part of Cedar Street, Town of Ajax (Mandrake Street). Surveyor's certificate dated July 31, 2026; deposited Aug 19, 2026. It is boundary/survey evidence, not construction progress. The file was already on the dashboard.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-10-30T21:45:54Z"
+      "createdAt": "2026-10-30T21:46:12Z"
     }
   }
 }
