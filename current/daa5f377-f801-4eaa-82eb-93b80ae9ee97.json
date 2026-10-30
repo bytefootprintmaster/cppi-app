@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-10-30T21:51:01Z",
+  "updatedAt": "2026-10-30T21:51:20Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 41,
-    "remarkCount": 59,
+    "remarkCount": 60,
     "latestRemark": {
-      "remarkId": "7e225971-999a-4b25-89c9-c832319e6fd8",
-      "text": "Site photo of the excavated pit with formed strip and pad footings, most with concrete placed and some with rebar still visible, and loose rebar in the foreground. It shows footing work under way, consistent with the Foundation stage already in progress. The file was already on the dashboard.",
+      "remarkId": "cf4f3eb2-92fa-4d36-951c-f55de5943360",
+      "text": "Site photo of the excavated pit with formed strip and pad footings, most with concrete placed and some with rebar still exposed, plus loose rebar in the foreground. It shows footing work under way, consistent with the Foundation stage already in progress. The file was already on the dashboard.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-10-30T21:51:01Z"
+      "createdAt": "2026-10-30T21:51:17Z"
     }
   }
 }
