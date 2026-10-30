@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-10-30T21:47:01Z",
+  "updatedAt": "2026-10-30T21:47:15Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 41,
-    "remarkCount": 45,
+    "remarkCount": 46,
     "latestRemark": {
-      "remarkId": "ddc2d76e-1ec2-4512-b8ac-dfca1e2de140",
-      "text": "RONA/Simpson EWP Studio placement layout (project 202640390) for 25 Mandrake St: MAX-CORE IB400 I-joist, rim board and hanger layouts for the ground, second and third floors and the roof. It is a supplier installation drawing, not evidence of installed work. The file was already on the dashboard.",
+      "remarkId": "0984fc22-9862-44a9-bf24-61c50f2b3f42",
+      "text": "RONA/Simpson EWP Studio placement layout (project 202640391) for 27 Mandrake St: MAX-CORE IB400 I-joist, rim board and hanger layouts for the ground, second and third floors and the roof. It is a supplier installation drawing, not evidence of installed work. The file was already on the dashboard.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-10-30T21:47:01Z"
+      "createdAt": "2026-10-30T21:47:14Z"
     }
   }
 }
