@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-10-30T21:51:20Z",
+  "updatedAt": "2026-10-30T21:51:39Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 41,
-    "remarkCount": 60,
+    "remarkCount": 61,
     "latestRemark": {
-      "remarkId": "cf4f3eb2-92fa-4d36-951c-f55de5943360",
-      "text": "Site photo of the excavated pit with formed strip and pad footings, most with concrete placed and some with rebar still exposed, plus loose rebar in the foreground. It shows footing work under way, consistent with the Foundation stage already in progress. The file was already on the dashboard.",
+      "remarkId": "fe1af34e-584c-4788-8e9b-49f36500481e",
+      "text": "Site photo of a concrete truck chute beside a formed footing area with gravel base and an excavated pit; the pour is not clearly shown, so it is consistent with foundation work under way. The file was already on the dashboard.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-10-30T21:51:17Z"
+      "createdAt": "2026-10-30T21:51:36Z"
     }
   }
 }
