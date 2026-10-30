@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-10-30T21:49:48Z",
+  "updatedAt": "2026-10-30T21:50:01Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 41,
-    "remarkCount": 55,
+    "remarkCount": 56,
     "latestRemark": {
-      "remarkId": "8cc472b6-aac2-4961-a42a-5815cbe30030",
-      "text": "Structural plans sheet A2.13 for the new 4-unit house at 27 Mandrake St, Ajax (Brian Li Engineering, engineer's stamp dated 06-JUL-2026; revisions 0–3 up to 'BLDG Clarifications'). It is a design drawing, not evidence of completed work. The file was already on the dashboard.",
+      "remarkId": "ff4df86d-aa87-4c86-8e2a-637186b8fbaa",
+      "text": "Site photo of an excavated pit with formed strip footings, several already poured with concrete, and two workers placing concrete. A mixer truck is parked at the site edge. It shows footing work under way, consistent with the Foundation stage already in progress. The file was already on the dashboard.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-10-30T21:49:32Z"
+      "createdAt": "2026-10-30T21:50:01Z"
     }
   }
 }
