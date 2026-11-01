@@ -1,0 +1,83 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "recordedAt": "2026-11-01T00:53:38Z",
+  "jobId": "b627781ffce2",
+  "trigger": "reconcile",
+  "task": "progress_update_from_file",
+  "agent": "progress",
+  "model": "claude-sonnet-5-5",
+  "source": {
+    "siteId": "6d14d4c5-15fb-4dc0-add2-36d5cf9066f0",
+    "s3Key": "sites/6d14d4c5-15fb-4dc0-add2-36d5cf9066f0/document/fd767a08-1f33-40e0-aa48-305b78a10116-4_Barnes_Dr._Ajax_Grant.pdf",
+    "fileName": "4_Barnes_Dr._Ajax_Grant.pdf",
+    "kind": "document",
+    "etag": "04e67f10775d386dbd8bc212ecf04196",
+    "size": 333206
+  },
+  "summary": "File was already registered (duplicate asset); added one remark describing the Ajax grant guidelines/enrolment form; no status changes proposed (administrative doc, project has no stages/milestones).",
+  "confidence": 0.85,
+  "steps": 2,
+  "actions": [
+    {
+      "tool": "get_project_state",
+      "input": {
+        "siteId": "6d14d4c5-15fb-4dc0-add2-36d5cf9066f0"
+      },
+      "status": "ok"
+    },
+    {
+      "tool": "add_progress_remark",
+      "input": {
+        "siteId": "6d14d4c5-15fb-4dc0-add2-36d5cf9066f0",
+        "text": "4_Barnes_Dr._Ajax_Grant.pdf is the Town of Ajax \"Build More, Get More\" ADU grant program guidelines with the enrolment form filled in for TT9 INC. (permit application nos. 26100759 and 26100777, dated May 25, 2026). Administrative document only; the signature line appears blank. It shows no construction progress."
+      },
+      "status": "added",
+      "result": {
+        "status": "added",
+        "remarkId": "cf5b4ffb-bebd-4aed-8179-32fe7d724848"
+      }
+    },
+    {
+      "tool": "finish",
+      "input": {
+        "summary": "File was already registered (duplicate asset); added one remark describing the Ajax grant guidelines/enrolment form; no status changes proposed (administrative doc, project has no stages/milestones).",
+        "confidence": 0.85,
+        "notes": "This file is already on the dashboard, categorised 'other'. It may be a copy of the signed enrolment, which has a separate remark. The signature line in this copy looks blank. The project has no stages or milestones defined."
+      },
+      "status": "done",
+      "result": {
+        "status": "done",
+        "summary": "File was already registered (duplicate asset); added one remark describing the Ajax grant guidelines/enrolment form; no status changes proposed (administrative doc, project has no stages/milestones).",
+        "confidence": 0.85
+      }
+    }
+  ],
+  "pendingApprovals": [],
+  "costUsd": 0.058047,
+  "tokens": {
+    "input": 4107,
+    "output": 555,
+    "cacheWrite": 15814,
+    "cacheRead": 23740
+  },
+  "dashboard": {
+    "progress": {
+      "stages": 0,
+      "stagesCompleted": 0,
+      "milestones": 0,
+      "milestonesCompleted": 0,
+      "percent": 0
+    },
+    "siteStatus": "planning",
+    "stages": [],
+    "milestones": [],
+    "assetCount": 25,
+    "remarkCount": 5,
+    "latestRemark": {
+      "remarkId": "cf5b4ffb-bebd-4aed-8179-32fe7d724848",
+      "text": "4_Barnes_Dr._Ajax_Grant.pdf is the Town of Ajax \"Build More, Get More\" ADU grant program guidelines with the enrolment form filled in for TT9 INC. (permit application nos. 26100759 and 26100777, dated May 25, 2026). Administrative document only; the signature line appears blank. It shows no construction progress.",
+      "authorName": "CPPI Agent (AI)",
+      "createdAt": "2026-11-01T00:53:38Z"
+    }
+  }
+}

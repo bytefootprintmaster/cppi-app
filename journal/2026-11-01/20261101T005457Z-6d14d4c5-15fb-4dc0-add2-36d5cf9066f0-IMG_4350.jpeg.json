@@ -1,0 +1,83 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "recordedAt": "2026-11-01T00:54:56Z",
+  "jobId": "3db27b8903f4",
+  "trigger": "reconcile",
+  "task": "progress_update_from_file",
+  "agent": "progress",
+  "model": "claude-sonnet-5-5",
+  "source": {
+    "siteId": "6d14d4c5-15fb-4dc0-add2-36d5cf9066f0",
+    "s3Key": "sites/6d14d4c5-15fb-4dc0-add2-36d5cf9066f0/image/d76c6a37-e8f7-4d3f-871c-a1494a806d10-IMG_4350.jpeg",
+    "fileName": "IMG_4350.jpeg",
+    "kind": "image",
+    "etag": "1c2beab8eaac6c4eb750775a8ee0932c",
+    "size": 8801926
+  },
+  "summary": "IMG_4350.jpeg was already registered, so I skipped registration. I added a remark that it shows a cleared lot with stumps and temporary fencing. I proposed no status changes.",
+  "confidence": 0.85,
+  "steps": 3,
+  "actions": [
+    {
+      "tool": "get_project_state",
+      "input": {
+        "siteId": "6d14d4c5-15fb-4dc0-add2-36d5cf9066f0"
+      },
+      "status": "ok"
+    },
+    {
+      "tool": "add_progress_remark",
+      "input": {
+        "siteId": "6d14d4c5-15fb-4dc0-add2-36d5cf9066f0",
+        "text": "Site photo IMG_4350.jpeg shows a cleared, vacant lot with bare gravel and soil, cut tree stumps, sawdust, and temporary fencing along a neighbouring wooden fence. It shows clearing and tree removal only, with no excavation, foundations or structures visible."
+      },
+      "status": "added",
+      "result": {
+        "status": "added",
+        "remarkId": "6b5b5b19-b0a0-4bcd-a30f-a21ad6895618"
+      }
+    },
+    {
+      "tool": "finish",
+      "input": {
+        "summary": "IMG_4350.jpeg was already registered, so I skipped registration. I added a remark that it shows a cleared lot with stumps and temporary fencing. I proposed no status changes.",
+        "confidence": 0.85,
+        "notes": "The project has no stages or milestones, so there was nothing to match or update. The photo shows only site clearing, and the site is still in \"planning\". I could not confirm whether an earlier remark already existed for this file, so there may be a duplicate."
+      },
+      "status": "done",
+      "result": {
+        "status": "done",
+        "summary": "IMG_4350.jpeg was already registered, so I skipped registration. I added a remark that it shows a cleared lot with stumps and temporary fencing. I proposed no status changes.",
+        "confidence": 0.85
+      }
+    }
+  ],
+  "pendingApprovals": [],
+  "costUsd": 0.036902,
+  "tokens": {
+    "input": 9369,
+    "output": 802,
+    "cacheWrite": 2678,
+    "cacheRead": 17245
+  },
+  "dashboard": {
+    "progress": {
+      "stages": 0,
+      "stagesCompleted": 0,
+      "milestones": 0,
+      "milestonesCompleted": 0,
+      "percent": 0
+    },
+    "siteStatus": "planning",
+    "stages": [],
+    "milestones": [],
+    "assetCount": 25,
+    "remarkCount": 10,
+    "latestRemark": {
+      "remarkId": "6b5b5b19-b0a0-4bcd-a30f-a21ad6895618",
+      "text": "Site photo IMG_4350.jpeg shows a cleared, vacant lot with bare gravel and soil, cut tree stumps, sawdust, and temporary fencing along a neighbouring wooden fence. It shows clearing and tree removal only, with no excavation, foundations or structures visible.",
+      "authorName": "CPPI Agent (AI)",
+      "createdAt": "2026-11-01T00:54:52Z"
+    }
+  }
+}

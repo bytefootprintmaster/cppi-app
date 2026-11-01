@@ -1,0 +1,69 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "recordedAt": "2026-11-01T00:51:16Z",
+  "jobId": "8301efcf6b1e",
+  "trigger": "reconcile",
+  "task": "progress_update_from_file",
+  "agent": "progress",
+  "model": "claude-sonnet-5-5",
+  "source": {
+    "siteId": "6d14d4c5-15fb-4dc0-add2-36d5cf9066f0",
+    "s3Key": "sites/6d14d4c5-15fb-4dc0-add2-36d5cf9066f0/document/1c34cf57-9502-4f7d-a814-dbbfd4c25e87-4_Barnes_Dr__ADUO_-Arch___Struct_Dwgs__2_.pdf",
+    "fileName": "4_Barnes_Dr__ADUO_-Arch___Struct_Dwgs__2_.pdf",
+    "kind": "document",
+    "etag": "7bb1562a0445b0f1b9e477efcba8cb90",
+    "size": 5369631
+  },
+  "summary": "",
+  "confidence": null,
+  "steps": 3,
+  "actions": [
+    {
+      "tool": "get_project_state",
+      "input": {
+        "siteId": "6d14d4c5-15fb-4dc0-add2-36d5cf9066f0"
+      },
+      "status": "ok"
+    },
+    {
+      "tool": "register_asset",
+      "input": {
+        "siteId": "6d14d4c5-15fb-4dc0-add2-36d5cf9066f0",
+        "name": "4 Barnes Dr (ADUO) - Arch & Struct Dwgs (2).pdf",
+        "s3Key": "sites/6d14d4c5-15fb-4dc0-add2-36d5cf9066f0/document/1c34cf57-9502-4f7d-a814-dbbfd4c25e87-4_Barnes_Dr__ADUO_-Arch___Struct_Dwgs__2_.pdf",
+        "type": "document",
+        "category": "plan",
+        "contentType": "application/pdf",
+        "size": 5369631
+      },
+      "status": "already_registered",
+      "result": {
+        "status": "already_registered",
+        "assetId": "6d482663-dbbb-4ef8-b362-942af44f3c8a"
+      }
+    }
+  ],
+  "pendingApprovals": [],
+  "costUsd": 0.247221,
+  "tokens": {
+    "input": 6956,
+    "output": 1154,
+    "cacheWrite": 75652,
+    "cacheRead": 163193
+  },
+  "dashboard": {
+    "progress": {
+      "stages": 0,
+      "stagesCompleted": 0,
+      "milestones": 0,
+      "milestonesCompleted": 0,
+      "percent": 0
+    },
+    "siteStatus": "planning",
+    "stages": [],
+    "milestones": [],
+    "assetCount": 25,
+    "remarkCount": 0,
+    "latestRemark": null
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "recordedAt": "2026-11-01T00:50:29Z",
+  "jobId": "b469da88f16c",
+  "trigger": "reconcile",
+  "task": "progress_update_from_file",
+  "agent": "progress",
+  "model": "claude-sonnet-5-5",
+  "source": {
+    "siteId": "6d14d4c5-15fb-4dc0-add2-36d5cf9066f0",
+    "s3Key": "sites/6d14d4c5-15fb-4dc0-add2-36d5cf9066f0/document/7c3b85df-8244-4e04-804d-bd7d2a23b000-4_Barnes_Dr__RM_-Arch_Dwgs.pdf",
+    "fileName": "4_Barnes_Dr__RM_-Arch_Dwgs.pdf",
+    "kind": "document",
+    "etag": "9f1bbccfe5315ae98ed677ceec53535f",
+    "size": 6900117
+  },
+  "summary": "",
+  "confidence": null,
+  "steps": 2,
+  "actions": [
+    {
+      "tool": "get_project_state",
+      "input": {
+        "siteId": "6d14d4c5-15fb-4dc0-add2-36d5cf9066f0"
+      },
+      "status": "ok"
+    }
+  ],
+  "pendingApprovals": [],
+  "costUsd": 0.284092,
+  "tokens": {
+    "input": 3240,
+    "output": 476,
+    "cacheWrite": 100469,
+    "cacheRead": 108395
+  },
+  "dashboard": {
+    "progress": {
+      "stages": 0,
+      "stagesCompleted": 0,
+      "milestones": 0,
+      "milestonesCompleted": 0,
+      "percent": 0
+    },
+    "siteStatus": "planning",
+    "stages": [],
+    "milestones": [],
+    "assetCount": 25,
+    "remarkCount": 0,
+    "latestRemark": null
+  }
+}

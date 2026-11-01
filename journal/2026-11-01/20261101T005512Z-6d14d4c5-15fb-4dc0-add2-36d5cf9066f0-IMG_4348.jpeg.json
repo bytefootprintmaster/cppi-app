@@ -1,0 +1,100 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "recordedAt": "2026-11-01T00:55:11Z",
+  "jobId": "63f90555e4c7",
+  "trigger": "reconcile",
+  "task": "progress_update_from_file",
+  "agent": "progress",
+  "model": "claude-sonnet-5-5",
+  "source": {
+    "siteId": "6d14d4c5-15fb-4dc0-add2-36d5cf9066f0",
+    "s3Key": "sites/6d14d4c5-15fb-4dc0-add2-36d5cf9066f0/image/c1ceabb1-3d36-49c6-af43-3261fad79280-IMG_4348.jpeg",
+    "fileName": "IMG_4348.jpeg",
+    "kind": "image",
+    "etag": "cb584e3a8b4ea8060d38423b5cbede34",
+    "size": 8541362
+  },
+  "summary": "The photo was already registered, so I added a progress remark. It shows a cleared lot with no construction, and I proposed no status changes.",
+  "confidence": 0.85,
+  "steps": 4,
+  "actions": [
+    {
+      "tool": "get_project_state",
+      "input": {
+        "siteId": "6d14d4c5-15fb-4dc0-add2-36d5cf9066f0"
+      },
+      "status": "ok"
+    },
+    {
+      "tool": "register_asset",
+      "input": {
+        "siteId": "6d14d4c5-15fb-4dc0-add2-36d5cf9066f0",
+        "name": "IMG_4348.jpeg",
+        "s3Key": "sites/6d14d4c5-15fb-4dc0-add2-36d5cf9066f0/image/c1ceabb1-3d36-49c6-af43-3261fad79280-IMG_4348.jpeg",
+        "type": "image",
+        "category": "progress",
+        "contentType": "image/jpeg",
+        "size": 8541362
+      },
+      "status": "already_registered",
+      "result": {
+        "status": "already_registered",
+        "assetId": "6d9ad43e-a6c2-4233-8a3f-4f61ca13f031"
+      }
+    },
+    {
+      "tool": "add_progress_remark",
+      "input": {
+        "siteId": "6d14d4c5-15fb-4dc0-add2-36d5cf9066f0",
+        "text": "Site photo IMG_4348.jpeg shows a cleared, vacant lot with bare gravel and soil, cut tree stumps, sawdust and temporary fencing beside neighbouring wooden fences. It shows clearing only, with no excavation, foundations or structures visible."
+      },
+      "status": "added",
+      "result": {
+        "status": "added",
+        "remarkId": "816d5f1f-7ba7-4cd2-9976-e8e8da450599"
+      }
+    },
+    {
+      "tool": "finish",
+      "input": {
+        "summary": "The photo was already registered, so I added a progress remark. It shows a cleared lot with no construction, and I proposed no status changes.",
+        "confidence": 0.85,
+        "notes": "The project has no stages or milestones defined yet, so nothing could be matched or proposed. The photo shows site clearing only."
+      },
+      "status": "done",
+      "result": {
+        "status": "done",
+        "summary": "The photo was already registered, so I added a progress remark. It shows a cleared lot with no construction, and I proposed no status changes.",
+        "confidence": 0.85
+      }
+    }
+  ],
+  "pendingApprovals": [],
+  "costUsd": 0.049954,
+  "tokens": {
+    "input": 14354,
+    "output": 978,
+    "cacheWrite": 2676,
+    "cacheRead": 23880
+  },
+  "dashboard": {
+    "progress": {
+      "stages": 0,
+      "stagesCompleted": 0,
+      "milestones": 0,
+      "milestonesCompleted": 0,
+      "percent": 0
+    },
+    "siteStatus": "planning",
+    "stages": [],
+    "milestones": [],
+    "assetCount": 25,
+    "remarkCount": 11,
+    "latestRemark": {
+      "remarkId": "816d5f1f-7ba7-4cd2-9976-e8e8da450599",
+      "text": "Site photo IMG_4348.jpeg shows a cleared, vacant lot with bare gravel and soil, cut tree stumps, sawdust and temporary fencing beside neighbouring wooden fences. It shows clearing only, with no excavation, foundations or structures visible.",
+      "authorName": "CPPI Agent (AI)",
+      "createdAt": "2026-11-01T00:55:09Z"
+    }
+  }
+}
