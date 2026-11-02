@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-11-02T16:52:19Z",
+  "updatedAt": "2026-11-02T16:54:57Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -220,13 +220,13 @@
         "status": "pending"
       }
     ],
-    "assetCount": 43,
-    "remarkCount": 65,
+    "assetCount": 44,
+    "remarkCount": 68,
     "latestRemark": {
-      "remarkId": "5dbb9c12-bdb4-4f69-a015-c781438e20f1",
-      "text": "Unsigned estimate GC-1068 from Grand Choice Mechanical for HVAC at 25 Mandrake St (4 heat pumps, 5 HRVs, exhausts), $43,000 plus HST, total $48,590. It is a quote only and shows no HVAC work started or completed.",
+      "remarkId": "b5c0ac9c-59be-4d27-a77c-0a0f99d7bf4a",
+      "text": "Site photo showing an excavated pit with a compacted gravel base and strip footings, plus erected yellow concrete wall formwork on the right. This is consistent with foundation work under way; no poured walls are visible. The file was already on the dashboard.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-02T16:52:19Z"
+      "createdAt": "2026-11-02T16:54:57Z"
     }
   }
 }
