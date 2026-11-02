@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-11-02T16:52:04Z",
+  "updatedAt": "2026-11-02T16:52:19Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -220,13 +220,13 @@
         "status": "pending"
       }
     ],
-    "assetCount": 42,
-    "remarkCount": 63,
+    "assetCount": 43,
+    "remarkCount": 65,
     "latestRemark": {
-      "remarkId": "bdc175a2-f03d-41e2-8ed9-db532d116a12",
-      "text": "Uploaded image is a company logo for GC Mechanical Inc., likely a mechanical/HVAC contractor. It shows no site work or inspection, so it evidences no progress; filed for reference only.",
+      "remarkId": "5dbb9c12-bdb4-4f69-a015-c781438e20f1",
+      "text": "Unsigned estimate GC-1068 from Grand Choice Mechanical for HVAC at 25 Mandrake St (4 heat pumps, 5 HRVs, exhausts), $43,000 plus HST, total $48,590. It is a quote only and shows no HVAC work started or completed.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-02T16:52:02Z"
+      "createdAt": "2026-11-02T16:52:19Z"
     }
   }
 }
