@@ -2,6 +2,7 @@ import path from 'node:path'
 import express, { type NextFunction, type Request, type Response } from 'express'
 import { env } from './env'
 import { authenticate } from './auth'
+import { backfillMissingFrameworks } from './framework'
 import { HttpError } from './lib/http'
 import { authRouter } from './routes/auth'
 import { adminRouter } from './routes/admin'
@@ -60,4 +61,6 @@ app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
 app.listen(env.PORT, () => {
   console.log(`[cppi] API listening on http://localhost:${env.PORT} (${env.NODE_ENV})`)
   console.log(`[cppi] region=${env.AWS_REGION} bucket=${env.S3_BUCKET}`)
+  // Existing projects created before the framework existed get seeded here.
+  void backfillMissingFrameworks()
 })

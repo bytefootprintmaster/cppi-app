@@ -1,7 +1,15 @@
 import { Router } from 'express'
 import { T, getItem, putItem, queryAll } from '../db'
 import { asyncHandler, HttpError } from '../lib/http'
-import { accessibleSites, computeProgress, listMilestones, listStages } from '../services'
+import {
+  accessibleSites,
+  computeBudget,
+  computeProgress,
+  listBudget,
+  listMilestones,
+  listStages
+} from '../services'
+import type { BudgetSummary } from '../services'
 import type { AssetRecord, KpiConfig, RemarkRecord, SiteRecord } from '../types'
 
 export const dashboardRouter = Router()
@@ -16,16 +24,28 @@ export const KPI_IDS = [
   'photos',
   'files',
   'remarks',
+  'budget_total',
+  'budget_spent',
+  'budget_remaining',
   'attention'
 ] as const
 
 export type KpiId = (typeof KPI_IDS)[number]
 
-const DEFAULT_KPIS: KpiId[] = ['projects', 'active', 'avg_progress', 'milestones_done', 'photos', 'attention']
+const DEFAULT_KPIS: KpiId[] = [
+  'projects',
+  'active',
+  'budget_total',
+  'budget_spent',
+  'avg_progress',
+  'milestones_done',
+  'attention'
+]
 
 export interface SiteSummary {
   site: SiteRecord
   progress: ReturnType<typeof computeProgress>
+  budget: BudgetSummary
   files: number
   photos: number
   remarks: number
@@ -39,9 +59,10 @@ dashboardRouter.get('/', asyncHandler(async (req, res) => {
 
   const rows: SiteSummary[] = await Promise.all(
     sites.map(async (site) => {
-      const [stages, milestones, assets, remarks] = await Promise.all([
+      const [stages, milestones, budgetLines, assets, remarks] = await Promise.all([
         listStages(site.siteId),
         listMilestones(site.siteId),
+        listBudget(site.siteId),
         queryAll<AssetRecord>(T.assets, {
           KeyConditionExpression: 'siteId = :s',
           ExpressionAttributeValues: { ':s': site.siteId }
@@ -69,6 +90,7 @@ dashboardRouter.get('/', asyncHandler(async (req, res) => {
       return {
         site,
         progress: computeProgress(stages, milestones),
+        budget: computeBudget(budgetLines),
         files: assets.filter((a) => a.type === 'document').length,
         photos: assets.filter((a) => a.type === 'image').length,
         remarks: remarks.length,
@@ -79,6 +101,17 @@ dashboardRouter.get('/', asyncHandler(async (req, res) => {
   )
 
   rows.sort((a, b) => String(b.lastActivity ?? '').localeCompare(String(a.lastActivity ?? '')))
+
+  const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100
+  const budgetTotals = rows.reduce(
+    (acc, r) => ({
+      budgeted: acc.budgeted + r.budget.budgeted,
+      spent: acc.spent + r.budget.spent,
+      paid: acc.paid + r.budget.paid,
+      remaining: acc.remaining + r.budget.remaining
+    }),
+    { budgeted: 0, spent: 0, paid: 0, remaining: 0 }
+  )
 
   const totals = {
     projects: rows.length,
@@ -92,6 +125,10 @@ dashboardRouter.get('/', asyncHandler(async (req, res) => {
     photos: rows.reduce((sum, r) => sum + r.photos, 0),
     files: rows.reduce((sum, r) => sum + r.files, 0),
     remarks: rows.reduce((sum, r) => sum + r.remarks, 0),
+    budgetTotal: round2(budgetTotals.budgeted),
+    budgetSpent: round2(budgetTotals.spent),
+    budgetPaid: round2(budgetTotals.paid),
+    budgetRemaining: round2(budgetTotals.remaining),
     attention: rows.filter((r) => r.site.status === 'on_hold' || r.progress.percent < 100 && r.site.status !== 'completed').length
   }
 

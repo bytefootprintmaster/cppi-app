@@ -6,17 +6,22 @@ import { requireAdmin } from '../auth'
 import {
   accessibleSites,
   canWrite,
+  computeBudget,
   computeProgress,
+  listBudget,
   listMilestones,
   listStages,
   requireSiteAccess
 } from '../services'
+import { applyStandardFramework } from '../framework'
 import { buildObjectKey, deleteObject, presignDownload, presignUpload } from '../s3'
 import type {
   AssetCategory,
   AssetFolderRecord,
   AssetRecord,
   AssetType,
+  BudgetGroup,
+  BudgetLineRecord,
   MilestoneRecord,
   RemarkRecord,
   SiteRecord,
@@ -30,8 +35,18 @@ const STAGE_STATUS = ['not_started', 'in_progress', 'completed', 'blocked'] as c
 const MILESTONE_STATUS = ['pending', 'in_progress', 'completed'] as const
 const ASSET_TYPES = ['image', 'document'] as const
 const ASSET_CATEGORIES = ['progress', 'plan', 'permit', 'invoice', 'other'] as const
+const BUDGET_GROUPS = ['land', 'soft', 'hard'] as const
 
 const nowIso = () => new Date().toISOString()
+
+/** Budget amounts are money: two decimals, never negative. */
+function money(value: unknown, field: string): number {
+  const n = Number(value)
+  if (!Number.isFinite(n) || n < 0) {
+    throw new HttpError(400, `"${field}" must be a number of 0 or more`)
+  }
+  return Math.round(n * 100) / 100
+}
 
 function listFolders(siteId: string): Promise<AssetFolderRecord[]> {
   return queryAll<AssetFolderRecord>(T.folders, {
@@ -49,7 +64,6 @@ function sitePatchFrom(body: Record<string, unknown>): Record<string, unknown> {
   if (body?.status !== undefined) patch.status = oneOf(body.status, SITE_STATUS, 'status')
   if (body?.startDate !== undefined) patch.startDate = optStr(body.startDate, 30)
   if (body?.targetDate !== undefined) patch.targetDate = optStr(body.targetDate, 30)
-  if (body?.budget !== undefined) patch.budget = Number(body.budget)
   return patch
 }
 
@@ -71,19 +85,32 @@ siteRouter.post('/', requireAdmin, asyncHandler(async (req, res) => {
     status: body.status ? oneOf(body.status, SITE_STATUS, 'status') : 'planning',
     startDate: optStr(body.startDate, 30),
     targetDate: optStr(body.targetDate, 30),
-    budget: body.budget !== undefined ? Number(body.budget) : undefined,
     createdBy: req.user!.userId,
     createdAt: ts,
     updatedAt: ts
   }
   await putItem(T.sites, site)
+  // Every project starts on the standard development framework; admins can edit
+  // the seeded stages and milestones afterwards.
+  await applyStandardFramework(site.siteId)
   res.json({ site })
 }))
 
 siteRouter.get('/:siteId', asyncHandler(async (req, res) => {
   const site = await requireSiteAccess(req.user!, req.params.siteId)
-  const [stages, milestones] = await Promise.all([listStages(site.siteId), listMilestones(site.siteId)])
-  res.json({ site, stages, milestones, progress: computeProgress(stages, milestones) })
+  const [stages, milestones, budgetLines] = await Promise.all([
+    listStages(site.siteId),
+    listMilestones(site.siteId),
+    listBudget(site.siteId)
+  ])
+  res.json({
+    site,
+    stages,
+    milestones,
+    progress: computeProgress(stages, milestones),
+    budgetLines,
+    budget: computeBudget(budgetLines)
+  })
 }))
 
 siteRouter.patch('/:siteId', requireAdmin, asyncHandler(async (req, res) => {
@@ -108,7 +135,8 @@ siteRouter.delete('/:siteId', requireAdmin, asyncHandler(async (req, res) => {
     [T.milestones, 'milestoneId'],
     [T.folders, 'folderId'],
     [T.assets, 'assetId'],
-    [T.remarks, 'remarkId']
+    [T.remarks, 'remarkId'],
+    [T.budget, 'lineId']
   ]
   for (const [table, sortKey] of children) {
     const rows = await queryAll<Record<string, unknown>>(table, {
@@ -120,6 +148,19 @@ siteRouter.delete('/:siteId', requireAdmin, asyncHandler(async (req, res) => {
 
   await deleteItem(T.sites, { siteId: site.siteId })
   res.json({ ok: true })
+}))
+
+/* ------------------------------ framework ---------------------------- */
+
+/**
+ * Re-apply the standard development framework, adding only the stages the
+ * project does not already have. Never touches existing stages or milestones.
+ */
+siteRouter.post('/:siteId/framework', requireAdmin, asyncHandler(async (req, res) => {
+  const site = await requireSiteAccess(req.user!, req.params.siteId)
+  const result = await applyStandardFramework(site.siteId)
+  const [stages, milestones] = await Promise.all([listStages(site.siteId), listMilestones(site.siteId)])
+  res.json({ ...result, stages, milestones })
 }))
 
 /* ------------------------------ stages ------------------------------- */
@@ -245,6 +286,64 @@ siteRouter.delete('/:siteId/milestones/:milestoneId', requireAdmin, asyncHandler
   })
   if (!milestone) throw new HttpError(404, 'Milestone not found')
   await deleteItem(T.milestones, { siteId: site.siteId, milestoneId: milestone.milestoneId })
+  res.json({ ok: true })
+}))
+
+/* ------------------------------- budget ------------------------------- */
+
+siteRouter.get('/:siteId/budget', asyncHandler(async (req, res) => {
+  await requireSiteAccess(req.user!, req.params.siteId)
+  const lines = await listBudget(req.params.siteId)
+  res.json({ lines, summary: computeBudget(lines) })
+}))
+
+siteRouter.post('/:siteId/budget', requireAdmin, asyncHandler(async (req, res) => {
+  const site = await requireSiteAccess(req.user!, req.params.siteId)
+  const body = (req.body ?? {}) as Record<string, unknown>
+  const existing = await listBudget(site.siteId)
+  const ts = nowIso()
+  const line: BudgetLineRecord = {
+    siteId: site.siteId,
+    lineId: randomUUID(),
+    group: oneOf<BudgetGroup>(body.group, BUDGET_GROUPS, 'group'),
+    code: optStr(body.code, 40),
+    name: str(body.name, 'name', 240),
+    budget: body.budget !== undefined ? money(body.budget, 'budget') : 0,
+    spent: body.spent !== undefined ? money(body.spent, 'spent') : 0,
+    hst: body.hst !== undefined ? money(body.hst, 'hst') : 0,
+    order: body.order !== undefined ? Number(body.order) : existing.length,
+    createdAt: ts,
+    updatedAt: ts
+  }
+  await putItem(T.budget, line)
+  await updateFields(T.sites, { siteId: site.siteId }, { updatedAt: ts })
+  res.json({ line })
+}))
+
+siteRouter.patch('/:siteId/budget/:lineId', requireAdmin, asyncHandler(async (req, res) => {
+  const site = await requireSiteAccess(req.user!, req.params.siteId)
+  const line = await getItem<BudgetLineRecord>(T.budget, { siteId: site.siteId, lineId: req.params.lineId })
+  if (!line) throw new HttpError(404, 'Budget line not found')
+
+  const body = (req.body ?? {}) as Record<string, unknown>
+  const patch: Record<string, unknown> = { updatedAt: nowIso() }
+  if (body.group !== undefined) patch.group = oneOf<BudgetGroup>(body.group, BUDGET_GROUPS, 'group')
+  if (body.code !== undefined) patch.code = optStr(body.code, 40)
+  if (body.name !== undefined) patch.name = str(body.name, 'name', 240)
+  if (body.budget !== undefined) patch.budget = money(body.budget, 'budget')
+  if (body.spent !== undefined) patch.spent = money(body.spent, 'spent')
+  if (body.hst !== undefined) patch.hst = money(body.hst, 'hst')
+  if (body.order !== undefined) patch.order = Number(body.order)
+
+  await updateFields(T.budget, { siteId: site.siteId, lineId: line.lineId }, patch)
+  res.json({ ok: true })
+}))
+
+siteRouter.delete('/:siteId/budget/:lineId', requireAdmin, asyncHandler(async (req, res) => {
+  const site = await requireSiteAccess(req.user!, req.params.siteId)
+  const line = await getItem<BudgetLineRecord>(T.budget, { siteId: site.siteId, lineId: req.params.lineId })
+  if (!line) throw new HttpError(404, 'Budget line not found')
+  await deleteItem(T.budget, { siteId: site.siteId, lineId: line.lineId })
   res.json({ ok: true })
 }))
 

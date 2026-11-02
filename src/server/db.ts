@@ -27,6 +27,7 @@ export const T = {
   folders: `${env.TABLE_PREFIX}folders`,
   assets: `${env.TABLE_PREFIX}assets`,
   remarks: `${env.TABLE_PREFIX}remarks`,
+  budget: `${env.TABLE_PREFIX}budget`,
   kpis: `${env.TABLE_PREFIX}kpis`
 } as const
 

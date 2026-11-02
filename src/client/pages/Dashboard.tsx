@@ -3,11 +3,12 @@ import { Link } from 'react-router-dom'
 import { api } from '../lib/api'
 import { useApi } from '../lib/useApi'
 import { useAuth } from '../lib/auth'
-import { formatDate, relativeTime } from '../lib/format'
+import { formatDate, formatMoney, relativeTime } from '../lib/format'
 import { PageBody, PageHeader } from '../components/Layout'
 import { Button, Card, CardHeader, Empty, ErrorNote, Loading, Progress, SiteStatusBadge } from '../components/ui'
 import { IconAlert, IconBuilding, IconPlus, IconSettings, IconTarget } from '../components/icons'
 import type { SiteRecord } from '../../server/types'
+import type { BudgetSummary } from '../../server/services'
 
 interface Totals {
   projects: number
@@ -19,6 +20,10 @@ interface Totals {
   photos: number
   files: number
   remarks: number
+  budgetTotal: number
+  budgetSpent: number
+  budgetPaid: number
+  budgetRemaining: number
   attention: number
 }
 
@@ -31,6 +36,7 @@ interface SiteSummary {
     milestonesCompleted: number
     percent: number
   }
+  budget: BudgetSummary
   files: number
   photos: number
   remarks: number
@@ -91,6 +97,24 @@ const KPI_META: Record<string, KpiMeta> = {
     label: 'Remarks',
     value: (t) => t.remarks,
     foot: () => 'Notes logged by the team'
+  },
+  budget_total: {
+    label: 'Total budget',
+    value: (t) => formatMoney(t.budgetTotal, { compact: true }),
+    foot: () => 'Approved cost across projects'
+  },
+  budget_spent: {
+    label: 'Spent',
+    value: (t) => formatMoney(t.budgetSpent, { compact: true }),
+    foot: (t) =>
+      t.budgetTotal > 0
+        ? `${Math.round((t.budgetSpent / t.budgetTotal) * 100)}% of budget, excl. HST`
+        : 'No budget set yet'
+  },
+  budget_remaining: {
+    label: 'Budget left',
+    value: (t) => formatMoney(t.budgetRemaining, { compact: true }),
+    foot: (t) => (t.budgetRemaining < 0 ? 'Over budget' : 'Still to be spent')
   },
   attention: {
     label: 'Needs attention',
@@ -206,6 +230,7 @@ export function DashboardPage() {
                     <th>Project</th>
                     <th style={{ width: 220 }}>Progress</th>
                     <th>Status</th>
+                    <th style={{ width: 180 }}>Budget</th>
                     <th>Next milestone</th>
                     <th>Activity</th>
                     <th />
@@ -229,6 +254,19 @@ export function DashboardPage() {
                       </td>
                       <td>
                         <SiteStatusBadge status={row.site.status} />
+                      </td>
+                      <td>
+                        {row.budget.lines === 0 ? (
+                          <span className="muted small">Not budgeted</span>
+                        ) : (
+                          <>
+                            <Progress percent={row.budget.percentUsed} />
+                            <div className="small muted" style={{ marginTop: 5 }}>
+                              {formatMoney(row.budget.spent, { compact: true })} of{' '}
+                              {formatMoney(row.budget.budgeted, { compact: true })} · {row.budget.percentUsed}%
+                            </div>
+                          </>
+                        )}
                       </td>
                       <td>
                         {row.nextMilestone ? (

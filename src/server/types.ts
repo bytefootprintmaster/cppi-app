@@ -8,6 +8,8 @@ export type MilestoneStatus = 'pending' | 'in_progress' | 'completed'
 export type AssetType = 'image' | 'document'
 export type AssetCategory = 'progress' | 'plan' | 'permit' | 'invoice' | 'other'
 export type InviteStatus = 'pending' | 'accepted' | 'revoked'
+/** Kind of cost a budget line belongs to. Land is bought, the other two are built. */
+export type BudgetGroup = 'land' | 'soft' | 'hard'
 
 export interface SessionUser {
   userId: string
@@ -33,7 +35,6 @@ export interface SiteRecord {
   status: SiteStatus
   startDate?: string
   targetDate?: string
-  budget?: number
   createdBy: string
   createdAt: string
   updatedAt: string
@@ -102,6 +103,26 @@ export interface RemarkRecord {
   authorName: string
   authorRole: Role
   createdAt: string
+}
+
+/**
+ * One budgeted cost against a project. The amounts mirror an accountant's
+ * workbook: `budget` is the approved figure excluding HST, `spent` is what has
+ * been paid net of HST, and `hst` is the HST paid on top of it.
+ */
+export interface BudgetLineRecord {
+  siteId: string
+  lineId: string
+  group: BudgetGroup
+  /** Cost code from the workbook, e.g. "S.13" or "H.06 10 00". */
+  code?: string
+  name: string
+  budget: number
+  spent: number
+  hst: number
+  order: number
+  createdAt: string
+  updatedAt: string
 }
 
 export interface InviteRecord {

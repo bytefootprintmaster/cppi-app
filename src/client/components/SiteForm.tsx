@@ -28,8 +28,7 @@ export function SiteFormModal({ site, onClose, onSaved }: Props) {
     status: (site?.status ?? 'planning') as SiteStatus,
     description: site?.description ?? '',
     startDate: site?.startDate ?? '',
-    targetDate: site?.targetDate ?? '',
-    budget: site?.budget != null ? String(site.budget) : ''
+    targetDate: site?.targetDate ?? ''
   })
 
   function set<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
@@ -52,8 +51,7 @@ export function SiteFormModal({ site, onClose, onSaved }: Props) {
       status: form.status,
       description: form.description.trim() || undefined,
       startDate: form.startDate || undefined,
-      targetDate: form.targetDate || undefined,
-      budget: form.budget === '' ? undefined : Number(form.budget)
+      targetDate: form.targetDate || undefined
     }
 
     try {
@@ -112,7 +110,7 @@ export function SiteFormModal({ site, onClose, onSaved }: Props) {
           </Field>
         </div>
 
-        <div className="grid grid-2">
+        <div className="grid grid-3">
           <Field label="Status">
             <select className="select" value={form.status} onChange={(e) => set('status', e.target.value as SiteStatus)}>
               {STATUS_OPTIONS.map((o) => (
@@ -122,18 +120,6 @@ export function SiteFormModal({ site, onClose, onSaved }: Props) {
               ))}
             </select>
           </Field>
-          <Field label="Budget" hint="Optional, in your local currency">
-            <input
-              className="input"
-              type="number"
-              min="0"
-              value={form.budget}
-              onChange={(e) => set('budget', e.target.value)}
-            />
-          </Field>
-        </div>
-
-        <div className="grid grid-2">
           <Field label="Start date">
             <input className="input" type="date" value={form.startDate} onChange={(e) => set('startDate', e.target.value)} />
           </Field>

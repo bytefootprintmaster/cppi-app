@@ -13,7 +13,7 @@ process, so it fits a Hostinger Node.js application with one startup file.
 | Area | Capability |
 | --- | --- |
 | **Projects** | Admins create building sites (name, code, location, status, dates, budget, description). |
-| **Development framework** | Admins define stages and the milestones inside each stage, and move their status forward. |
+| **Development framework** | Every project is seeded with the **standard framework** — 10 stages covering a residential build (feasibility → permits → excavation → foundation → framing → envelope → rough-in → finishes → landscaping → handover), each with its milestones. Admins then edit, extend or re-apply it. |
 | **Files** | Photos and documents upload straight to a private S3 bucket via presigned URLs. Downloads use short-lived signed links. |
 | **Remarks** | Admin and contractor users post project remarks; they can optionally be tied to a stage. |
 | **Dashboard** | Admin (and any user) sees a portfolio tracker with **customisable KPIs** — pick which metrics headline the view. |
@@ -278,6 +278,7 @@ All endpoints are under `/api`. Authenticated calls send `Authorization: Bearer 
 | `GET /api/sites/:id` | auth | Site + stages + milestones + progress |
 | `PATCH /api/sites/:id` · `DELETE /api/sites/:id` | admin | Update / delete (cascades files and children) |
 | `…/stages` `…/milestones` (GET/POST/PATCH/DELETE) | admin writes | Development framework |
+| `POST /api/sites/:id/framework` | admin | Re-apply the standard framework — adds only the stages the project is missing |
 | `…/folders` (GET/POST/PATCH/DELETE) | admin writes | File folders inside a project; deleting one moves its files to the project root |
 | `POST /api/sites/:id/assets/presign` | admin, contractor | Get a presigned S3 PUT URL |
 | `POST /api/sites/:id/assets` | admin, contractor | Register the uploaded object (optional `folderId`) |

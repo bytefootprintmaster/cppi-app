@@ -58,3 +58,25 @@ export function isImage(nameOrType?: string): boolean {
   if (!nameOrType) return false
   return /\.(png|jpe?g|gif|webp|avif|bmp|svg)$/i.test(nameOrType) || nameOrType.startsWith('image/')
 }
+
+/**
+ * Canadian dollar amounts. `compact` is for headline figures where "$4.6M"
+ * reads better than the full number; the exact form is used in tables.
+ */
+export function formatMoney(value?: number, opts: { compact?: boolean } = {}): string {
+  if (value == null || Number.isNaN(value)) return '—'
+  if (opts.compact) {
+    return new Intl.NumberFormat('en-CA', {
+      style: 'currency',
+      currency: 'CAD',
+      notation: 'compact',
+      maximumFractionDigits: 1
+    }).format(value)
+  }
+  return new Intl.NumberFormat('en-CA', {
+    style: 'currency',
+    currency: 'CAD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(value)
+}
