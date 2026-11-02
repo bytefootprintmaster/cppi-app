@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-11-02T16:55:24Z",
+  "updatedAt": "2026-11-02T21:18:03Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -220,13 +220,13 @@
         "status": "pending"
       }
     ],
-    "assetCount": 45,
-    "remarkCount": 70,
+    "assetCount": 46,
+    "remarkCount": 71,
     "latestRemark": {
-      "remarkId": "59d48f1c-51ec-4bf8-94f5-21dd6e713592",
-      "text": "Site photo showing Imperial/Countryside yellow concrete wall formwork erected around the foundation footprint over a gravel base, with rebar and form accessories on site. Consistent with foundation walls being formed; no poured or waterproofed walls are visible. File was already on the dashboard.",
+      "remarkId": "ba03ecc1-61b0-4760-988c-67d0a73ddc23",
+      "text": "Drawing \"Proposed Regional Service Connections\" for 25 & 27 Mandrake St, Ajax (dated 09-21-2026, Q347-2024-A-039). It shows proposed water services to both houses and existing sanitary, storm and watermain locations. This is a design drawing and does not show any service work done. The file was already on the dashboard.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-02T16:55:23Z"
+      "createdAt": "2026-11-02T21:18:03Z"
     }
   }
 }
