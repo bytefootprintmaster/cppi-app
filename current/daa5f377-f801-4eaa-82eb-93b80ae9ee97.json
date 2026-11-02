@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-11-02T16:54:58Z",
+  "updatedAt": "2026-11-02T16:55:23Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -220,13 +220,13 @@
         "status": "pending"
       }
     ],
-    "assetCount": 44,
-    "remarkCount": 68,
+    "assetCount": 45,
+    "remarkCount": 70,
     "latestRemark": {
-      "remarkId": "b5c0ac9c-59be-4d27-a77c-0a0f99d7bf4a",
-      "text": "Site photo showing an excavated pit with a compacted gravel base and strip footings, plus erected yellow concrete wall formwork on the right. This is consistent with foundation work under way; no poured walls are visible. The file was already on the dashboard.",
+      "remarkId": "59d48f1c-51ec-4bf8-94f5-21dd6e713592",
+      "text": "Site photo showing Imperial/Countryside yellow concrete wall formwork erected around the foundation footprint over a gravel base, with rebar and form accessories on site. Consistent with foundation walls being formed; no poured or waterproofed walls are visible. File was already on the dashboard.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-02T16:54:57Z"
+      "createdAt": "2026-11-02T16:55:23Z"
     }
   }
 }
