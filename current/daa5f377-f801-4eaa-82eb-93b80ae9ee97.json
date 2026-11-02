@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-10-30T21:51:39Z",
+  "updatedAt": "2026-11-02T16:52:03Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -220,13 +220,13 @@
         "status": "pending"
       }
     ],
-    "assetCount": 41,
-    "remarkCount": 61,
+    "assetCount": 42,
+    "remarkCount": 63,
     "latestRemark": {
-      "remarkId": "fe1af34e-584c-4788-8e9b-49f36500481e",
-      "text": "Site photo of a concrete truck chute beside a formed footing area with gravel base and an excavated pit; the pour is not clearly shown, so it is consistent with foundation work under way. The file was already on the dashboard.",
+      "remarkId": "bdc175a2-f03d-41e2-8ed9-db532d116a12",
+      "text": "Uploaded image is a company logo for GC Mechanical Inc., likely a mechanical/HVAC contractor. It shows no site work or inspection, so it evidences no progress; filed for reference only.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-10-30T21:51:36Z"
+      "createdAt": "2026-11-02T16:52:02Z"
     }
   }
 }
