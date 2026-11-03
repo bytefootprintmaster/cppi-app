@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-11-02T21:18:03Z",
+  "updatedAt": "2026-11-03T23:18:44Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -220,13 +220,13 @@
         "status": "pending"
       }
     ],
-    "assetCount": 46,
-    "remarkCount": 71,
+    "assetCount": 47,
+    "remarkCount": 72,
     "latestRemark": {
-      "remarkId": "ba03ecc1-61b0-4760-988c-67d0a73ddc23",
-      "text": "Drawing \"Proposed Regional Service Connections\" for 25 & 27 Mandrake St, Ajax (dated 09-21-2026, Q347-2024-A-039). It shows proposed water services to both houses and existing sanitary, storm and watermain locations. This is a design drawing and does not show any service work done. The file was already on the dashboard.",
+      "remarkId": "7d3bae56-7161-4050-befb-085e5a90fc6c",
+      "text": "Site photo (2026-11-02) showing an excavated pit with a gravel base and strip footings, with yellow concrete wall forms erected on the right and rebar on site. Consistent with foundation work under way; no poured or waterproofed walls are visible. File was already on the dashboard.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-02T21:18:03Z"
+      "createdAt": "2026-11-03T23:18:44Z"
     }
   }
 }
