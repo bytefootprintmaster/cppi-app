@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "e8e36e70-e6a6-4425-a917-5d5b71212012",
-  "updatedAt": "2026-11-04T23:38:28Z",
+  "updatedAt": "2026-11-04T23:38:42Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 7,
-    "remarkCount": 6,
+    "remarkCount": 7,
     "latestRemark": {
-      "remarkId": "96d6323f-38eb-4a90-814e-df7ae9d5caf1",
-      "text": "Archive 224hickory.zip (about 230 KB) was uploaded and is already on the file list. Its contents could not be read, so it shows no progress and no status changes are proposed.",
+      "remarkId": "7418e8c0-5d91-4cba-a49e-3effa889deed",
+      "text": "Hickory Project Budget.xlsx: budgeted cost to build for 224 Hickory St N, total $10,902,200 for 21,000 sqft, including $7,671,200 hard costs. It is an unsigned budget with no approval shown, and no work is evidenced, so no status changes are proposed.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-04T23:38:28Z"
+      "createdAt": "2026-11-04T23:38:39Z"
     }
   }
 }
