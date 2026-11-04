@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
-  "updatedAt": "2026-11-04T16:55:55Z",
+  "updatedAt": "2026-11-04T16:56:30Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -220,13 +220,13 @@
         "status": "pending"
       }
     ],
-    "assetCount": 3,
-    "remarkCount": 6,
+    "assetCount": 4,
+    "remarkCount": 8,
     "latestRemark": {
-      "remarkId": "85c0ccba-95e5-4071-8b2b-2cdec49bd85b",
-      "text": "City of Cambridge Residential Alteration Permit 26 008338 000 00 (conversion of single detached dwelling to triplex, 288 Salisbury Ave) was issued 10-July-2026, signed by the Chief Building Official. This card is Revision 1 dated Nov 3, 2026 (revised dwelling unit design) and lists the mandatory inspections.",
+      "remarkId": "70bd60b7-1e97-4241-8683-9877ed7e3b66",
+      "text": "Revision 1 reviewed drawing set (13 pages) for permit 26-8338, 288 Salisbury Ave triplex conversion, bearing a City of Cambridge Building Division \"in order to issue\" stamp dated 11/03/2026. It includes architectural sheets and a P.Eng structural sheet (Brian Li Engineering, 15-Oct-2026); no MEP drawings are included and no construction work is evidenced.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-04T16:55:51Z"
+      "createdAt": "2026-11-04T16:56:24Z"
     }
   }
 }
