@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
-  "updatedAt": "2026-11-04T16:55:17Z",
+  "updatedAt": "2026-11-04T16:55:18Z",
   "dashboard": {
     "progress": {
       "stages": 10,
