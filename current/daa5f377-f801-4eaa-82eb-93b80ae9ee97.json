@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-11-03T23:18:44Z",
+  "updatedAt": "2026-11-04T02:04:14Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -220,13 +220,13 @@
         "status": "pending"
       }
     ],
-    "assetCount": 47,
-    "remarkCount": 72,
+    "assetCount": 48,
+    "remarkCount": 73,
     "latestRemark": {
-      "remarkId": "7d3bae56-7161-4050-befb-085e5a90fc6c",
-      "text": "Site photo (2026-11-02) showing an excavated pit with a gravel base and strip footings, with yellow concrete wall forms erected on the right and rebar on site. Consistent with foundation work under way; no poured or waterproofed walls are visible. File was already on the dashboard.",
+      "remarkId": "b6282162-31e1-42bd-a1cd-27d77d021cc1",
+      "text": "Site photo (file dated 2026-11-02) showing an excavated pit with gravel base and strip footings, with yellow concrete wall forms erected and rebar on site. Consistent with foundation work under way; no poured or waterproofed walls are visible. Same image as an earlier upload.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-03T23:18:44Z"
+      "createdAt": "2026-11-04T02:04:08Z"
     }
   }
 }
