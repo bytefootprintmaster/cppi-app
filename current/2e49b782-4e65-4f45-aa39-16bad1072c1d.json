@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
-  "updatedAt": "2026-11-04T16:55:18Z",
+  "updatedAt": "2026-11-04T16:55:29Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -220,13 +220,13 @@
         "status": "pending"
       }
     ],
-    "assetCount": 1,
-    "remarkCount": 3,
+    "assetCount": 2,
+    "remarkCount": 4,
     "latestRemark": {
-      "remarkId": "20090508-a9c8-4dce-8fbc-f9df2180d9b3",
-      "text": "Image _WRD0002.jpg (823 bytes) was uploaded and is on the file list. It appears blank or white, with no visible site work, so it shows no progress on any stage or milestone.",
+      "remarkId": "be0fa681-ca4c-4f8b-9723-1b0feb644deb",
+      "text": "Image image001.png was uploaded and filed as other. It is a City of Cambridge (Canada) logo, likely from an email signature, and shows no site work, so no status changes are proposed.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-04T16:55:17Z"
+      "createdAt": "2026-11-04T16:55:28Z"
     }
   }
 }
