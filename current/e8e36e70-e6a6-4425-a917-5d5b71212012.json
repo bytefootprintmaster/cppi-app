@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "e8e36e70-e6a6-4425-a917-5d5b71212012",
-  "updatedAt": "2026-11-04T23:38:00Z",
+  "updatedAt": "2026-11-04T23:38:14Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 7,
-    "remarkCount": 4,
+    "remarkCount": 5,
     "latestRemark": {
-      "remarkId": "9bbeb795-5ae9-45d3-a2d8-cd3d0ac87152",
-      "text": "Intrepid Quantity Surveying fee proposal P26052 (April 7, 2026) to 2797422 Ontario Inc. for cost estimate, pro-forma budget, pre-funding and monthly draw reports on a 6-storey, 30-unit building. Only the QS signed; the client acceptance block is blank, so this is a quote and no progress is evidenced.",
+      "remarkId": "7bb98e96-9260-4873-a766-b18b4e75feb5",
+      "text": "n Architecture Inc invoice 2176-10 (2024-11-21) to 2797422 Ontario Inc.: $6,500 + HST ($7,345 total) for finalizing drawings for the third site plan application (SPA) submission, bringing the $23,000 site plan contract to fully billed. It is a billing document only; it does not show the submission was approved or the drawings issued.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-04T23:38:00Z"
+      "createdAt": "2026-11-04T23:38:14Z"
     }
   }
 }
