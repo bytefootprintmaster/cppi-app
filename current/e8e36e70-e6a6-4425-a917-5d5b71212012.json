@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "e8e36e70-e6a6-4425-a917-5d5b71212012",
-  "updatedAt": "2026-11-04T23:36:58Z",
+  "updatedAt": "2026-11-04T23:37:45Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -220,13 +220,13 @@
         "status": "pending"
       }
     ],
-    "assetCount": 5,
-    "remarkCount": 2,
+    "assetCount": 7,
+    "remarkCount": 3,
     "latestRemark": {
-      "remarkId": "4ffc029a-1c6b-4839-a1df-19b382ae6c02",
-      "text": "Alpha Cost Consultants Inc. team member résumés (Sanjay Verma, Marcelo Loureiro Goncalves, Gurpreet Kaur), supporting fee proposal PR26027 for loan monitoring. Staff credentials only; no construction progress is evidenced.",
+      "remarkId": "b9ed5c32-951e-4879-86a0-6c4ee75540b9",
+      "text": "Colliers DRAFT appraisal (effective Feb 20, 2024, unsigned) for 224 Hickory St N: as-is land value $1.8M, as-complete $11.54M for a proposed 6-storey, 27-unit building. The rezoning/site plan application was still under review and the site was unimproved, so no construction progress is evidenced.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-04T23:36:58Z"
+      "createdAt": "2026-11-04T23:37:44Z"
     }
   }
 }
