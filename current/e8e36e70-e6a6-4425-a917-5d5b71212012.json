@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "e8e36e70-e6a6-4425-a917-5d5b71212012",
-  "updatedAt": "2026-11-04T23:36:46Z",
+  "updatedAt": "2026-11-04T23:36:58Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 5,
-    "remarkCount": 1,
+    "remarkCount": 2,
     "latestRemark": {
-      "remarkId": "fb08f5ec-7c18-4d25-8cb9-bd6baa9bfb33",
-      "text": "Alpha Cost Consultants fee proposal PR26027 (April 13, 2026) to Jakk Group for loan monitoring: feasibility/construction budget, first advance report and monthly draw reviews. The acceptance block is unsigned, so this is a quote only and shows no completed work.",
+      "remarkId": "4ffc029a-1c6b-4839-a1df-19b382ae6c02",
+      "text": "Alpha Cost Consultants Inc. team member résumés (Sanjay Verma, Marcelo Loureiro Goncalves, Gurpreet Kaur), supporting fee proposal PR26027 for loan monitoring. Staff credentials only; no construction progress is evidenced.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-04T23:36:46Z"
+      "createdAt": "2026-11-04T23:36:58Z"
     }
   }
 }
