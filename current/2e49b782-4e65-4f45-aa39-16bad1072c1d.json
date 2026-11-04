@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
-  "updatedAt": "2026-11-04T16:55:34Z",
+  "updatedAt": "2026-11-04T16:55:49Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -220,13 +220,13 @@
         "status": "pending"
       }
     ],
-    "assetCount": 2,
-    "remarkCount": 4,
+    "assetCount": 3,
+    "remarkCount": 5,
     "latestRemark": {
-      "remarkId": "be0fa681-ca4c-4f8b-9723-1b0feb644deb",
-      "text": "Image image001.png was uploaded and filed as other. It is a City of Cambridge (Canada) logo, likely from an email signature, and shows no site work, so no status changes are proposed.",
+      "remarkId": "31776e7a-0dbd-41fd-a922-14ad120dbb6e",
+      "text": "City of Cambridge Residential Alteration Permit 26 008338 000 00 (issued 10-July-2026, signed by the Chief Building Official) for conversion of 288 Salisbury Ave to a triplex. The card is marked Revision 1 (Nov 3, 2026, revised dwelling unit design) and lists the mandatory inspections; none are recorded as passed.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-04T16:55:28Z"
+      "createdAt": "2026-11-04T16:55:45Z"
     }
   }
 }

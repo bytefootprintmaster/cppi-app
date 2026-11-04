@@ -1,0 +1,344 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "recordedAt": "2026-11-04T16:55:49Z",
+  "jobId": "e8f4d8372cbb",
+  "trigger": "email",
+  "task": "progress_update_from_file",
+  "agent": "progress",
+  "model": "claude-sonnet-5-5",
+  "source": {
+    "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+    "s3Key": "sites/2e49b782-4e65-4f45-aa39-16bad1072c1d/document/ce3d9318-0cfb-5826-881b-7564b8903c09-288_Salisbury_Ave_-_Revision_1_-_Revised_Permit_Card.pdf",
+    "fileName": "288_Salisbury_Ave_-_Revision_1_-_Revised_Permit_Card.pdf",
+    "kind": "document",
+    "etag": "4eadff7880f16f78d0b911dbc57d9528",
+    "size": 75271
+  },
+  "summary": "Permit card was already registered. Added a remark, proposed 'Building permit issued' → completed and 'Design & Permits' stage → in_progress (both pending approval).",
+  "confidence": 0.85,
+  "steps": 3,
+  "actions": [
+    {
+      "tool": "get_project_state",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d"
+      },
+      "status": "ok"
+    },
+    {
+      "tool": "register_asset",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+        "name": "288 Salisbury Ave - Revision 1 - Revised Permit Card.pdf",
+        "s3Key": "sites/2e49b782-4e65-4f45-aa39-16bad1072c1d/document/ce3d9318-0cfb-5826-881b-7564b8903c09-288_Salisbury_Ave_-_Revision_1_-_Revised_Permit_Card.pdf",
+        "type": "document",
+        "category": "permit",
+        "contentType": "application/pdf",
+        "size": 75271,
+        "stageId": "148fb8ea-c715-40c7-9ee7-2c259780c4f2"
+      },
+      "status": "already_registered",
+      "result": {
+        "status": "already_registered",
+        "assetId": "b3dec205-627f-40e8-9f16-c624f2ccd0a1"
+      }
+    },
+    {
+      "tool": "add_progress_remark",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+        "stageId": "148fb8ea-c715-40c7-9ee7-2c259780c4f2",
+        "text": "City of Cambridge Residential Alteration Permit 26 008338 000 00 (issued 10-July-2026, signed by the Chief Building Official) for conversion of 288 Salisbury Ave to a triplex. The card is marked Revision 1 (Nov 3, 2026, revised dwelling unit design) and lists the mandatory inspections; none are recorded as passed."
+      },
+      "status": "added",
+      "result": {
+        "status": "added",
+        "remarkId": "31776e7a-0dbd-41fd-a922-14ad120dbb6e"
+      }
+    },
+    {
+      "tool": "propose_milestone_status",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+        "milestoneId": "1b85f76a-4551-457b-9c21-33f460e217e6",
+        "status": "completed",
+        "reason": "City of Cambridge Residential Alteration Permit 26 008338 000 00, signed by the Chief Building Official, is issued for the triplex conversion (Revision 1 dated Nov 3, 2026)."
+      },
+      "status": "pending_approval",
+      "result": {
+        "status": "pending_approval",
+        "action_id": "bf8254ab208c",
+        "preview": "Mark milestone *Building permit issued* on *288 Salisbury Ave. Cambridge* as *completed*\nReason: City of Cambridge Residential Alteration Permit 26 008338 000 00, signed by the Chief Building Official, is issued for the triplex conversion (Revision 1 dated Nov 3, 2026).",
+        "note": "Queued for human approval. It has NOT been applied."
+      }
+    },
+    {
+      "tool": "propose_stage_status",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+        "stageId": "148fb8ea-c715-40c7-9ee7-2c259780c4f2",
+        "status": "in_progress",
+        "reason": "A building permit has been issued, so the Design & Permits stage is underway. Other milestones in the stage have no evidence yet."
+      },
+      "status": "pending_approval",
+      "result": {
+        "status": "pending_approval",
+        "action_id": "5a6687193f5e",
+        "preview": "Mark stage *Design & Permits* on *288 Salisbury Ave. Cambridge* as *in_progress*\nReason: A building permit has been issued, so the Design & Permits stage is underway. Other milestones in the stage have no evidence yet.",
+        "note": "Queued for human approval. It has NOT been applied."
+      }
+    },
+    {
+      "tool": "finish",
+      "input": {
+        "summary": "Permit card was already registered. Added a remark, proposed 'Building permit issued' → completed and 'Design & Permits' stage → in_progress (both pending approval).",
+        "confidence": 0.85,
+        "notes": "The permit's original issue date (10-July-2026) is before the project's creation date (2026-11-02). Revision 1 is dated Nov 3, 2026. Please confirm the permit applies to this project. No inspections are shown as passed."
+      },
+      "status": "done",
+      "result": {
+        "status": "done",
+        "summary": "Permit card was already registered. Added a remark, proposed 'Building permit issued' → completed and 'Design & Permits' stage → in_progress (both pending approval).",
+        "confidence": 0.85
+      }
+    }
+  ],
+  "pendingApprovals": [
+    "bf8254ab208c",
+    "5a6687193f5e"
+  ],
+  "costUsd": 0.051351,
+  "tokens": {
+    "input": 12342,
+    "output": 1516,
+    "cacheWrite": 2992,
+    "cacheRead": 20135
+  },
+  "dashboard": {
+    "progress": {
+      "stages": 10,
+      "stagesCompleted": 0,
+      "milestones": 31,
+      "milestonesCompleted": 0,
+      "percent": 0
+    },
+    "siteStatus": "in_progress",
+    "stages": [
+      {
+        "stageId": "a178ee5d-c7aa-4837-b7e0-189fba21e49c",
+        "name": "Feasibility & Due Diligence",
+        "status": "not_started"
+      },
+      {
+        "stageId": "148fb8ea-c715-40c7-9ee7-2c259780c4f2",
+        "name": "Design & Permits",
+        "status": "not_started"
+      },
+      {
+        "stageId": "93c0b7e7-6cfd-4247-a01b-35487978f9d9",
+        "name": "Site Preparation & Excavation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "b8107dd2-5e8e-4cf9-8c8c-f02aa265093d",
+        "name": "Foundation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "7c3acc10-7598-4c70-8a7b-7e4f6a54b63b",
+        "name": "Structural Framing",
+        "status": "not_started"
+      },
+      {
+        "stageId": "2d610aea-b999-4273-9407-24a807c0a070",
+        "name": "Building Envelope",
+        "status": "not_started"
+      },
+      {
+        "stageId": "ec35698a-8cb1-4314-8a96-1e86798c6641",
+        "name": "Rough-In Services",
+        "status": "not_started"
+      },
+      {
+        "stageId": "44487e07-2e6c-45b7-b85c-5fa7c7056fce",
+        "name": "Interior Finishes",
+        "status": "not_started"
+      },
+      {
+        "stageId": "300c66e9-fab8-492c-9ddb-8d84ce9b6a92",
+        "name": "Landscaping & Exterior Works",
+        "status": "not_started"
+      },
+      {
+        "stageId": "7ea9447d-4b0c-43ad-8ae5-9433e8f90f5a",
+        "name": "Handover & Closeout",
+        "status": "not_started"
+      }
+    ],
+    "milestones": [
+      {
+        "milestoneId": "0c523cf9-264f-42d8-b715-2dc509e98c90",
+        "name": "Site survey & boundary confirmed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "ab96545e-0f90-4eab-9f30-11ee09d2d290",
+        "name": "Zoning & by-law review completed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "e0dda174-92bc-47ad-b064-760862d6d6d5",
+        "name": "Feasibility budget approved",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "d4b669cc-0d8a-4ad6-b852-3d5b748471d2",
+        "name": "Architectural drawings issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "287dceb2-aaa5-4b24-a6a5-7e4f03358a99",
+        "name": "Structural & MEP drawings complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "1b85f76a-4551-457b-9c21-33f460e217e6",
+        "name": "Building permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "6c7e0a89-6833-44d0-bcf7-ce9f67ec4672",
+        "name": "Utilities & services located",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "2141a41c-a0f9-4879-8e1b-930e839b48eb",
+        "name": "Clearing & demolition complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "24805f97-3552-4a3c-9fbf-caddfeb2f643",
+        "name": "Excavation & shoring inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c6f1f9fb-950c-4ad2-b3a6-317c09496dc0",
+        "name": "Footings inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "b6be4a74-a4dc-4816-b277-5bac9230e7af",
+        "name": "Foundation walls poured & waterproofed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "02d280ee-f2ac-4579-be9f-3cabf5aefb22",
+        "name": "Backfill & drainage complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "cadf04a0-cad4-4591-ac7f-cc6e7f5d7506",
+        "name": "Floor structure complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "dce92415-6eaa-4833-8854-65e2194b189b",
+        "name": "Framing erected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "a3f3b501-1186-488e-b1eb-1457574378da",
+        "name": "Framing inspection passed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "544e66cc-49f4-4e0f-927a-297c363bb376",
+        "name": "Roof trusses & sheathing complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "79ac0026-b890-4427-aab8-25f54a3adc72",
+        "name": "Roofing watertight",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "04665110-c0b9-4ee7-a208-f00f57dc4a4a",
+        "name": "Windows & exterior doors installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c553e85e-ed66-4f1e-b40b-7a8e88a7fd30",
+        "name": "Cladding & insulation complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c6b56de5-ed16-4c5f-aa58-efd936121d49",
+        "name": "Electrical rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "0ce7a092-c344-44c6-b18a-86c1c47b991f",
+        "name": "Plumbing rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "d5ffab5c-85df-4638-8753-2706850d339e",
+        "name": "HVAC rough-in complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "eb94ed97-93da-49ad-af04-2f896b0ae1a0",
+        "name": "Drywall & plaster complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "2dc00489-2b34-497a-b4d6-1febe512add5",
+        "name": "Cabinetry & millwork installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "d66dc6fe-847f-44f7-9596-a5ed6c494723",
+        "name": "Flooring & paint complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "cdddea56-da89-45ac-b55a-b54a0a182d07",
+        "name": "Grading & drainage certified",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "dcf8b547-ddfa-4f0e-93a5-872da4ae74ca",
+        "name": "Driveway & hardscaping complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "8565fc1f-f23b-47e7-967d-e60426288901",
+        "name": "Landscaping planted",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "b30aaed6-86b8-4037-935e-fbeb0ca916de",
+        "name": "Occupancy permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "f83705ba-86ed-4ca1-baf1-c81bb174ab25",
+        "name": "Pre-delivery inspection (PDI) complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "ef0c8733-772e-4374-ab5d-7d9bc944e234",
+        "name": "Final accounts & warranty documents issued",
+        "status": "pending"
+      }
+    ],
+    "assetCount": 3,
+    "remarkCount": 5,
+    "latestRemark": {
+      "remarkId": "31776e7a-0dbd-41fd-a922-14ad120dbb6e",
+      "text": "City of Cambridge Residential Alteration Permit 26 008338 000 00 (issued 10-July-2026, signed by the Chief Building Official) for conversion of 288 Salisbury Ave to a triplex. The card is marked Revision 1 (Nov 3, 2026, revised dwelling unit design) and lists the mandatory inspections; none are recorded as passed.",
+      "authorName": "CPPI Agent (AI)",
+      "createdAt": "2026-11-04T16:55:45Z"
+    }
+  }
+}
