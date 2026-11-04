@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "e8e36e70-e6a6-4425-a917-5d5b71212012",
-  "updatedAt": "2026-11-04T23:38:14Z",
+  "updatedAt": "2026-11-04T23:38:28Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 7,
-    "remarkCount": 5,
+    "remarkCount": 6,
     "latestRemark": {
-      "remarkId": "7bb98e96-9260-4873-a766-b18b4e75feb5",
-      "text": "n Architecture Inc invoice 2176-10 (2024-11-21) to 2797422 Ontario Inc.: $6,500 + HST ($7,345 total) for finalizing drawings for the third site plan application (SPA) submission, bringing the $23,000 site plan contract to fully billed. It is a billing document only; it does not show the submission was approved or the drawings issued.",
+      "remarkId": "96d6323f-38eb-4a90-814e-df7ae9d5caf1",
+      "text": "Archive 224hickory.zip (about 230 KB) was uploaded and is already on the file list. Its contents could not be read, so it shows no progress and no status changes are proposed.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-04T23:38:14Z"
+      "createdAt": "2026-11-04T23:38:28Z"
     }
   }
 }
