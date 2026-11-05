@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "e8e36e70-e6a6-4425-a917-5d5b71212012",
-  "updatedAt": "2026-11-04T23:38:42Z",
+  "updatedAt": "2026-11-05T02:02:19Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -220,13 +220,13 @@
         "status": "pending"
       }
     ],
-    "assetCount": 7,
-    "remarkCount": 7,
+    "assetCount": 8,
+    "remarkCount": 9,
     "latestRemark": {
-      "remarkId": "7418e8c0-5d91-4cba-a49e-3effa889deed",
-      "text": "Hickory Project Budget.xlsx: budgeted cost to build for 224 Hickory St N, total $10,902,200 for 21,000 sqft, including $7,671,200 hard costs. It is an unsigned budget with no approval shown, and no work is evidenced, so no status changes are proposed.",
+      "remarkId": "b6152275-9697-4780-ab59-8ee18a586a9a",
+      "text": "Jain Infrastructure Consultants civil drawing package (C101 servicing, C102 grading, C103 erosion control, C105 notes/details, C106 pavement marking), rev 3 dated Nov 22, 2024 (C106 Dec 6, 2024), all \"Issued for SPA\". Design-stage drawings only; no construction or permit approval is evidenced.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-04T23:38:39Z"
+      "createdAt": "2026-11-05T02:02:14Z"
     }
   }
 }
