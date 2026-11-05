@@ -1,8 +1,8 @@
 {
   "schema": "cppi-agent-audit/1",
-  "recordedAt": "2026-11-05T02:02:19Z",
-  "jobId": "0a2eb4d4035a",
-  "trigger": "email",
+  "recordedAt": "2026-11-05T02:02:20Z",
+  "jobId": "30de2f013a84",
+  "trigger": "s3",
   "task": "progress_update_from_file",
   "agent": "progress",
   "model": "claude-sonnet-5-5",
@@ -14,9 +14,9 @@
     "etag": "09f30d014a0aa55bf6f87f5c3d4ee8e2",
     "size": 13575234
   },
-  "summary": "The civil drawings package was already on the dashboard. I added one progress remark and proposed moving 'Design & Permits' to in_progress, which is waiting for approval.",
-  "confidence": 0.8,
-  "steps": 3,
+  "summary": "Registered the civil drawings package as a plan, added a progress remark, and proposed 'Design & Permits' stage → in_progress (pending approval).",
+  "confidence": 0.85,
+  "steps": 4,
   "actions": [
     {
       "tool": "get_project_state",
@@ -33,13 +33,13 @@
         "s3Key": "sites/e8e36e70-e6a6-4425-a917-5d5b71212012/document/3aff1bb6-cd69-57b4-9790-28be60c7994e-6_224_Hickory_Street__Whitby_Civil_Drawings_Package.pdf",
         "type": "document",
         "category": "plan",
-        "stageId": "a9504558-88b1-412a-aa22-5e6db6874aaf",
         "contentType": "application/pdf",
-        "size": 13575234
+        "size": 13575234,
+        "stageId": "a9504558-88b1-412a-aa22-5e6db6874aaf"
       },
-      "status": "already_registered",
+      "status": "registered",
       "result": {
-        "status": "already_registered",
+        "status": "registered",
         "assetId": "dc6dc32c-ba26-4770-9c4c-e4232a9bd9d2"
       }
     },
@@ -48,12 +48,12 @@
       "input": {
         "siteId": "e8e36e70-e6a6-4425-a917-5d5b71212012",
         "stageId": "a9504558-88b1-412a-aa22-5e6db6874aaf",
-        "text": "Jain Infrastructure Consultants civil drawing package (C101 servicing, C102 grading, C103 erosion control, C105 notes/details, C106 pavement marking) for the 224 Hickory St senior's apartment building, latest revisions Nov 22 and Dec 06, 2024, all marked \"Issued for SPA\". These are design drawings for site plan approval, not permits or construction progress."
+        "text": "Jain Infrastructure Consultants civil drawing package (C101 servicing, C102 grading, C103 erosion control, C105 notes/details, C106 pavement marking), rev 3 dated Nov 22, 2024 (C106 Dec 6, 2024), all \"Issued for SPA\". Design-stage drawings only; no construction or permit approval is evidenced."
       },
       "status": "added",
       "result": {
         "status": "added",
-        "remarkId": "14ed612d-c0a7-4c69-9436-91408208358d"
+        "remarkId": "b6152275-9697-4780-ab59-8ee18a586a9a"
       }
     },
     {
@@ -62,40 +62,40 @@
         "siteId": "e8e36e70-e6a6-4425-a917-5d5b71212012",
         "stageId": "a9504558-88b1-412a-aa22-5e6db6874aaf",
         "status": "in_progress",
-        "reason": "Civil design drawings (servicing, grading, erosion control, details, signage) were issued for site plan application in Nov–Dec 2024, showing design work is underway. No permit is evidenced, so the stage is not complete."
+        "reason": "Civil drawings issued for site plan application (Nov–Dec 2024) show design work underway; no permit issued yet."
       },
       "status": "pending_approval",
       "result": {
         "status": "pending_approval",
-        "action_id": "bac29b36c80f",
-        "preview": "Mark stage *Design & Permits* on *224 Hickory St. North Whitby* as *in_progress*\nReason: Civil design drawings (servicing, grading, erosion control, details, signage) were issued for site plan application in Nov–Dec 2024, showing design work is underway. No permit is evidenced, so the stage is not complete.",
+        "action_id": "5e35240c05eb",
+        "preview": "Mark stage *Design & Permits* on *224 Hickory St. North Whitby* as *in_progress*\nReason: Civil drawings issued for site plan application (Nov–Dec 2024) show design work underway; no permit issued yet.",
         "note": "Queued for human approval. It has NOT been applied."
       }
     },
     {
       "tool": "finish",
       "input": {
-        "summary": "The civil drawings package was already on the dashboard. I added one progress remark and proposed moving 'Design & Permits' to in_progress, which is waiting for approval.",
-        "confidence": 0.8,
-        "notes": "register_asset returned already_registered, so the file was a duplicate upload and I did not register it again. The stage proposal is pending approval. The drawings are all marked \"Issued for SPA\", so they don't show a building permit or any construction. I did not propose any milestone changes."
+        "summary": "Registered the civil drawings package as a plan, added a progress remark, and proposed 'Design & Permits' stage → in_progress (pending approval).",
+        "confidence": 0.85,
+        "notes": "The drawings are issued for site plan application (SPA) only. They don't show that any permit or approval was granted, so I proposed no milestone changes. The 'Architectural drawings issued' and 'Structural & MEP drawings complete' milestones need other evidence."
       },
       "status": "done",
       "result": {
         "status": "done",
-        "summary": "The civil drawings package was already on the dashboard. I added one progress remark and proposed moving 'Design & Permits' to in_progress, which is waiting for approval.",
-        "confidence": 0.8
+        "summary": "Registered the civil drawings package as a plan, added a progress remark, and proposed 'Design & Permits' stage → in_progress (pending approval).",
+        "confidence": 0.85
       }
     }
   ],
   "pendingApprovals": [
-    "bac29b36c80f"
+    "5e35240c05eb"
   ],
-  "costUsd": 0.135212,
+  "costUsd": 0.155966,
   "tokens": {
-    "input": 14826,
-    "output": 1327,
+    "input": 22086,
+    "output": 1314,
     "cacheWrite": 31824,
-    "cacheRead": 63648
+    "cacheRead": 95472
   },
   "dashboard": {
     "progress": {
