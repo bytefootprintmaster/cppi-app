@@ -1,0 +1,1497 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "recordedAt": "2026-11-06T02:18:41Z",
+  "jobId": "e15bd57d0425",
+  "trigger": "email",
+  "task": "progress_update_from_file",
+  "agent": "progress",
+  "model": "claude-sonnet-5-5",
+  "source": {
+    "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+    "s3Key": "sites/2e49b782-4e65-4f45-aa39-16bad1072c1d/document/fba4ac5e-e19c-5ce4-aeed-5ac84aaf489f-Budget-288_Salisbury.xlsx",
+    "fileName": "Budget-288_Salisbury.xlsx",
+    "kind": "document",
+    "etag": "56d4913e9c6d23a7fe5993e5022a6946",
+    "size": 38367
+  },
+  "summary": "Registered Budget-288_Salisbury.xlsx and wrote its 19 cost lines with replace=true, but the budget now shows duplicate lines (38), so it needs a manual check. No status changes proposed.",
+  "confidence": 0.6,
+  "steps": 7,
+  "actions": [
+    {
+      "tool": "get_project_state",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d"
+      },
+      "status": "ok"
+    },
+    {
+      "tool": "get_budget",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d"
+      },
+      "status": "ok",
+      "result": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+        "summary": {
+          "groups": [
+            {
+              "group": "land",
+              "lines": 0,
+              "budget": 0.0,
+              "spent": 0.0,
+              "hst": 0.0
+            },
+            {
+              "group": "soft",
+              "lines": 0,
+              "budget": 0.0,
+              "spent": 0.0,
+              "hst": 0.0
+            },
+            {
+              "group": "hard",
+              "lines": 0,
+              "budget": 0.0,
+              "spent": 0.0,
+              "hst": 0.0
+            }
+          ],
+          "lines": 0,
+          "budgeted": 0.0,
+          "spent": 0.0,
+          "hst": 0.0,
+          "paid": 0.0,
+          "remaining": 0.0,
+          "percentUsed": 0
+        },
+        "lines": []
+      }
+    },
+    {
+      "tool": "register_asset",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+        "name": "Budget-288_Salisbury.xlsx",
+        "s3Key": "sites/2e49b782-4e65-4f45-aa39-16bad1072c1d/document/fba4ac5e-e19c-5ce4-aeed-5ac84aaf489f-Budget-288_Salisbury.xlsx",
+        "type": "document",
+        "category": "invoice",
+        "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "size": 38367
+      },
+      "status": "registered",
+      "result": {
+        "status": "registered",
+        "assetId": "3b1da28d-68d1-4659-9b77-72afd49d6966"
+      }
+    },
+    {
+      "tool": "update_budget",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+        "replace": true,
+        "lines": [
+          {
+            "group": "land",
+            "name": "Land (book value)",
+            "budget": 774624.78,
+            "spent": 774624.78,
+            "hst": 0,
+            "order": 1
+          },
+          {
+            "group": "soft",
+            "code": "S.11",
+            "name": "Development & Consulting (6% of hard cost)",
+            "budget": 10012.5,
+            "spent": 0,
+            "hst": 0,
+            "order": 1
+          },
+          {
+            "group": "soft",
+            "code": "S.13",
+            "name": "General Conditions - Building permit fee & BCIN Design Fee",
+            "budget": 9648,
+            "spent": 3500,
+            "hst": 455,
+            "order": 2
+          },
+          {
+            "group": "soft",
+            "code": "S.31",
+            "name": "Accounting & Admin. (2% of hard costs)",
+            "budget": 4057.5,
+            "spent": 0,
+            "hst": 0,
+            "order": 3
+          },
+          {
+            "group": "soft",
+            "code": "S.32",
+            "name": "Financing Costs",
+            "budget": 0,
+            "spent": 0,
+            "hst": 0,
+            "order": 4
+          },
+          {
+            "group": "soft",
+            "code": "S.39",
+            "name": "Property operating expenses (property taxes, insurance, utilities)",
+            "budget": 0,
+            "spent": 1358,
+            "hst": 100.64,
+            "order": 5
+          },
+          {
+            "group": "hard",
+            "code": "H.01 00 00",
+            "name": "Project Management / site supervision (~12 wks)",
+            "budget": 36000,
+            "spent": 8990,
+            "hst": 1168.7,
+            "order": 1
+          },
+          {
+            "group": "hard",
+            "code": "H.01 15 00",
+            "name": "Demolition",
+            "budget": 4400,
+            "spent": 0,
+            "hst": 0,
+            "order": 2
+          },
+          {
+            "group": "hard",
+            "code": "H.02 10 00",
+            "name": "Deck & Guards",
+            "budget": 5100,
+            "spent": 0,
+            "hst": 0,
+            "order": 3
+          },
+          {
+            "group": "hard",
+            "code": "H.02 12 00",
+            "name": "Structural/Framing",
+            "budget": 20800,
+            "spent": 0,
+            "hst": 0,
+            "order": 4
+          },
+          {
+            "group": "hard",
+            "code": "H.02 16 00",
+            "name": "Doors & Hardware",
+            "budget": 6800,
+            "spent": 0,
+            "hst": 0,
+            "order": 5
+          },
+          {
+            "group": "hard",
+            "code": "H.02 16 10",
+            "name": "Windows",
+            "budget": 3800,
+            "spent": 0,
+            "hst": 0,
+            "order": 6
+          },
+          {
+            "group": "hard",
+            "code": "H.02 21 00",
+            "name": "Plumbing",
+            "budget": 20700,
+            "spent": 0,
+            "hst": 0,
+            "order": 7
+          },
+          {
+            "group": "hard",
+            "code": "H.02 23 00",
+            "name": "Electrical",
+            "budget": 22400,
+            "spent": 0,
+            "hst": 0,
+            "order": 8
+          },
+          {
+            "group": "hard",
+            "code": "H.02 24 00",
+            "name": "HVAC/Mechanical",
+            "budget": 5400,
+            "spent": 0,
+            "hst": 0,
+            "order": 9
+          },
+          {
+            "group": "hard",
+            "code": "H.02 27 00",
+            "name": "Fire Separation & Drywall",
+            "budget": 25850,
+            "spent": 0,
+            "hst": 0,
+            "order": 10
+          },
+          {
+            "group": "hard",
+            "code": "H.02 32 00",
+            "name": "Finishes",
+            "budget": 10900,
+            "spent": 0,
+            "hst": 0,
+            "order": 11
+          },
+          {
+            "group": "hard",
+            "code": "H.02 33 00",
+            "name": "Kitchen & Bath",
+            "budget": 25425,
+            "spent": 0,
+            "hst": 0,
+            "order": 12
+          },
+          {
+            "group": "hard",
+            "code": "H.05 00 00",
+            "name": "Contingency",
+            "budget": 15300,
+            "spent": 0,
+            "hst": 0,
+            "order": 13
+          }
+        ]
+      },
+      "status": "applied",
+      "result": {
+        "status": "applied",
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+        "created": 19,
+        "updated": 0,
+        "deleted": 0,
+        "summary": {
+          "groups": [
+            {
+              "group": "land",
+              "lines": 1,
+              "budget": 774624.78,
+              "spent": 774624.78,
+              "hst": 0.0
+            },
+            {
+              "group": "soft",
+              "lines": 8,
+              "budget": 27775.5,
+              "spent": 6216.0,
+              "hst": 656.28
+            },
+            {
+              "group": "hard",
+              "lines": 21,
+              "budget": 322875.0,
+              "spent": 17980.0,
+              "hst": 2337.4
+            }
+          ],
+          "lines": 30,
+          "budgeted": 1125275.28,
+          "spent": 798820.78,
+          "hst": 2993.68,
+          "paid": 801814.46,
+          "remaining": 326454.5,
+          "percentUsed": 71
+        }
+      }
+    },
+    {
+      "tool": "get_budget",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d"
+      },
+      "status": "ok",
+      "result": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+        "summary": {
+          "groups": [
+            {
+              "group": "land",
+              "lines": 1,
+              "budget": 774624.78,
+              "spent": 774624.78,
+              "hst": 0.0
+            },
+            {
+              "group": "soft",
+              "lines": 8,
+              "budget": 27775.5,
+              "spent": 6216.0,
+              "hst": 656.28
+            },
+            {
+              "group": "hard",
+              "lines": 26,
+              "budget": 405750.0,
+              "spent": 17980.0,
+              "hst": 2337.4
+            }
+          ],
+          "lines": 35,
+          "budgeted": 1208150.28,
+          "spent": 798820.78,
+          "hst": 2993.68,
+          "paid": 801814.46,
+          "remaining": 409329.5,
+          "percentUsed": 66
+        },
+        "lines": [
+          {
+            "lineId": "8c333a8e-09bc-41cd-9334-e93360c2b4d8",
+            "group": "land",
+            "code": null,
+            "name": "Land (book value)",
+            "budget": 774624.78,
+            "spent": 774624.78,
+            "hst": 0,
+            "order": 1
+          },
+          {
+            "lineId": "45539125-df00-4acf-ab36-40e186ea5c84",
+            "group": "soft",
+            "code": "S. 11",
+            "name": "Development & Consulting (6% of hard cost)",
+            "budget": 10012.5,
+            "spent": 0,
+            "hst": 0,
+            "order": 1
+          },
+          {
+            "lineId": "e8c9a839-23d4-4e3c-87d7-35d1d2e2e6bc",
+            "group": "soft",
+            "code": "S.13",
+            "name": "General Conditions - Building permit fee & BCIN Design Fee",
+            "budget": 9648,
+            "spent": 3500,
+            "hst": 455,
+            "order": 2
+          },
+          {
+            "lineId": "7fb24170-0783-4cd7-a00d-f48f4b88711c",
+            "group": "soft",
+            "code": "S.31",
+            "name": "Accounting & Admin. (2% of hard costs)",
+            "budget": 4057.5,
+            "spent": 0,
+            "hst": 0,
+            "order": 3
+          },
+          {
+            "lineId": "95874978-79b9-4cae-b63c-d18a44b854ce",
+            "group": "soft",
+            "code": "S.31",
+            "name": "Accounting & Admin. (2% of hard costs)",
+            "budget": 4057.5,
+            "spent": 0,
+            "hst": 0,
+            "order": 3
+          },
+          {
+            "lineId": "95e4e531-bbc0-4731-82a3-c5cfc66efd0e",
+            "group": "soft",
+            "code": "S.32",
+            "name": "Financing Costs",
+            "budget": 0,
+            "spent": 0,
+            "hst": 0,
+            "order": 4
+          },
+          {
+            "lineId": "e9069ea4-3d9c-432b-9c55-7cd9f8eb2b1f",
+            "group": "soft",
+            "code": "S.32",
+            "name": "Financing Costs",
+            "budget": 0,
+            "spent": 0,
+            "hst": 0,
+            "order": 4
+          },
+          {
+            "lineId": "403563ce-a61c-41fb-aa4a-3d99e449c160",
+            "group": "soft",
+            "code": "S.39",
+            "name": "Property operating expenses (property taxes, insurance, utilities)",
+            "budget": 0,
+            "spent": 1358,
+            "hst": 100.64,
+            "order": 5
+          },
+          {
+            "lineId": "6f346351-595f-418b-ad18-6faf766f787d",
+            "group": "soft",
+            "code": "S.39",
+            "name": "Property operating expenses (property taxes, insurance, utilities)",
+            "budget": 0,
+            "spent": 1358,
+            "hst": 100.64,
+            "order": 5
+          },
+          {
+            "lineId": "542031a7-32c6-45f8-a611-0415028f6f8f",
+            "group": "hard",
+            "code": "H.01 00 00",
+            "name": "Project Management / site supervision (~12 wks)",
+            "budget": 36000,
+            "spent": 8990,
+            "hst": 1168.7,
+            "order": 1
+          },
+          {
+            "lineId": "a09028dd-a5eb-40a3-9e99-54e08d687109",
+            "group": "hard",
+            "code": "H.01 00 00",
+            "name": "Project Management / site supervision (~12 wks)",
+            "budget": 36000,
+            "spent": 8990,
+            "hst": 1168.7,
+            "order": 1
+          },
+          {
+            "lineId": "35a00263-6b78-46cf-9501-b110a113a905",
+            "group": "hard",
+            "code": "H.01 15 00",
+            "name": "Demolition",
+            "budget": 4400,
+            "spent": 0,
+            "hst": 0,
+            "order": 2
+          },
+          {
+            "lineId": "57a206da-d9b3-4f4a-a3c9-73dd64568012",
+            "group": "hard",
+            "code": "H.01 15 00",
+            "name": "Demolition",
+            "budget": 4400,
+            "spent": 0,
+            "hst": 0,
+            "order": 2
+          },
+          {
+            "lineId": "96003308-edda-4ce4-8109-9f7bde195aac",
+            "group": "hard",
+            "code": "H.02 10 00",
+            "name": "Deck & Guards",
+            "budget": 5100,
+            "spent": 0,
+            "hst": 0,
+            "order": 3
+          },
+          {
+            "lineId": "ed98c33e-befb-4165-afb6-69a7b0df2a2b",
+            "group": "hard",
+            "code": "H.02 10 00",
+            "name": "Deck & Guards",
+            "budget": 5100,
+            "spent": 0,
+            "hst": 0,
+            "order": 3
+          },
+          {
+            "lineId": "3d97899e-b5c1-44f7-8447-d613afe52782",
+            "group": "hard",
+            "code": "H.02 12 00",
+            "name": "Structural/Framing",
+            "budget": 20800,
+            "spent": 0,
+            "hst": 0,
+            "order": 4
+          },
+          {
+            "lineId": "b9623d4c-c6eb-41d2-9875-819d75fbdaf7",
+            "group": "hard",
+            "code": "H.02 12 00",
+            "name": "Structural/Framing",
+            "budget": 20800,
+            "spent": 0,
+            "hst": 0,
+            "order": 4
+          },
+          {
+            "lineId": "b7f51cd2-5cc3-4c04-9223-3140d923395f",
+            "group": "hard",
+            "code": "H.02 16 00",
+            "name": "Doors & Hardware",
+            "budget": 6800,
+            "spent": 0,
+            "hst": 0,
+            "order": 5
+          },
+          {
+            "lineId": "df9c50e8-a6e3-44dc-b99e-258bb1f86be2",
+            "group": "hard",
+            "code": "H.02 16 00",
+            "name": "Doors & Hardware",
+            "budget": 6800,
+            "spent": 0,
+            "hst": 0,
+            "order": 5
+          },
+          {
+            "lineId": "0194ebb2-888f-4414-bf88-c75f192a0b12",
+            "group": "hard",
+            "code": "H.02 16 10",
+            "name": "Windows",
+            "budget": 3800,
+            "spent": 0,
+            "hst": 0,
+            "order": 6
+          },
+          "… 15 more"
+        ]
+      }
+    },
+    {
+      "tool": "update_budget",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+        "replace": true,
+        "lines": [
+          {
+            "group": "land",
+            "name": "Land (book value)",
+            "budget": 774624.78,
+            "spent": 774624.78,
+            "hst": 0,
+            "order": 1
+          },
+          {
+            "group": "soft",
+            "code": "S.11",
+            "name": "Development & Consulting (6% of hard cost)",
+            "budget": 10012.5,
+            "spent": 0,
+            "hst": 0,
+            "order": 1
+          },
+          {
+            "group": "soft",
+            "code": "S.13",
+            "name": "General Conditions - Building permit fee & BCIN Design Fee",
+            "budget": 9648,
+            "spent": 3500,
+            "hst": 455,
+            "order": 2
+          },
+          {
+            "group": "soft",
+            "code": "S.31",
+            "name": "Accounting & Admin. (2% of hard costs)",
+            "budget": 4057.5,
+            "spent": 0,
+            "hst": 0,
+            "order": 3
+          },
+          {
+            "group": "soft",
+            "code": "S.32",
+            "name": "Financing Costs",
+            "budget": 0,
+            "spent": 0,
+            "hst": 0,
+            "order": 4
+          },
+          {
+            "group": "soft",
+            "code": "S.39",
+            "name": "Property operating expenses (property taxes, insurance, utilities)",
+            "budget": 0,
+            "spent": 1358,
+            "hst": 100.64,
+            "order": 5
+          },
+          {
+            "group": "hard",
+            "code": "H.01 00 00",
+            "name": "Project Management / site supervision (~12 wks)",
+            "budget": 36000,
+            "spent": 8990,
+            "hst": 1168.7,
+            "order": 1
+          },
+          {
+            "group": "hard",
+            "code": "H.01 15 00",
+            "name": "Demolition",
+            "budget": 4400,
+            "spent": 0,
+            "hst": 0,
+            "order": 2
+          },
+          {
+            "group": "hard",
+            "code": "H.02 10 00",
+            "name": "Deck & Guards",
+            "budget": 5100,
+            "spent": 0,
+            "hst": 0,
+            "order": 3
+          },
+          {
+            "group": "hard",
+            "code": "H.02 12 00",
+            "name": "Structural/Framing",
+            "budget": 20800,
+            "spent": 0,
+            "hst": 0,
+            "order": 4
+          },
+          {
+            "group": "hard",
+            "code": "H.02 16 00",
+            "name": "Doors & Hardware",
+            "budget": 6800,
+            "spent": 0,
+            "hst": 0,
+            "order": 5
+          },
+          {
+            "group": "hard",
+            "code": "H.02 16 10",
+            "name": "Windows",
+            "budget": 3800,
+            "spent": 0,
+            "hst": 0,
+            "order": 6
+          },
+          {
+            "group": "hard",
+            "code": "H.02 21 00",
+            "name": "Plumbing",
+            "budget": 20700,
+            "spent": 0,
+            "hst": 0,
+            "order": 7
+          },
+          {
+            "group": "hard",
+            "code": "H.02 23 00",
+            "name": "Electrical",
+            "budget": 22400,
+            "spent": 0,
+            "hst": 0,
+            "order": 8
+          },
+          {
+            "group": "hard",
+            "code": "H.02 24 00",
+            "name": "HVAC/Mechanical",
+            "budget": 5400,
+            "spent": 0,
+            "hst": 0,
+            "order": 9
+          },
+          {
+            "group": "hard",
+            "code": "H.02 27 00",
+            "name": "Fire Separation & Drywall",
+            "budget": 25850,
+            "spent": 0,
+            "hst": 0,
+            "order": 10
+          },
+          {
+            "group": "hard",
+            "code": "H.02 32 00",
+            "name": "Finishes",
+            "budget": 10900,
+            "spent": 0,
+            "hst": 0,
+            "order": 11
+          },
+          {
+            "group": "hard",
+            "code": "H.02 33 00",
+            "name": "Kitchen & Bath",
+            "budget": 25425,
+            "spent": 0,
+            "hst": 0,
+            "order": 12
+          },
+          {
+            "group": "hard",
+            "code": "H.05 00 00",
+            "name": "Contingency",
+            "budget": 15300,
+            "spent": 0,
+            "hst": 0,
+            "order": 13
+          }
+        ]
+      },
+      "status": "applied",
+      "result": {
+        "status": "applied",
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+        "created": 19,
+        "updated": 0,
+        "deleted": 35,
+        "summary": {
+          "groups": [
+            {
+              "group": "land",
+              "lines": 2,
+              "budget": 1549249.56,
+              "spent": 1549249.56,
+              "hst": 0.0
+            },
+            {
+              "group": "soft",
+              "lines": 10,
+              "budget": 47436.0,
+              "spent": 9716.0,
+              "hst": 1111.28
+            },
+            {
+              "group": "hard",
+              "lines": 26,
+              "budget": 405750.0,
+              "spent": 17980.0,
+              "hst": 2337.4
+            }
+          ],
+          "lines": 38,
+          "budgeted": 2002435.56,
+          "spent": 1576945.56,
+          "hst": 3448.68,
+          "paid": 1580394.24,
+          "remaining": 425490.0,
+          "percentUsed": 79
+        }
+      }
+    },
+    {
+      "tool": "get_budget",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d"
+      },
+      "status": "ok",
+      "result": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+        "summary": {
+          "groups": [
+            {
+              "group": "land",
+              "lines": 2,
+              "budget": 1549249.56,
+              "spent": 1549249.56,
+              "hst": 0.0
+            },
+            {
+              "group": "soft",
+              "lines": 10,
+              "budget": 47436.0,
+              "spent": 9716.0,
+              "hst": 1111.28
+            },
+            {
+              "group": "hard",
+              "lines": 26,
+              "budget": 405750.0,
+              "spent": 17980.0,
+              "hst": 2337.4
+            }
+          ],
+          "lines": 38,
+          "budgeted": 2002435.56,
+          "spent": 1576945.56,
+          "hst": 3448.68,
+          "paid": 1580394.24,
+          "remaining": 425490.0,
+          "percentUsed": 79
+        },
+        "lines": [
+          {
+            "lineId": "3339519a-0dc0-4f93-9810-9f9d24795224",
+            "group": "land",
+            "code": null,
+            "name": "Land (book value)",
+            "budget": 774624.78,
+            "spent": 774624.78,
+            "hst": 0,
+            "order": 1
+          },
+          {
+            "lineId": "cb4625c9-8e59-4d15-86a0-969640767af3",
+            "group": "land",
+            "code": null,
+            "name": "Land (book value)",
+            "budget": 774624.78,
+            "spent": 774624.78,
+            "hst": 0,
+            "order": 1
+          },
+          {
+            "lineId": "88f5e2c3-54b8-4402-b66a-e79123f9b9ac",
+            "group": "soft",
+            "code": "S.11",
+            "name": "Development & Consulting (6% of hard cost)",
+            "budget": 10012.5,
+            "spent": 0,
+            "hst": 0,
+            "order": 1
+          },
+          {
+            "lineId": "f5ec56bf-0ccf-44af-a71e-5360acb421e6",
+            "group": "soft",
+            "code": "S. 11",
+            "name": "Development & Consulting (6% of hard cost)",
+            "budget": 10012.5,
+            "spent": 0,
+            "hst": 0,
+            "order": 1
+          },
+          {
+            "lineId": "52f2810a-9060-4ffa-8766-de9a8ce12007",
+            "group": "soft",
+            "code": "S.13",
+            "name": "General Conditions - Building permit fee & BCIN Design Fee",
+            "budget": 9648,
+            "spent": 3500,
+            "hst": 455,
+            "order": 2
+          },
+          {
+            "lineId": "a5d61833-c0e2-47d1-bf02-39c3f523fdb1",
+            "group": "soft",
+            "code": "S.13",
+            "name": "General Conditions - Building permit fee & BCIN Design Fee",
+            "budget": 9648,
+            "spent": 3500,
+            "hst": 455,
+            "order": 2
+          },
+          {
+            "lineId": "12780eb3-eb95-408c-a864-9fa30060bc87",
+            "group": "soft",
+            "code": "S.31",
+            "name": "Accounting & Admin. (2% of hard costs)",
+            "budget": 4057.5,
+            "spent": 0,
+            "hst": 0,
+            "order": 3
+          },
+          {
+            "lineId": "d50d0c10-1656-4680-906b-ee7d5e518ddf",
+            "group": "soft",
+            "code": "S.31",
+            "name": "Accounting & Admin. (2% of hard costs)",
+            "budget": 4057.5,
+            "spent": 0,
+            "hst": 0,
+            "order": 3
+          },
+          {
+            "lineId": "22f663d6-442a-4b1b-9912-fd99cfa7da8e",
+            "group": "soft",
+            "code": "S.32",
+            "name": "Financing Costs",
+            "budget": 0,
+            "spent": 0,
+            "hst": 0,
+            "order": 4
+          },
+          {
+            "lineId": "e2169d11-1234-4f52-b239-76e75725f38a",
+            "group": "soft",
+            "code": "S.32",
+            "name": "Financing Costs",
+            "budget": 0,
+            "spent": 0,
+            "hst": 0,
+            "order": 4
+          },
+          {
+            "lineId": "00da9f36-0edc-4690-8ba2-693d63123a16",
+            "group": "soft",
+            "code": "S.39",
+            "name": "Property operating expenses (property taxes, insurance, utilities)",
+            "budget": 0,
+            "spent": 1358,
+            "hst": 100.64,
+            "order": 5
+          },
+          {
+            "lineId": "05db94f2-b7bc-4bc7-b3d0-3b3092ca78ee",
+            "group": "soft",
+            "code": "S.39",
+            "name": "Property operating expenses (property taxes, insurance, utilities)",
+            "budget": 0,
+            "spent": 1358,
+            "hst": 100.64,
+            "order": 5
+          },
+          {
+            "lineId": "e0507170-c6f5-4e6e-9392-7153d16c564d",
+            "group": "hard",
+            "code": "H.01 00 00",
+            "name": "Project Management / site supervision (~12 wks)",
+            "budget": 36000,
+            "spent": 8990,
+            "hst": 1168.7,
+            "order": 1
+          },
+          {
+            "lineId": "f3c58dcd-4ebb-4660-b7a1-3b9bab054063",
+            "group": "hard",
+            "code": "H.01 00 00",
+            "name": "Project Management / site supervision (~12 wks)",
+            "budget": 36000,
+            "spent": 8990,
+            "hst": 1168.7,
+            "order": 1
+          },
+          {
+            "lineId": "561e55bd-61bf-4b05-a46e-b650b5ab612e",
+            "group": "hard",
+            "code": "H.01 15 00",
+            "name": "Demolition",
+            "budget": 4400,
+            "spent": 0,
+            "hst": 0,
+            "order": 2
+          },
+          {
+            "lineId": "fbed6713-d21e-4481-a244-dc269ca19cbd",
+            "group": "hard",
+            "code": "H.01 15 00",
+            "name": "Demolition",
+            "budget": 4400,
+            "spent": 0,
+            "hst": 0,
+            "order": 2
+          },
+          {
+            "lineId": "46a1652a-bc1c-4522-8de7-93454f7af16e",
+            "group": "hard",
+            "code": "H.02 10 00",
+            "name": "Deck & Guards",
+            "budget": 5100,
+            "spent": 0,
+            "hst": 0,
+            "order": 3
+          },
+          {
+            "lineId": "e5a2f584-7f3b-4404-9cdc-abdac127929a",
+            "group": "hard",
+            "code": "H.02 10 00",
+            "name": "Deck & Guards",
+            "budget": 5100,
+            "spent": 0,
+            "hst": 0,
+            "order": 3
+          },
+          {
+            "lineId": "70202c87-112d-497a-9110-6dff8a3a61c1",
+            "group": "hard",
+            "code": "H.02 12 00",
+            "name": "Structural/Framing",
+            "budget": 20800,
+            "spent": 0,
+            "hst": 0,
+            "order": 4
+          },
+          {
+            "lineId": "c2d602fc-6908-479e-b182-86d1cf7f9768",
+            "group": "hard",
+            "code": "H.02 12 00",
+            "name": "Structural/Framing",
+            "budget": 20800,
+            "spent": 0,
+            "hst": 0,
+            "order": 4
+          },
+          "… 18 more"
+        ]
+      }
+    },
+    {
+      "tool": "update_budget",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+        "replace": true,
+        "lines": [
+          {
+            "group": "land",
+            "name": "Land (book value)",
+            "budget": 774624.78,
+            "spent": 774624.78,
+            "hst": 0,
+            "order": 1
+          },
+          {
+            "group": "soft",
+            "code": "S.11",
+            "name": "Development & Consulting (6% of hard cost)",
+            "budget": 10012.5,
+            "spent": 0,
+            "hst": 0,
+            "order": 1
+          },
+          {
+            "group": "soft",
+            "code": "S.13",
+            "name": "General Conditions - Building permit fee & BCIN Design Fee",
+            "budget": 9648,
+            "spent": 3500,
+            "hst": 455,
+            "order": 2
+          },
+          {
+            "group": "soft",
+            "code": "S.31",
+            "name": "Accounting & Admin. (2% of hard costs)",
+            "budget": 4057.5,
+            "spent": 0,
+            "hst": 0,
+            "order": 3
+          },
+          {
+            "group": "soft",
+            "code": "S.32",
+            "name": "Financing Costs",
+            "budget": 0,
+            "spent": 0,
+            "hst": 0,
+            "order": 4
+          },
+          {
+            "group": "soft",
+            "code": "S.39",
+            "name": "Property operating expenses (property taxes, insurance, utilities)",
+            "budget": 0,
+            "spent": 1358,
+            "hst": 100.64,
+            "order": 5
+          },
+          {
+            "group": "hard",
+            "code": "H.01 00 00",
+            "name": "Project Management / site supervision (~12 wks)",
+            "budget": 36000,
+            "spent": 8990,
+            "hst": 1168.7,
+            "order": 1
+          },
+          {
+            "group": "hard",
+            "code": "H.01 15 00",
+            "name": "Demolition",
+            "budget": 4400,
+            "spent": 0,
+            "hst": 0,
+            "order": 2
+          },
+          {
+            "group": "hard",
+            "code": "H.02 10 00",
+            "name": "Deck & Guards",
+            "budget": 5100,
+            "spent": 0,
+            "hst": 0,
+            "order": 3
+          },
+          {
+            "group": "hard",
+            "code": "H.02 12 00",
+            "name": "Structural/Framing",
+            "budget": 20800,
+            "spent": 0,
+            "hst": 0,
+            "order": 4
+          },
+          {
+            "group": "hard",
+            "code": "H.02 16 00",
+            "name": "Doors & Hardware",
+            "budget": 6800,
+            "spent": 0,
+            "hst": 0,
+            "order": 5
+          },
+          {
+            "group": "hard",
+            "code": "H.02 16 10",
+            "name": "Windows",
+            "budget": 3800,
+            "spent": 0,
+            "hst": 0,
+            "order": 6
+          },
+          {
+            "group": "hard",
+            "code": "H.02 21 00",
+            "name": "Plumbing",
+            "budget": 20700,
+            "spent": 0,
+            "hst": 0,
+            "order": 7
+          },
+          {
+            "group": "hard",
+            "code": "H.02 23 00",
+            "name": "Electrical",
+            "budget": 22400,
+            "spent": 0,
+            "hst": 0,
+            "order": 8
+          },
+          {
+            "group": "hard",
+            "code": "H.02 24 00",
+            "name": "HVAC/Mechanical",
+            "budget": 5400,
+            "spent": 0,
+            "hst": 0,
+            "order": 9
+          },
+          {
+            "group": "hard",
+            "code": "H.02 27 00",
+            "name": "Fire Separation & Drywall",
+            "budget": 25850,
+            "spent": 0,
+            "hst": 0,
+            "order": 10
+          },
+          {
+            "group": "hard",
+            "code": "H.02 32 00",
+            "name": "Finishes",
+            "budget": 10900,
+            "spent": 0,
+            "hst": 0,
+            "order": 11
+          },
+          {
+            "group": "hard",
+            "code": "H.02 33 00",
+            "name": "Kitchen & Bath",
+            "budget": 25425,
+            "spent": 0,
+            "hst": 0,
+            "order": 12
+          },
+          {
+            "group": "hard",
+            "code": "H.05 00 00",
+            "name": "Contingency",
+            "budget": 15300,
+            "spent": 0,
+            "hst": 0,
+            "order": 13
+          }
+        ]
+      },
+      "status": "applied",
+      "result": {
+        "status": "applied",
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+        "created": 19,
+        "updated": 0,
+        "deleted": 38,
+        "summary": {
+          "groups": [
+            {
+              "group": "land",
+              "lines": 2,
+              "budget": 1549249.56,
+              "spent": 1549249.56,
+              "hst": 0.0
+            },
+            {
+              "group": "soft",
+              "lines": 10,
+              "budget": 47436.0,
+              "spent": 9716.0,
+              "hst": 1111.28
+            },
+            {
+              "group": "hard",
+              "lines": 26,
+              "budget": 405750.0,
+              "spent": 17980.0,
+              "hst": 2337.4
+            }
+          ],
+          "lines": 38,
+          "budgeted": 2002435.56,
+          "spent": 1576945.56,
+          "hst": 3448.68,
+          "paid": 1580394.24,
+          "remaining": 425490.0,
+          "percentUsed": 79
+        }
+      }
+    },
+    {
+      "tool": "add_progress_remark",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+        "text": "Budget-288_Salisbury.xlsx: full budget sheet (19 cost lines: land, soft, hard) written to the budget; the sheet's total is $1,001,217.78 HST-exclusive. Payments recorded to date include permit drawing revisions, insurance, grass cutting and two project management invoices. Dashboard budget lines appear duplicated and need checking."
+      },
+      "status": "added",
+      "result": {
+        "status": "added",
+        "remarkId": "a806d700-5597-46c0-846f-e2910831d728"
+      }
+    },
+    {
+      "tool": "finish",
+      "input": {
+        "summary": "Registered Budget-288_Salisbury.xlsx and wrote its 19 cost lines with replace=true, but the budget now shows duplicate lines (38), so it needs a manual check. No status changes proposed.",
+        "confidence": 0.6,
+        "notes": "The sheet's total is $1,001,217.78 (land $774,624.78, soft $23,718, hard $202,875). After each update_budget call the project shows twice as many lines (38), so the budgeted total reads about $2.0M. The duplicates carry the same codes, except one set uses \"S. 11\" with a space. Another run or process looks like it is writing the same lines at the same time. Please check the budget lines and delete the duplicates. Re-running with replace=true did not fix it. The 'Land (book value)' line was written without a code. Dashboard progress is unchanged because the sheet shows cost, not work progress."
+      },
+      "status": "done",
+      "result": {
+        "status": "done",
+        "summary": "Registered Budget-288_Salisbury.xlsx and wrote its 19 cost lines with replace=true, but the budget now shows duplicate lines (38), so it needs a manual check. No status changes proposed.",
+        "confidence": 0.6
+      }
+    }
+  ],
+  "pendingApprovals": [],
+  "costUsd": 0.27095,
+  "tokens": {
+    "input": 82168,
+    "output": 5615,
+    "cacheWrite": 13639,
+    "cacheRead": 81834
+  },
+  "dashboard": {
+    "progress": {
+      "stages": 10,
+      "stagesCompleted": 0,
+      "milestones": 31,
+      "milestonesCompleted": 2,
+      "percent": 6
+    },
+    "siteStatus": "in_progress",
+    "stages": [
+      {
+        "stageId": "a178ee5d-c7aa-4837-b7e0-189fba21e49c",
+        "name": "Feasibility & Due Diligence",
+        "status": "not_started"
+      },
+      {
+        "stageId": "148fb8ea-c715-40c7-9ee7-2c259780c4f2",
+        "name": "Design & Permits",
+        "status": "in_progress"
+      },
+      {
+        "stageId": "93c0b7e7-6cfd-4247-a01b-35487978f9d9",
+        "name": "Site Preparation & Excavation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "b8107dd2-5e8e-4cf9-8c8c-f02aa265093d",
+        "name": "Foundation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "7c3acc10-7598-4c70-8a7b-7e4f6a54b63b",
+        "name": "Structural Framing",
+        "status": "not_started"
+      },
+      {
+        "stageId": "2d610aea-b999-4273-9407-24a807c0a070",
+        "name": "Building Envelope",
+        "status": "not_started"
+      },
+      {
+        "stageId": "ec35698a-8cb1-4314-8a96-1e86798c6641",
+        "name": "Rough-In Services",
+        "status": "not_started"
+      },
+      {
+        "stageId": "44487e07-2e6c-45b7-b85c-5fa7c7056fce",
+        "name": "Interior Finishes",
+        "status": "not_started"
+      },
+      {
+        "stageId": "300c66e9-fab8-492c-9ddb-8d84ce9b6a92",
+        "name": "Landscaping & Exterior Works",
+        "status": "not_started"
+      },
+      {
+        "stageId": "7ea9447d-4b0c-43ad-8ae5-9433e8f90f5a",
+        "name": "Handover & Closeout",
+        "status": "not_started"
+      }
+    ],
+    "milestones": [
+      {
+        "milestoneId": "0c523cf9-264f-42d8-b715-2dc509e98c90",
+        "name": "Site survey & boundary confirmed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "ab96545e-0f90-4eab-9f30-11ee09d2d290",
+        "name": "Zoning & by-law review completed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "e0dda174-92bc-47ad-b064-760862d6d6d5",
+        "name": "Feasibility budget approved",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "d4b669cc-0d8a-4ad6-b852-3d5b748471d2",
+        "name": "Architectural drawings issued",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "287dceb2-aaa5-4b24-a6a5-7e4f03358a99",
+        "name": "Structural & MEP drawings complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "1b85f76a-4551-457b-9c21-33f460e217e6",
+        "name": "Building permit issued",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "6c7e0a89-6833-44d0-bcf7-ce9f67ec4672",
+        "name": "Utilities & services located",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "2141a41c-a0f9-4879-8e1b-930e839b48eb",
+        "name": "Clearing & demolition complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "24805f97-3552-4a3c-9fbf-caddfeb2f643",
+        "name": "Excavation & shoring inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c6f1f9fb-950c-4ad2-b3a6-317c09496dc0",
+        "name": "Footings inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "b6be4a74-a4dc-4816-b277-5bac9230e7af",
+        "name": "Foundation walls poured & waterproofed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "02d280ee-f2ac-4579-be9f-3cabf5aefb22",
+        "name": "Backfill & drainage complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "cadf04a0-cad4-4591-ac7f-cc6e7f5d7506",
+        "name": "Floor structure complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "dce92415-6eaa-4833-8854-65e2194b189b",
+        "name": "Framing erected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "a3f3b501-1186-488e-b1eb-1457574378da",
+        "name": "Framing inspection passed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "544e66cc-49f4-4e0f-927a-297c363bb376",
+        "name": "Roof trusses & sheathing complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "79ac0026-b890-4427-aab8-25f54a3adc72",
+        "name": "Roofing watertight",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "04665110-c0b9-4ee7-a208-f00f57dc4a4a",
+        "name": "Windows & exterior doors installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c553e85e-ed66-4f1e-b40b-7a8e88a7fd30",
+        "name": "Cladding & insulation complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c6b56de5-ed16-4c5f-aa58-efd936121d49",
+        "name": "Electrical rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "0ce7a092-c344-44c6-b18a-86c1c47b991f",
+        "name": "Plumbing rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "d5ffab5c-85df-4638-8753-2706850d339e",
+        "name": "HVAC rough-in complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "eb94ed97-93da-49ad-af04-2f896b0ae1a0",
+        "name": "Drywall & plaster complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "2dc00489-2b34-497a-b4d6-1febe512add5",
+        "name": "Cabinetry & millwork installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "d66dc6fe-847f-44f7-9596-a5ed6c494723",
+        "name": "Flooring & paint complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "cdddea56-da89-45ac-b55a-b54a0a182d07",
+        "name": "Grading & drainage certified",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "dcf8b547-ddfa-4f0e-93a5-872da4ae74ca",
+        "name": "Driveway & hardscaping complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "8565fc1f-f23b-47e7-967d-e60426288901",
+        "name": "Landscaping planted",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "b30aaed6-86b8-4037-935e-fbeb0ca916de",
+        "name": "Occupancy permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "f83705ba-86ed-4ca1-baf1-c81bb174ab25",
+        "name": "Pre-delivery inspection (PDI) complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "ef0c8733-772e-4374-ab5d-7d9bc944e234",
+        "name": "Final accounts & warranty documents issued",
+        "status": "pending"
+      }
+    ],
+    "assetCount": 5,
+    "remarkCount": 11,
+    "latestRemark": {
+      "remarkId": "07834760-4779-4103-9024-72d6f32a55a2",
+      "text": "Budget-288_Salisbury.xlsx: full project budget with 19 cost lines (1 land, 5 soft, 13 hard); the sheet states a total of $1,001,217.78 HST-exclusive. Spent to date is land, a permit drawing revision, insurance, grass cutting and two project management invoices. Budget lines on the dashboard appear duplicated and need review.",
+      "authorName": "CPPI Agent (AI)",
+      "createdAt": "2026-11-06T02:18:41Z"
+    }
+  }
+}

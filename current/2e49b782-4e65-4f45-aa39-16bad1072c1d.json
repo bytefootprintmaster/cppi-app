@@ -1,14 +1,14 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
-  "updatedAt": "2026-11-04T16:56:32Z",
+  "updatedAt": "2026-11-06T02:18:41Z",
   "dashboard": {
     "progress": {
       "stages": 10,
       "stagesCompleted": 0,
       "milestones": 31,
-      "milestonesCompleted": 0,
-      "percent": 0
+      "milestonesCompleted": 2,
+      "percent": 6
     },
     "siteStatus": "in_progress",
     "stages": [
@@ -20,7 +20,7 @@
       {
         "stageId": "148fb8ea-c715-40c7-9ee7-2c259780c4f2",
         "name": "Design & Permits",
-        "status": "not_started"
+        "status": "in_progress"
       },
       {
         "stageId": "93c0b7e7-6cfd-4247-a01b-35487978f9d9",
@@ -82,7 +82,7 @@
       {
         "milestoneId": "d4b669cc-0d8a-4ad6-b852-3d5b748471d2",
         "name": "Architectural drawings issued",
-        "status": "pending"
+        "status": "completed"
       },
       {
         "milestoneId": "287dceb2-aaa5-4b24-a6a5-7e4f03358a99",
@@ -92,7 +92,7 @@
       {
         "milestoneId": "1b85f76a-4551-457b-9c21-33f460e217e6",
         "name": "Building permit issued",
-        "status": "pending"
+        "status": "completed"
       },
       {
         "milestoneId": "6c7e0a89-6833-44d0-bcf7-ce9f67ec4672",
@@ -220,13 +220,13 @@
         "status": "pending"
       }
     ],
-    "assetCount": 4,
-    "remarkCount": 8,
+    "assetCount": 5,
+    "remarkCount": 11,
     "latestRemark": {
-      "remarkId": "70bd60b7-1e97-4241-8683-9877ed7e3b66",
-      "text": "Revision 1 reviewed drawing set (13 pages) for permit 26-8338, 288 Salisbury Ave triplex conversion, bearing a City of Cambridge Building Division \"in order to issue\" stamp dated 11/03/2026. It includes architectural sheets and a P.Eng structural sheet (Brian Li Engineering, 15-Oct-2026); no MEP drawings are included and no construction work is evidenced.",
+      "remarkId": "07834760-4779-4103-9024-72d6f32a55a2",
+      "text": "Budget-288_Salisbury.xlsx: full project budget with 19 cost lines (1 land, 5 soft, 13 hard); the sheet states a total of $1,001,217.78 HST-exclusive. Spent to date is land, a permit drawing revision, insurance, grass cutting and two project management invoices. Budget lines on the dashboard appear duplicated and need review.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-04T16:56:24Z"
+      "createdAt": "2026-11-06T02:18:41Z"
     }
   }
 }
