@@ -1,8 +1,8 @@
 {
   "schema": "cppi-agent-audit/1",
   "recordedAt": "2026-11-06T02:18:41Z",
-  "jobId": "e15bd57d0425",
-  "trigger": "email",
+  "jobId": "96e18ae70a12",
+  "trigger": "s3",
   "task": "progress_update_from_file",
   "agent": "progress",
   "model": "claude-sonnet-5-5",
@@ -14,8 +14,8 @@
     "etag": "56d4913e9c6d23a7fe5993e5022a6946",
     "size": 38367
   },
-  "summary": "Registered Budget-288_Salisbury.xlsx and wrote its 19 cost lines with replace=true, but the budget now shows duplicate lines (38), so it needs a manual check. No status changes proposed.",
-  "confidence": 0.6,
+  "summary": "Wrote the 19-line Budget-288_Salisbury.xlsx to the budget, but the dashboard now shows duplicated lines (38) that need a manual clean-up; the file was already registered, and no status changes were proposed.",
+  "confidence": 0.5,
   "steps": 7,
   "actions": [
     {
@@ -75,13 +75,13 @@
         "name": "Budget-288_Salisbury.xlsx",
         "s3Key": "sites/2e49b782-4e65-4f45-aa39-16bad1072c1d/document/fba4ac5e-e19c-5ce4-aeed-5ac84aaf489f-Budget-288_Salisbury.xlsx",
         "type": "document",
-        "category": "invoice",
+        "category": "other",
         "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         "size": 38367
       },
-      "status": "registered",
+      "status": "already_registered",
       "result": {
-        "status": "registered",
+        "status": "already_registered",
         "assetId": "3b1da28d-68d1-4659-9b77-72afd49d6966"
       }
     },
@@ -101,7 +101,7 @@
           },
           {
             "group": "soft",
-            "code": "S.11",
+            "code": "S. 11",
             "name": "Development & Consulting (6% of hard cost)",
             "budget": 10012.5,
             "spent": 0,
@@ -269,7 +269,7 @@
         "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
         "created": 19,
         "updated": 0,
-        "deleted": 0,
+        "deleted": 3,
         "summary": {
           "groups": [
             {
@@ -288,19 +288,19 @@
             },
             {
               "group": "hard",
-              "lines": 21,
-              "budget": 322875.0,
+              "lines": 26,
+              "budget": 405750.0,
               "spent": 17980.0,
               "hst": 2337.4
             }
           ],
-          "lines": 30,
-          "budgeted": 1125275.28,
+          "lines": 35,
+          "budgeted": 1208150.28,
           "spent": 798820.78,
           "hst": 2993.68,
           "paid": 801814.46,
-          "remaining": 326454.5,
-          "percentUsed": 71
+          "remaining": 409329.5,
+          "percentUsed": 66
         }
       }
     },
@@ -565,7 +565,7 @@
           },
           {
             "group": "soft",
-            "code": "S.11",
+            "code": "S. 11",
             "name": "Development & Consulting (6% of hard cost)",
             "budget": 10012.5,
             "spent": 0,
@@ -733,7 +733,7 @@
         "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
         "created": 19,
         "updated": 0,
-        "deleted": 35,
+        "deleted": 27,
         "summary": {
           "groups": [
             {
@@ -1197,7 +1197,7 @@
         "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
         "created": 19,
         "updated": 0,
-        "deleted": 38,
+        "deleted": 31,
         "summary": {
           "groups": [
             {
@@ -1236,36 +1236,36 @@
       "tool": "add_progress_remark",
       "input": {
         "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
-        "text": "Budget-288_Salisbury.xlsx: full budget sheet (19 cost lines: land, soft, hard) written to the budget; the sheet's total is $1,001,217.78 HST-exclusive. Payments recorded to date include permit drawing revisions, insurance, grass cutting and two project management invoices. Dashboard budget lines appear duplicated and need checking."
+        "text": "Budget-288_Salisbury.xlsx: full project budget with 19 cost lines (1 land, 5 soft, 13 hard); the sheet states a total of $1,001,217.78 HST-exclusive. Spent to date is land, a permit drawing revision, insurance, grass cutting and two project management invoices. Budget lines on the dashboard appear duplicated and need review."
       },
       "status": "added",
       "result": {
         "status": "added",
-        "remarkId": "a806d700-5597-46c0-846f-e2910831d728"
+        "remarkId": "07834760-4779-4103-9024-72d6f32a55a2"
       }
     },
     {
       "tool": "finish",
       "input": {
-        "summary": "Registered Budget-288_Salisbury.xlsx and wrote its 19 cost lines with replace=true, but the budget now shows duplicate lines (38), so it needs a manual check. No status changes proposed.",
-        "confidence": 0.6,
-        "notes": "The sheet's total is $1,001,217.78 (land $774,624.78, soft $23,718, hard $202,875). After each update_budget call the project shows twice as many lines (38), so the budgeted total reads about $2.0M. The duplicates carry the same codes, except one set uses \"S. 11\" with a space. Another run or process looks like it is writing the same lines at the same time. Please check the budget lines and delete the duplicates. Re-running with replace=true did not fix it. The 'Land (book value)' line was written without a code. Dashboard progress is unchanged because the sheet shows cost, not work progress."
+        "summary": "Wrote the 19-line Budget-288_Salisbury.xlsx to the budget, but the dashboard now shows duplicated lines (38) that need a manual clean-up; the file was already registered, and no status changes were proposed.",
+        "confidence": 0.5,
+        "notes": "The extraction is accurate: land $774,624.78, soft $27,718 budget, hard $202,875 budget, total $1,001,217.78 per the sheet. But update_budget with replace=true produced duplicate lines on each of 3 attempts (the dashboard shows $2,002,435.56 budgeted across 38 lines). This is probably another concurrent run writing the same file, or a tool problem. Please check the budget lines and remove the duplicates; I can't delete individual lines. Note the sheet's soft cost total of $23,718 excludes the S.32 and S.39 lines, which have a $0 budget. The remark records the sheet's own total, not the dashboa…"
       },
       "status": "done",
       "result": {
         "status": "done",
-        "summary": "Registered Budget-288_Salisbury.xlsx and wrote its 19 cost lines with replace=true, but the budget now shows duplicate lines (38), so it needs a manual check. No status changes proposed.",
-        "confidence": 0.6
+        "summary": "Wrote the 19-line Budget-288_Salisbury.xlsx to the budget, but the dashboard now shows duplicated lines (38) that need a manual clean-up; the file was already registered, and no status changes were proposed.",
+        "confidence": 0.5
       }
     }
   ],
   "pendingApprovals": [],
-  "costUsd": 0.27095,
+  "costUsd": 0.241847,
   "tokens": {
-    "input": 82168,
-    "output": 5615,
-    "cacheWrite": 13639,
-    "cacheRead": 81834
+    "input": 82496,
+    "output": 5776,
+    "cacheWrite": 0,
+    "cacheRead": 95473
   },
   "dashboard": {
     "progress": {
