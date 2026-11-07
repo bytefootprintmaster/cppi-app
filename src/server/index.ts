@@ -8,6 +8,7 @@ import { authRouter } from './routes/auth'
 import { adminRouter } from './routes/admin'
 import { inviteRouter } from './routes/invites'
 import { siteRouter } from './routes/sites'
+import { searchRouter } from './routes/search'
 import { dashboardRouter } from './routes/dashboard'
 
 const app = express()
@@ -24,6 +25,7 @@ app.use('/api', authRouter)
 app.use('/api/admin', adminRouter)
 app.use('/api/invites', inviteRouter)
 app.use('/api/sites', siteRouter)
+app.use('/api/search', searchRouter)
 app.use('/api/dashboard', dashboardRouter)
 
 app.use('/api', (_req, res) => {

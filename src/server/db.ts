@@ -28,6 +28,10 @@ export const T = {
   assets: `${env.TABLE_PREFIX}assets`,
   remarks: `${env.TABLE_PREFIX}remarks`,
   budget: `${env.TABLE_PREFIX}budget`,
+  budgetCategories: `${env.TABLE_PREFIX}budget_categories`,
+  /** File search index. Written by the agent, read here for portal search. */
+  fileIndex: `${env.TABLE_PREFIX}file_index`,
+  fileTerms: `${env.TABLE_PREFIX}file_terms`,
   kpis: `${env.TABLE_PREFIX}kpis`
 } as const
 

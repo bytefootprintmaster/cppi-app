@@ -193,6 +193,71 @@ p { margin: 0; }
 .search-input { width: 220px; }
 .status-select { width: 150px; }
 
+/* ------------------------------- search --------------------------------- */
+
+.search-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.search-form-field {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+}
+.search-form-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+.search-form-input { padding-left: 38px; }
+.search-form-select { width: 190px; flex-shrink: 0; }
+
+.search-results { display: flex; flex-direction: column; }
+.search-result {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+  color: inherit;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+.search-result:last-child { border-bottom: none; }
+.search-result:hover { background: var(--green-50); }
+.search-result-icon {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  background: var(--green-50);
+  color: var(--green-600);
+  display: grid;
+  place-items: center;
+}
+.search-result-main { min-width: 0; flex: 1; }
+.search-result-name { font-weight: 700; font-size: 14.5px; word-break: break-word; }
+.search-result-meta { display: flex; align-items: center; gap: 6px; margin-top: 3px; }
+.search-result-snippet {
+  margin: 8px 0 0;
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  line-height: 1.55;
+}
+.search-result-snippet mark {
+  background: var(--green-100);
+  color: var(--green-800);
+  border-radius: 4px;
+  padding: 0 2px;
+  font-weight: 600;
+}
+.search-result-terms { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+
 /* -------------------------------- cards -------------------------------- */
 
 .card {
@@ -495,6 +560,198 @@ p { margin: 0; }
   padding: 14px 16px;
 }
 .grand-total:hover td { background: var(--green-50) !important; }
+
+/* ------------------------- budget toolbar + tree ------------------------- */
+
+.budget-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.budget-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 240px;
+  min-width: 200px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--muted);
+}
+.budget-search:focus-within { border-color: var(--green-400); box-shadow: var(--ring); }
+.budget-search input {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+}
+.budget-search-clear {
+  display: inline-flex;
+  padding: 3px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.budget-search-clear:hover { background: var(--green-50); color: var(--green-700); }
+
+.budget-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.budget-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+
+.budget-note { padding: 0 16px 12px; }
+
+/* Each group's subtotal closes its own <tbody>, so the shared border is restored. */
+.budget-table .subtotal td { border-bottom: 1px solid var(--line-strong); }
+
+.budget-table td:first-child,
+.budget-table th:first-child { min-width: 240px; }
+
+.tree-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.tree-row.indent-1 { padding-left: 4px; }
+.tree-row.indent-2 { padding-left: 26px; }
+
+.tree-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 2px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--green-700);
+  cursor: pointer;
+}
+.tree-toggle:hover { background: var(--green-100); }
+.tree-toggle:focus-visible { outline: none; box-shadow: var(--ring); }
+
+.group-name { font-weight: 700; }
+.group-meta { text-transform: none; letter-spacing: 0; font-weight: 600; opacity: 0.7; }
+
+.category-row td {
+  background: #f6fbf8;
+  border-bottom: 1px solid var(--line);
+  font-weight: 600;
+}
+.category-row:hover td { background: #f1f9f4 !important; }
+.category-name { font-weight: 650; }
+
+.line-name { font-weight: 600; }
+
+.drag-handle {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: #b7cec5;
+  cursor: grab;
+}
+.drag-handle:hover { color: var(--green-600); }
+.drag-handle:active { cursor: grabbing; }
+.drag-spacer { width: 14px; flex-shrink: 0; }
+
+tr.drop-target > td {
+  box-shadow: inset 0 0 0 2px var(--green-300);
+}
+
+.inline-amount {
+  width: 100%;
+  padding: 3px 6px;
+  border: 1px dashed transparent;
+  border-radius: 6px;
+  background: transparent;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  color: inherit;
+  text-align: right;
+  cursor: text;
+}
+.inline-amount:hover { border-color: var(--green-300); background: var(--green-50); }
+.inline-amount-input {
+  width: 100%;
+  min-width: 88px;
+  padding: 4px 8px;
+  border: 1px solid var(--green-400);
+  border-radius: 8px;
+  outline: none;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  box-shadow: var(--ring);
+}
+.inline-spinner { width: 13px; height: 13px; border-width: 2px; }
+
+/* --------------------------- category manager ---------------------------- */
+
+.category-create { border-bottom: 1px solid var(--line); }
+.category-list { display: flex; flex-direction: column; gap: 18px; }
+
+.category-group-title {
+  margin-bottom: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.category-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+.category-item + .category-item { margin-top: 8px; }
+.category-item .input { flex: 1; min-width: 0; }
+.category-item-text { flex: 1; min-width: 0; }
+.category-item-name { font-weight: 600; }
+
+/* ---------------------------- budget import ------------------------------ */
+
+.budget-import-preview {
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border: 1px solid var(--green-200);
+  border-radius: var(--radius-sm);
+  background: var(--green-50);
+  color: var(--green-700);
+  font-size: 13px;
+}
+.budget-import-preview.is-error {
+  border-color: #f6c9c9;
+  background: var(--red-bg);
+  color: var(--red);
+}
+
+.mode-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.mode-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1 1 220px;
+  padding: 12px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.mode-option.on { border-color: var(--green-400); background: var(--green-50); }
+.mode-option > span { display: flex; flex-direction: column; gap: 2px; }
+.mode-option input { margin-top: 2px; accent-color: var(--green-500); }
 
 /* --------------------------------- tabs --------------------------------- */
 
@@ -886,6 +1143,11 @@ p { margin: 0; }
   .topbar .row { width: 100%; }
   .search-input { flex: 1; min-width: 0; width: auto; }
 
+  .search-form-field { width: 100%; min-width: 0; }
+  .search-form-select { width: 100%; }
+  .search-form .btn { width: 100%; }
+  .search-result { padding: 14px 16px; }
+
   .content { padding: 14px 14px 44px; }
   .card-header { padding: 14px 16px; }
   .card-body { padding: 16px; }
@@ -907,6 +1169,14 @@ p { margin: 0; }
   .login-panel { padding: 28px 18px; }
   .dropzone { padding: 20px 14px; }
   .file-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+
+  .budget-toolbar { padding: 14px 14px 10px; }
+  .budget-actions { width: 100%; margin-left: 0; }
+  .budget-chips { width: 100%; }
+  .budget-table td:first-child,
+  .budget-table th:first-child { min-width: 180px; }
+  .tree-row.indent-2 { padding-left: 14px; }
+  .category-item { flex-wrap: wrap; }
 }
 
 /* Small phones */

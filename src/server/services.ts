@@ -1,6 +1,7 @@
 import { T, getItem, queryAll, scanAll } from './db'
 import { HttpError } from './lib/http'
 import type {
+  BudgetCategoryRecord,
   BudgetGroup,
   BudgetLineRecord,
   MilestoneRecord,
@@ -69,6 +70,19 @@ export function listBudget(siteId: string): Promise<BudgetLineRecord[]> {
     KeyConditionExpression: 'siteId = :s',
     ExpressionAttributeValues: { ':s': siteId }
   }).then((rows) => rows.sort(compareBudgetLines))
+}
+
+function compareCategories(a: BudgetCategoryRecord, b: BudgetCategoryRecord): number {
+  if (a.group !== b.group) return GROUP_ORDER[a.group] - GROUP_ORDER[b.group]
+  if (a.order !== b.order) return a.order - b.order
+  return a.name.localeCompare(b.name)
+}
+
+export function listBudgetCategories(siteId: string): Promise<BudgetCategoryRecord[]> {
+  return queryAll<BudgetCategoryRecord>(T.budgetCategories, {
+    KeyConditionExpression: 'siteId = :s',
+    ExpressionAttributeValues: { ':s': siteId }
+  }).then((rows) => rows.sort(compareCategories))
 }
 
 export interface BudgetGroupTotal {

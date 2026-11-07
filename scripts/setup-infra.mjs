@@ -48,6 +48,12 @@ const TABLE_DEFS = [
   { name: `${prefix}assets`, hash: 'siteId', range: 'assetId' },
   { name: `${prefix}remarks`, hash: 'siteId', range: 'remarkId' },
   { name: `${prefix}budget`, hash: 'siteId', range: 'lineId' },
+  { name: `${prefix}budget_categories`, hash: 'siteId', range: 'categoryId' },
+  // File search index, written by the agent when it processes an upload.
+  // file_index: one row per file (metadata + extracted text + optional vector).
+  // file_terms: the inverted index, one row per (word, file) pair.
+  { name: `${prefix}file_index`, hash: 'siteId', range: 'docId' },
+  { name: `${prefix}file_terms`, hash: 'term', range: 'ref' },
   { name: `${prefix}kpis`, hash: 'userId' }
 ]
 

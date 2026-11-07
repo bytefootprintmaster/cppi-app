@@ -9,6 +9,7 @@ import {
   computeBudget,
   computeProgress,
   listBudget,
+  listBudgetCategories,
   listMilestones,
   listStages,
   requireSiteAccess
@@ -20,6 +21,7 @@ import type {
   AssetFolderRecord,
   AssetRecord,
   AssetType,
+  BudgetCategoryRecord,
   BudgetGroup,
   BudgetLineRecord,
   MilestoneRecord,
@@ -98,10 +100,11 @@ siteRouter.post('/', requireAdmin, asyncHandler(async (req, res) => {
 
 siteRouter.get('/:siteId', asyncHandler(async (req, res) => {
   const site = await requireSiteAccess(req.user!, req.params.siteId)
-  const [stages, milestones, budgetLines] = await Promise.all([
+  const [stages, milestones, budgetLines, budgetCategories] = await Promise.all([
     listStages(site.siteId),
     listMilestones(site.siteId),
-    listBudget(site.siteId)
+    listBudget(site.siteId),
+    listBudgetCategories(site.siteId)
   ])
   res.json({
     site,
@@ -109,6 +112,7 @@ siteRouter.get('/:siteId', asyncHandler(async (req, res) => {
     milestones,
     progress: computeProgress(stages, milestones),
     budgetLines,
+    budgetCategories,
     budget: computeBudget(budgetLines)
   })
 }))
@@ -136,7 +140,8 @@ siteRouter.delete('/:siteId', requireAdmin, asyncHandler(async (req, res) => {
     [T.folders, 'folderId'],
     [T.assets, 'assetId'],
     [T.remarks, 'remarkId'],
-    [T.budget, 'lineId']
+    [T.budget, 'lineId'],
+    [T.budgetCategories, 'categoryId']
   ]
   for (const [table, sortKey] of children) {
     const rows = await queryAll<Record<string, unknown>>(table, {
@@ -291,27 +296,294 @@ siteRouter.delete('/:siteId/milestones/:milestoneId', requireAdmin, asyncHandler
 
 /* ------------------------------- budget ------------------------------- */
 
+/**
+ * A line may only point at a category in its own project *and* cost group, so
+ * every write resolves the id here rather than trusting what the client sent.
+ * An empty id means "leave it uncategorised".
+ */
+async function requireCategory(siteId: string, group: BudgetGroup, raw: unknown): Promise<string | undefined> {
+  if (raw === undefined || raw === null || raw === '') return undefined
+  if (typeof raw !== 'string') throw new HttpError(400, '"categoryId" must be a string')
+  const category = await getItem<BudgetCategoryRecord>(T.budgetCategories, { siteId, categoryId: raw })
+  if (!category) throw new HttpError(400, 'That budget category no longer exists')
+  if (category.group !== group) throw new HttpError(400, 'The category belongs to a different cost group')
+  return category.categoryId
+}
+
+function orderValue(value: unknown, fallback: number): number {
+  const n = Number(value)
+  return Number.isFinite(n) ? Math.trunc(n) : fallback
+}
+
+/** Amounts are optional in a body and default to zero. */
+function amount(value: unknown, field: string): number {
+  return value === undefined || value === null || value === '' ? 0 : money(value, field)
+}
+
 siteRouter.get('/:siteId/budget', asyncHandler(async (req, res) => {
-  await requireSiteAccess(req.user!, req.params.siteId)
-  const lines = await listBudget(req.params.siteId)
-  res.json({ lines, summary: computeBudget(lines) })
+  const site = await requireSiteAccess(req.user!, req.params.siteId)
+  const [lines, categories] = await Promise.all([
+    listBudget(site.siteId),
+    listBudgetCategories(site.siteId)
+  ])
+  res.json({ lines, categories, summary: computeBudget(lines) })
+}))
+
+/* -------------------------- budget categories -------------------------- */
+
+siteRouter.post('/:siteId/budget/categories', requireAdmin, asyncHandler(async (req, res) => {
+  const site = await requireSiteAccess(req.user!, req.params.siteId)
+  const body = (req.body ?? {}) as Record<string, unknown>
+  const group = oneOf<BudgetGroup>(body.group, BUDGET_GROUPS, 'group')
+  const name = str(body.name, 'name', 120)
+  const existing = await listBudgetCategories(site.siteId)
+  if (existing.some((c) => c.group === group && c.name.toLowerCase() === name.toLowerCase())) {
+    throw new HttpError(409, `A ${group} category called "${name}" already exists`)
+  }
+
+  const ts = nowIso()
+  const category: BudgetCategoryRecord = {
+    siteId: site.siteId,
+    categoryId: randomUUID(),
+    group,
+    name,
+    description: optStr(body.description, 500),
+    order:
+      body.order !== undefined
+        ? orderValue(body.order, existing.filter((c) => c.group === group).length)
+        : existing.filter((c) => c.group === group).length,
+    createdAt: ts,
+    updatedAt: ts
+  }
+  await putItem(T.budgetCategories, category)
+  await updateFields(T.sites, { siteId: site.siteId }, { updatedAt: ts })
+  res.json({ category })
+}))
+
+siteRouter.post('/:siteId/budget/categories/reorder', requireAdmin, asyncHandler(async (req, res) => {
+  const site = await requireSiteAccess(req.user!, req.params.siteId)
+  const body = (req.body ?? {}) as Record<string, unknown>
+  const items = Array.isArray(body.items) ? (body.items as unknown[]) : []
+  const owned = new Set((await listBudgetCategories(site.siteId)).map((c) => c.categoryId))
+  const ts = nowIso()
+  for (const item of items) {
+    const row = (item ?? {}) as Record<string, unknown>
+    if (typeof row.categoryId !== 'string' || !owned.has(row.categoryId)) continue
+    await updateFields(
+      T.budgetCategories,
+      { siteId: site.siteId, categoryId: row.categoryId },
+      { order: orderValue(row.order, 0), updatedAt: ts }
+    )
+  }
+  res.json({ ok: true })
+}))
+
+siteRouter.patch('/:siteId/budget/categories/:categoryId', requireAdmin, asyncHandler(async (req, res) => {
+  const site = await requireSiteAccess(req.user!, req.params.siteId)
+  const category = await getItem<BudgetCategoryRecord>(T.budgetCategories, {
+    siteId: site.siteId,
+    categoryId: req.params.categoryId
+  })
+  if (!category) throw new HttpError(404, 'Budget category not found')
+
+  const body = (req.body ?? {}) as Record<string, unknown>
+  const patch: Record<string, unknown> = { updatedAt: nowIso() }
+  if (body.name !== undefined) patch.name = str(body.name, 'name', 120)
+  if (body.description !== undefined) patch.description = optStr(body.description, 500)
+  if (body.order !== undefined) patch.order = orderValue(body.order, category.order)
+
+  if (body.group !== undefined) {
+    const group = oneOf<BudgetGroup>(body.group, BUDGET_GROUPS, 'group')
+    // Moving a category means moving its lines too, or the tree would show a
+    // hard-cost line sitting inside the land group.
+    if (group !== category.group) {
+      patch.group = group
+      const lines = (await listBudget(site.siteId)).filter((l) => l.categoryId === category.categoryId)
+      for (const line of lines) {
+        await updateFields(T.budget, { siteId: site.siteId, lineId: line.lineId }, { group, updatedAt: patch.updatedAt })
+      }
+    }
+  }
+
+  await updateFields(T.budgetCategories, { siteId: site.siteId, categoryId: category.categoryId }, patch)
+  res.json({ ok: true })
+}))
+
+siteRouter.delete('/:siteId/budget/categories/:categoryId', requireAdmin, asyncHandler(async (req, res) => {
+  const site = await requireSiteAccess(req.user!, req.params.siteId)
+  const category = await getItem<BudgetCategoryRecord>(T.budgetCategories, {
+    siteId: site.siteId,
+    categoryId: req.params.categoryId
+  })
+  if (!category) throw new HttpError(404, 'Budget category not found')
+
+  const lines = (await listBudget(site.siteId)).filter((l) => l.categoryId === category.categoryId)
+  if (lines.length > 0 && req.query.reassign !== 'none') {
+    throw new HttpError(
+      409,
+      `${lines.length} cost line${lines.length === 1 ? '' : 's'} still sit under "${category.name}". Move them out first.`
+    )
+  }
+  const ts = nowIso()
+  for (const line of lines) {
+    await updateFields(T.budget, { siteId: site.siteId, lineId: line.lineId }, { categoryId: '', updatedAt: ts })
+  }
+  await deleteItem(T.budgetCategories, { siteId: site.siteId, categoryId: category.categoryId })
+  res.json({ ok: true })
+}))
+
+/* ----------------------------- budget lines ---------------------------- */
+
+/** Bulk reorder / re-bucket from drag-and-drop. One round trip, not one per row. */
+siteRouter.post('/:siteId/budget/reorder', requireAdmin, asyncHandler(async (req, res) => {
+  const site = await requireSiteAccess(req.user!, req.params.siteId)
+  const body = (req.body ?? {}) as Record<string, unknown>
+  const items = Array.isArray(body.items) ? (body.items as unknown[]) : []
+  const byId = new Map((await listBudget(site.siteId)).map((l) => [l.lineId, l]))
+  const categories = new Map((await listBudgetCategories(site.siteId)).map((c) => [c.categoryId, c]))
+  const ts = nowIso()
+
+  for (const item of items) {
+    const row = (item ?? {}) as Record<string, unknown>
+    const line = typeof row.lineId === 'string' ? byId.get(row.lineId) : undefined
+    if (!line) continue
+    const patch: Record<string, unknown> = { order: orderValue(row.order, line.order), updatedAt: ts }
+    if (row.categoryId !== undefined) {
+      const next = typeof row.categoryId === 'string' ? row.categoryId : ''
+      if (next === '') {
+        patch.categoryId = ''
+      } else {
+        const category = categories.get(next)
+        if (!category) throw new HttpError(400, 'That budget category no longer exists')
+        // Dropping onto a category in another group moves the line with it.
+        patch.group = category.group
+        patch.categoryId = next
+      }
+    }
+    await updateFields(T.budget, { siteId: site.siteId, lineId: line.lineId }, patch)
+  }
+  res.json({ ok: true })
+}))
+
+/**
+ * Bulk import from a spreadsheet. The whole sheet is validated before a single
+ * write, so one bad row can never leave the budget half-loaded.
+ */
+siteRouter.post('/:siteId/budget/import', requireAdmin, asyncHandler(async (req, res) => {
+  const site = await requireSiteAccess(req.user!, req.params.siteId)
+  const body = (req.body ?? {}) as Record<string, unknown>
+  const rawRows = Array.isArray(body.rows) ? (body.rows as unknown[]) : []
+  if (rawRows.length === 0) throw new HttpError(400, 'Nothing to import')
+  if (rawRows.length > 1000) throw new HttpError(400, 'Import at most 1000 rows at a time')
+  const mode = body.mode === 'replace' ? 'replace' : 'append'
+
+  type Prepared = {
+    group: BudgetGroup
+    category?: string
+    code?: string
+    name: string
+    budget: number
+    spent: number
+    hst: number
+  }
+
+  const prepared: Prepared[] = rawRows.map((raw, index) => {
+    const row = (raw ?? {}) as Record<string, unknown>
+    const label = `Row ${index + 1}`
+    try {
+      return {
+        group: oneOf<BudgetGroup>(row.group, BUDGET_GROUPS, `${label}: group`),
+        category: optStr(row.category, 120),
+        code: optStr(row.code, 40),
+        name: str(row.name, `${label}: item`, 240),
+        budget: amount(row.budget, `${label}: budget`),
+        spent: amount(row.spent, `${label}: spent`),
+        hst: amount(row.hst, `${label}: hst`)
+      }
+    } catch (err) {
+      throw new HttpError(400, err instanceof Error ? err.message : `${label} is invalid`)
+    }
+  })
+
+  const ts = nowIso()
+  if (mode === 'replace') {
+    const [oldLines, oldCategories] = await Promise.all([
+      listBudget(site.siteId),
+      listBudgetCategories(site.siteId)
+    ])
+    await Promise.all([
+      ...oldLines.map((l) => deleteItem(T.budget, { siteId: site.siteId, lineId: l.lineId })),
+      ...oldCategories.map((c) => deleteItem(T.budgetCategories, { siteId: site.siteId, categoryId: c.categoryId }))
+    ])
+  }
+
+  const categories = mode === 'replace' ? [] : await listBudgetCategories(site.siteId)
+  const perGroup: Record<BudgetGroup, number> = { land: 0, soft: 0, hard: 0 }
+  let categoriesCreated = 0
+  let linesCreated = 0
+
+  for (const row of prepared) {
+    let categoryId: string | undefined
+    if (row.category) {
+      let category = categories.find(
+        (c) => c.group === row.group && c.name.toLowerCase() === row.category!.toLowerCase()
+      )
+      if (!category) {
+        category = {
+          siteId: site.siteId,
+          categoryId: randomUUID(),
+          group: row.group,
+          name: row.category,
+          order: categories.filter((c) => c.group === row.group).length,
+          createdAt: ts,
+          updatedAt: ts
+        }
+        await putItem(T.budgetCategories, category)
+        categories.push(category)
+        categoriesCreated += 1
+      }
+      categoryId = category.categoryId
+    }
+
+    const line: BudgetLineRecord = {
+      siteId: site.siteId,
+      lineId: randomUUID(),
+      group: row.group,
+      categoryId,
+      code: row.code,
+      name: row.name,
+      budget: row.budget,
+      spent: row.spent,
+      hst: row.hst,
+      order: perGroup[row.group]++,
+      createdAt: ts,
+      updatedAt: ts
+    }
+    await putItem(T.budget, line)
+    linesCreated += 1
+  }
+
+  await updateFields(T.sites, { siteId: site.siteId }, { updatedAt: ts })
+  res.json({ ok: true, mode, linesCreated, categoriesCreated, summary: computeBudget(await listBudget(site.siteId)) })
 }))
 
 siteRouter.post('/:siteId/budget', requireAdmin, asyncHandler(async (req, res) => {
   const site = await requireSiteAccess(req.user!, req.params.siteId)
   const body = (req.body ?? {}) as Record<string, unknown>
+  const group = oneOf<BudgetGroup>(body.group, BUDGET_GROUPS, 'group')
   const existing = await listBudget(site.siteId)
   const ts = nowIso()
   const line: BudgetLineRecord = {
     siteId: site.siteId,
     lineId: randomUUID(),
-    group: oneOf<BudgetGroup>(body.group, BUDGET_GROUPS, 'group'),
+    group,
+    categoryId: await requireCategory(site.siteId, group, body.categoryId),
     code: optStr(body.code, 40),
     name: str(body.name, 'name', 240),
-    budget: body.budget !== undefined ? money(body.budget, 'budget') : 0,
-    spent: body.spent !== undefined ? money(body.spent, 'spent') : 0,
-    hst: body.hst !== undefined ? money(body.hst, 'hst') : 0,
-    order: body.order !== undefined ? Number(body.order) : existing.length,
+    budget: amount(body.budget, 'budget'),
+    spent: amount(body.spent, 'spent'),
+    hst: amount(body.hst, 'hst'),
+    order: body.order !== undefined ? orderValue(body.order, existing.length) : existing.filter((l) => l.group === group).length,
     createdAt: ts,
     updatedAt: ts
   }
@@ -326,14 +598,21 @@ siteRouter.patch('/:siteId/budget/:lineId', requireAdmin, asyncHandler(async (re
   if (!line) throw new HttpError(404, 'Budget line not found')
 
   const body = (req.body ?? {}) as Record<string, unknown>
+  const group = body.group !== undefined ? oneOf<BudgetGroup>(body.group, BUDGET_GROUPS, 'group') : line.group
   const patch: Record<string, unknown> = { updatedAt: nowIso() }
-  if (body.group !== undefined) patch.group = oneOf<BudgetGroup>(body.group, BUDGET_GROUPS, 'group')
+  if (body.group !== undefined) patch.group = group
+  if (body.categoryId !== undefined) {
+    patch.categoryId = (await requireCategory(site.siteId, group, body.categoryId)) ?? ''
+  } else if (body.group !== undefined && group !== line.group && line.categoryId) {
+    // Moved to another group without naming a category — drop the stale one.
+    patch.categoryId = ''
+  }
   if (body.code !== undefined) patch.code = optStr(body.code, 40)
   if (body.name !== undefined) patch.name = str(body.name, 'name', 240)
   if (body.budget !== undefined) patch.budget = money(body.budget, 'budget')
   if (body.spent !== undefined) patch.spent = money(body.spent, 'spent')
   if (body.hst !== undefined) patch.hst = money(body.hst, 'hst')
-  if (body.order !== undefined) patch.order = Number(body.order)
+  if (body.order !== undefined) patch.order = orderValue(body.order, line.order)
 
   await updateFields(T.budget, { siteId: site.siteId, lineId: line.lineId }, patch)
   res.json({ ok: true })

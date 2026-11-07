@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api } from '../lib/api'
 import { useApi } from '../lib/useApi'
@@ -25,17 +25,26 @@ import {
 } from '../components/ui'
 import {
   IconBuilding,
+  IconChevronDown,
+  IconChevronRight,
+  IconDownload,
   IconEdit,
   IconFile,
   IconFolder,
+  IconGrip,
   IconImage,
+  IconLayers,
   IconPlus,
-  IconTrash
+  IconSearch,
+  IconTrash,
+  IconUpload,
+  IconX
 } from '../components/icons'
 import type { BudgetSummary } from '../../server/services'
 import type {
   AssetFolderRecord,
   AssetRecord,
+  BudgetCategoryRecord,
   BudgetGroup,
   BudgetLineRecord,
   MilestoneRecord,
@@ -51,6 +60,7 @@ interface SiteDetailResponse {
   stages: StageRecord[]
   milestones: MilestoneRecord[]
   budgetLines: BudgetLineRecord[]
+  budgetCategories: BudgetCategoryRecord[]
   budget: BudgetSummary
   progress: {
     stages: number
@@ -113,7 +123,7 @@ export function SiteDetailPage() {
   }
   if (!data) return null
 
-  const { site, stages, milestones, budgetLines, budget, progress } = data
+  const { site, stages, milestones, budgetLines, budgetCategories, budget, progress } = data
 
   return (
     <>
@@ -179,6 +189,7 @@ export function SiteDetailPage() {
           <BudgetTab
             siteId={site.siteId}
             lines={budgetLines}
+            categories={budgetCategories}
             summary={budget}
             isAdmin={isAdmin}
             onChanged={reload}
@@ -727,25 +738,387 @@ function MilestoneFormModal({
 
 const BUDGET_GROUP_ORDER: BudgetGroup[] = ['land', 'soft', 'hard']
 
+const GROUP_INDEX: Record<BudgetGroup, number> = { land: 0, soft: 1, hard: 2 }
+
+type BudgetFilter = 'all' | 'over' | 'uncategorised'
+
+const BUDGET_FILTERS: Array<{ value: BudgetFilter; label: string }> = [
+  { value: 'all', label: 'All items' },
+  { value: 'over', label: 'Over budget' },
+  { value: 'uncategorised', label: 'Uncategorised' }
+]
+
+/** Spreadsheet columns the importer reads and the exporter writes. */
+const IMPORT_COLUMNS = ['group', 'category', 'code', 'name', 'budget', 'spent', 'hst']
+
+const GROUP_ALIASES: Record<string, BudgetGroup> = {
+  land: 'land',
+  soft: 'soft',
+  'soft cost': 'soft',
+  'soft costs': 'soft',
+  hard: 'hard',
+  'hard cost': 'hard',
+  'hard costs': 'hard'
+}
+
+interface ImportRow {
+  group: BudgetGroup
+  category?: string
+  code?: string
+  name: string
+  budget: number
+  spent: number
+  hst: number
+}
+
+/** One node of the tree: a category and the cost lines filed under it. */
+interface BudgetBucket {
+  /** null is the group's uncategorised bucket. */
+  categoryId: string | null
+  name: string
+  description?: string
+  group: BudgetGroup
+  lines: BudgetLineRecord[]
+  budget: number
+  spent: number
+  hst: number
+}
+
+const bucketKey = (bucket: BudgetBucket) => bucket.categoryId ?? `${bucket.group}:__none`
+
+const round2 = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100
+
+function sumLines(rows: BudgetLineRecord[], pick: (line: BudgetLineRecord) => number): number {
+  return round2(rows.reduce((total, line) => total + pick(line), 0))
+}
+
+function compareLines(a: BudgetLineRecord, b: BudgetLineRecord): number {
+  if (a.group !== b.group) return GROUP_INDEX[a.group] - GROUP_INDEX[b.group]
+  if (a.order !== b.order) return a.order - b.order
+  return a.name.localeCompare(b.name)
+}
+
+function normalizeGroup(raw: string): BudgetGroup | null {
+  return GROUP_ALIASES[raw.trim().toLowerCase()] ?? null
+}
+
+/** Split one CSV/TSV line, honouring "quoted, fields" and "" escapes. */
+function parseCsvLine(raw: string): string[] {
+  const cells: string[] = []
+  let cell = ''
+  let quoted = false
+  for (let index = 0; index < raw.length; index += 1) {
+    const char = raw[index]
+    if (quoted) {
+      if (char === '"') {
+        if (raw[index + 1] === '"') {
+          cell += '"'
+          index += 1
+        } else {
+          quoted = false
+        }
+      } else {
+        cell += char
+      }
+    } else if (char === '"') {
+      quoted = true
+    } else if (char === ',' || char === '\t') {
+      cells.push(cell)
+      cell = ''
+    } else {
+      cell += char
+    }
+  }
+  cells.push(cell)
+  return cells
+}
+
+function csvEscape(value: string | number): string {
+  const text = String(value)
+  return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
+}
+
+/**
+ * Fold the flat cost lines into the tree the tab renders. A line whose category
+ * has been deleted falls back to its group's uncategorised bucket, so a cost can
+ * never silently vanish from the budget.
+ */
+function buildBuckets(
+  group: BudgetGroup,
+  lines: BudgetLineRecord[],
+  categories: BudgetCategoryRecord[]
+): BudgetBucket[] {
+  const groupCategories = categories.filter((category) => category.group === group)
+  const known = new Set(groupCategories.map((category) => category.categoryId))
+  const buckets: BudgetBucket[] = groupCategories.map((category) => ({
+    categoryId: category.categoryId,
+    name: category.name,
+    description: category.description,
+    group,
+    lines: [],
+    budget: 0,
+    spent: 0,
+    hst: 0
+  }))
+
+  const loose: BudgetLineRecord[] = []
+  for (const line of lines) {
+    if (line.group !== group) continue
+    const bucket = line.categoryId && known.has(line.categoryId)
+      ? buckets.find((candidate) => candidate.categoryId === line.categoryId)
+      : undefined
+    if (bucket) bucket.lines.push(line)
+    else loose.push(line)
+  }
+
+  const withTotals = (bucket: BudgetBucket): BudgetBucket => ({
+    ...bucket,
+    budget: sumLines(bucket.lines, (line) => line.budget),
+    spent: sumLines(bucket.lines, (line) => line.spent),
+    hst: sumLines(bucket.lines, (line) => line.hst)
+  })
+
+  const result = buckets.map(withTotals)
+  if (loose.length > 0) {
+    result.push(
+      withTotals({ categoryId: null, name: 'Uncategorised', group, lines: loose, budget: 0, spent: 0, hst: 0 })
+    )
+  }
+  return result
+}
+
+function parseImport(text: string): { rows: ImportRow[]; error?: string } {
+  const lines = text.split(/\r?\n/).filter((line) => line.trim() !== '')
+  if (lines.length === 0) return { rows: [], error: 'Nothing to import yet.' }
+
+  const first = parseCsvLine(lines[0]).map((cell) => cell.trim().toLowerCase())
+  const hasHeader = first.includes('name')
+  const columns = hasHeader ? first : IMPORT_COLUMNS
+  const body = hasHeader ? lines.slice(1) : lines
+
+  const rows: ImportRow[] = []
+  const problems: string[] = []
+
+  body.forEach((raw, index) => {
+    const cells = parseCsvLine(raw)
+    const label = `Row ${index + (hasHeader ? 2 : 1)}`
+    const pick = (column: string) => {
+      const at = columns.indexOf(column)
+      return at >= 0 ? (cells[at] ?? '').trim() : ''
+    }
+    const numeric = (column: string) => {
+      const value = pick(column)
+      return value === '' ? 0 : Number(value.replace(/[$,\s]/g, ''))
+    }
+
+    const group = normalizeGroup(pick('group'))
+    const name = pick('name')
+    const budget = numeric('budget')
+    const spent = numeric('spent')
+    const hst = numeric('hst')
+
+    if (!group) {
+      problems.push(`${label}: group must be land, soft or hard`)
+      return
+    }
+    if (!name) {
+      problems.push(`${label}: item name is required`)
+      return
+    }
+    if ([budget, spent, hst].some((value) => !Number.isFinite(value) || value < 0)) {
+      problems.push(`${label}: budget, spent and hst must be numbers of 0 or more`)
+      return
+    }
+    rows.push({
+      group,
+      category: pick('category') || undefined,
+      code: pick('code') || undefined,
+      name,
+      budget,
+      spent,
+      hst
+    })
+  })
+
+  if (problems.length > 0) {
+    const shown = problems.slice(0, 5).join(' · ')
+    const extra = problems.length > 5 ? ` (+${problems.length - 5} more)` : ''
+    return { rows: [], error: `${shown}${extra}` }
+  }
+  return { rows }
+}
+
+function budgetToCsv(lines: BudgetLineRecord[], categories: BudgetCategoryRecord[]): string {
+  const nameOf = new Map(categories.map((category) => [category.categoryId, category.name]))
+  const rows = lines
+    .slice()
+    .sort(compareLines)
+    .map((line) =>
+      [
+        BUDGET_GROUP_LABEL[line.group],
+        line.categoryId ? nameOf.get(line.categoryId) ?? '' : '',
+        line.code ?? '',
+        line.name,
+        line.budget,
+        line.spent,
+        line.hst
+      ]
+        .map(csvEscape)
+        .join(',')
+    )
+  return [IMPORT_COLUMNS.join(','), ...rows].join('\r\n')
+}
+
+function downloadCsv(filename: string, content: string) {
+  const url = URL.createObjectURL(new Blob([content], { type: 'text/csv;charset=utf-8' }))
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
+/** An amount that becomes an input in place, so figures can be tuned without a modal. */
+function InlineAmount({
+  value,
+  canEdit,
+  onSave,
+  onError
+}: {
+  value: number
+  canEdit: boolean
+  onSave: (next: number) => Promise<void>
+  onError: (message: string) => void
+}) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState('')
+  const [busy, setBusy] = useState(false)
+  const saving = useRef(false)
+
+  async function commit() {
+    if (saving.current) return
+    const next = draft.trim() === '' ? 0 : Number(draft)
+    if (!Number.isFinite(next) || next < 0) {
+      onError('Amounts must be numbers of 0 or more')
+      setEditing(false)
+      return
+    }
+    if (next === value) {
+      setEditing(false)
+      return
+    }
+    saving.current = true
+    setBusy(true)
+    try {
+      await onSave(next)
+      setEditing(false)
+    } catch (err) {
+      onError(err instanceof Error ? err.message : 'Could not save the amount')
+      setEditing(false)
+    } finally {
+      saving.current = false
+      setBusy(false)
+    }
+  }
+
+  if (!canEdit) return <span className="num">{formatMoney(value)}</span>
+  if (busy) return <span className="num"><span className="spinner inline-spinner" /></span>
+
+  if (!editing) {
+    return (
+      <button
+        type="button"
+        className="num inline-amount"
+        title="Click to edit"
+        onClick={() => {
+          setDraft(value === 0 ? '' : String(value))
+          setEditing(true)
+        }}
+      >
+        {formatMoney(value)}
+      </button>
+    )
+  }
+
+  return (
+    <input
+      className="num inline-amount-input"
+      type="number"
+      min="0"
+      step="0.01"
+      value={draft}
+      autoFocus
+      onChange={(event) => setDraft(event.target.value)}
+      onBlur={() => void commit()}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault()
+          void commit()
+        } else if (event.key === 'Escape') {
+          event.preventDefault()
+          setEditing(false)
+        }
+      }}
+    />
+  )
+}
+
 function BudgetTab({
   siteId,
   lines,
+  categories,
   summary,
   isAdmin,
   onChanged
 }: {
   siteId: string
   lines: BudgetLineRecord[]
+  categories: BudgetCategoryRecord[]
   summary: BudgetSummary
   isAdmin: boolean
   onChanged: () => void
 }) {
-  const [modal, setModal] = useState<{ line: BudgetLineRecord | null; group: BudgetGroup } | null>(null)
+  const [modal, setModal] = useState<{ line: BudgetLineRecord | null; group: BudgetGroup; categoryId?: string } | null>(null)
+  const [managing, setManaging] = useState(false)
+  const [importing, setImporting] = useState(false)
   const [busyId, setBusyId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [query, setQuery] = useState('')
+  const [filter, setFilter] = useState<BudgetFilter>('all')
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
+  const [drag, setDrag] = useState<{ kind: 'line' | 'category'; id: string } | null>(null)
+  const [dropKey, setDropKey] = useState<string | null>(null)
+
+  const needle = query.trim().toLowerCase()
+  const filtering = needle !== '' || filter !== 'all'
+
+  const visibleLineIds = useMemo(() => {
+    const byId = new Map(categories.map((category) => [category.categoryId, category]))
+    const ids = new Set<string>()
+    for (const line of lines) {
+      if (filter === 'over' && !(line.spent > line.budget)) continue
+      if (filter === 'uncategorised' && line.categoryId && byId.has(line.categoryId)) continue
+      if (needle) {
+        const haystack = [
+          line.name,
+          line.code ?? '',
+          line.categoryId ? byId.get(line.categoryId)?.name ?? '' : ''
+        ]
+          .join(' ')
+          .toLowerCase()
+        if (!haystack.includes(needle)) continue
+      }
+      ids.add(line.lineId)
+    }
+    return ids
+  }, [lines, categories, needle, filter])
+
+  const dragLine = drag?.kind === 'line' ? lines.find((line) => line.lineId === drag.id) ?? null : null
 
   async function remove(line: BudgetLineRecord) {
-    if (!window.confirm(`Delete the budget line "${line.name}"?`)) return
+    if (!window.confirm(`Delete the cost line "${line.name}"?`)) return
     setBusyId(line.lineId)
     setError(null)
     try {
@@ -758,7 +1131,149 @@ function BudgetTab({
     }
   }
 
+  async function run(id: string, fn: () => Promise<unknown>) {
+    setBusyId(id)
+    setError(null)
+    try {
+      await fn()
+      onChanged()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Action failed')
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  async function saveAmount(line: BudgetLineRecord, field: 'budget' | 'spent' | 'hst', next: number) {
+    await api(`/sites/${siteId}/budget/${line.lineId}`, { method: 'PATCH', body: { [field]: next } })
+    onChanged()
+  }
+
+  /** Re-file a cost line and renumber its group in a single round trip. */
+  async function moveLine(lineId: string, group: BudgetGroup, targetCategoryId: string | null, beforeLineId: string | null) {
+    const moved = lines.find((line) => line.lineId === lineId)
+    if (!moved) return
+    // A category id already carries its group, so dropping onto a category in
+    // another group travels on its own. Dropping into another group's
+    // uncategorised bucket is the one case the reorder call cannot express.
+    if (!targetCategoryId && moved.group !== group) {
+      await api(`/sites/${siteId}/budget/${lineId}`, { method: 'PATCH', body: { group, categoryId: '' } })
+    }
+    const buckets = buildBuckets(group, lines.filter((line) => line.lineId !== lineId), categories)
+    let bucket = buckets.find((candidate) => candidate.categoryId === targetCategoryId)
+    if (!bucket) {
+      if (targetCategoryId !== null) return
+      bucket = { categoryId: null, name: 'Uncategorised', group, lines: [], budget: 0, spent: 0, hst: 0 }
+      buckets.push(bucket)
+    }
+    const at = beforeLineId ? bucket.lines.findIndex((line) => line.lineId === beforeLineId) : -1
+    if (at >= 0) bucket.lines.splice(at, 0, moved)
+    else bucket.lines.push(moved)
+
+    const items = buckets.flatMap((node) =>
+      node.lines.map((line, index) => ({ lineId: line.lineId, order: index, categoryId: node.categoryId ?? '' }))
+    )
+    await api(`/sites/${siteId}/budget/reorder`, { method: 'POST', body: { items } })
+  }
+
+  async function moveCategory(categoryId: string, group: BudgetGroup, beforeId: string | null) {
+    const moved = categories.find((category) => category.categoryId === categoryId)
+    if (!moved) return
+    // Changing group drags the category's cost lines along with it.
+    if (moved.group !== group) {
+      await api(`/sites/${siteId}/budget/categories/${categoryId}`, { method: 'PATCH', body: { group } })
+    }
+    const siblings = categories.filter(
+      (category) => category.group === group && category.categoryId !== categoryId
+    )
+    const at = beforeId ? siblings.findIndex((category) => category.categoryId === beforeId) : -1
+    if (at >= 0) siblings.splice(at, 0, moved)
+    else siblings.push(moved)
+
+    const items = siblings.map((category, index) => ({ categoryId: category.categoryId, order: index }))
+    await api(`/sites/${siteId}/budget/categories/reorder`, { method: 'POST', body: { items } })
+  }
+
+  function toggle(key: string) {
+    setCollapsed((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  }
+
+  function setAllCollapsed(shouldCollapse: boolean) {
+    if (!shouldCollapse) {
+      setCollapsed(new Set())
+      return
+    }
+    const keys: string[] = []
+    for (const group of BUDGET_GROUP_ORDER) {
+      keys.push(`group:${group}`)
+      for (const bucket of buildBuckets(group, lines, categories)) keys.push(`cat:${bucketKey(bucket)}`)
+    }
+    setCollapsed(new Set(keys))
+  }
+
+  function resetDrag() {
+    setDrag(null)
+    setDropKey(null)
+  }
+
+  function dropOnLine(target: BudgetLineRecord) {
+    const moved = dragLine
+    resetDrag()
+    if (!moved || moved.lineId === target.lineId) return
+    const targetCategoryId =
+      target.categoryId && categories.some((category) => category.categoryId === target.categoryId)
+        ? target.categoryId
+        : null
+    void run(`move:${moved.lineId}`, () => moveLine(moved.lineId, target.group, targetCategoryId, target.lineId))
+  }
+
+  function dropOnBucket(bucket: BudgetBucket) {
+    const moved = dragLine
+    const categoryId = drag?.kind === 'category' ? drag.id : null
+    resetDrag()
+    if (moved) {
+      void run(`move:${moved.lineId}`, () => moveLine(moved.lineId, bucket.group, bucket.categoryId, null))
+      return
+    }
+    if (categoryId && bucket.categoryId) {
+      void run(`movecat:${categoryId}`, () => moveCategory(categoryId, bucket.group, bucket.categoryId))
+    }
+  }
+
+  function dropOnGroup(group: BudgetGroup) {
+    const moved = dragLine
+    const categoryId = drag?.kind === 'category' ? drag.id : null
+    resetDrag()
+    if (moved) {
+      void run(`move:${moved.lineId}`, () => moveLine(moved.lineId, group, null, null))
+      return
+    }
+    if (categoryId) {
+      void run(`movecat:${categoryId}`, () => moveCategory(categoryId, group, null))
+    }
+  }
+
+  const exportCsv = () =>
+    downloadCsv(`budget-${new Date().toISOString().slice(0, 10)}.csv`, budgetToCsv(lines, categories))
+
   const columns = isAdmin ? 6 : 5
+
+  /** Everything folded into the tree, then narrowed to whatever the filter kept. */
+  const shownLines = filtering ? lines.filter((line) => visibleLineIds.has(line.lineId)) : lines
+
+  const allCollapsed = useMemo(() => {
+    const keys: string[] = []
+    for (const group of BUDGET_GROUP_ORDER) {
+      keys.push(`group:${group}`)
+      for (const bucket of buildBuckets(group, lines, categories)) keys.push(`cat:${bucketKey(bucket)}`)
+    }
+    return keys.length > 0 && keys.every((key) => collapsed.has(key))
+  }, [lines, categories, collapsed])
 
   return (
     <div className="stack">
@@ -794,33 +1309,102 @@ function BudgetTab({
         </div>
       </div>
 
-      {lines.length === 0 ? (
+      {lines.length === 0 && categories.length === 0 ? (
         <Card>
           <Empty title="No budget yet">
             {isAdmin
-              ? 'Add land, soft cost and hard cost lines to start tracking spend against this project.'
+              ? 'Add land, soft cost and hard cost lines — or import a spreadsheet — to start tracking spend against this project.'
               : 'The administrator has not set a budget for this project yet.'}
           </Empty>
+          {isAdmin ? (
+            <div className="row" style={{ justifyContent: 'center', paddingBottom: 20, gap: 10 }}>
+              <Button variant="ghost" onClick={() => setModal({ line: null, group: 'hard' })}>
+                <IconPlus size={16} />
+                Add cost line
+              </Button>
+              <Button variant="ghost" onClick={() => setImporting(true)}>
+                <IconUpload size={16} />
+                Import CSV
+              </Button>
+            </div>
+          ) : null}
         </Card>
       ) : (
         <Card>
-          <CardHeader
-            title="Cost breakdown"
-            sub={`${formatMoney(summary.budgeted)} budgeted · ${formatMoney(summary.paid)} paid`}
-            action={
-              isAdmin ? (
-                <Button variant="ghost" size="sm" onClick={() => setModal({ line: null, group: 'hard' })}>
-                  <IconPlus size={14} />
-                  Add line
-                </Button>
-              ) : undefined
-            }
-          />
+          <div className="budget-toolbar">
+            <label className="budget-search">
+              <IconSearch size={16} />
+              <input
+                value={query}
+                placeholder="Search items, codes or categories"
+                onChange={(event) => setQuery(event.target.value)}
+              />
+              {query ? (
+                <button
+                  type="button"
+                  className="budget-search-clear"
+                  onClick={() => setQuery('')}
+                  aria-label="Clear search"
+                >
+                  <IconX size={14} />
+                </button>
+              ) : null}
+            </label>
+
+            <div className="budget-chips">
+              {BUDGET_FILTERS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  className={`chip${filter === option.value ? ' on' : ''}`}
+                  onClick={() => setFilter(option.value)}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="budget-actions">
+              <Button variant="ghost" size="sm" onClick={() => setAllCollapsed(!allCollapsed)}>
+                <IconChevronDown size={14} />
+                {allCollapsed ? 'Expand all' : 'Collapse all'}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={exportCsv}>
+                <IconDownload size={14} />
+                Export
+              </Button>
+              {isAdmin ? (
+                <>
+                  <Button variant="ghost" size="sm" onClick={() => setImporting(true)}>
+                    <IconUpload size={14} />
+                    Import
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setManaging(true)}>
+                    <IconLayers size={14} />
+                    Categories
+                  </Button>
+                  <Button size="sm" onClick={() => setModal({ line: null, group: 'hard' })}>
+                    <IconPlus size={14} />
+                    Add cost line
+                  </Button>
+                </>
+              ) : null}
+            </div>
+          </div>
+
+          {filtering ? (
+            <div className="budget-note small muted">
+              Showing {shownLines.length} of {lines.length} cost line{lines.length === 1 ? '' : 's'}
+              {filter === 'over' ? ' over budget' : ''}
+              {filter === 'uncategorised' ? ' with no category' : ''}
+            </div>
+          ) : null}
+
           <div className="table-wrap">
-            <table className="table">
+            <table className="table budget-table">
               <thead>
                 <tr>
-                  <th>Item</th>
+                  <th>Category / item</th>
                   <th className="num">Budget</th>
                   <th className="num">Spent</th>
                   <th className="num">HST</th>
@@ -828,64 +1412,279 @@ function BudgetTab({
                   {isAdmin ? <th /> : null}
                 </tr>
               </thead>
+
               {BUDGET_GROUP_ORDER.map((group) => {
-                const rows = lines.filter((line) => line.group === group)
-                if (rows.length === 0) return null
-                const subtotal = summary.groups.find((g) => g.group === group)
+                const buckets = buildBuckets(group, shownLines, categories).filter(
+                  (bucket) => !filtering || bucket.lines.length > 0
+                )
+                if (buckets.length === 0) return null
+
+                const groupBudget = round2(buckets.reduce((total, bucket) => total + bucket.budget, 0))
+                const groupSpent = round2(buckets.reduce((total, bucket) => total + bucket.spent, 0))
+                const groupHst = round2(buckets.reduce((total, bucket) => total + bucket.hst, 0))
+                const groupRemaining = round2(groupBudget - groupSpent)
+                const groupKey = `group:${group}`
+                const groupCollapsed = collapsed.has(groupKey)
+
                 return (
-                  <tbody key={group}>
-                    <tr className="group-row">
-                      <td colSpan={columns}>{BUDGET_GROUP_LABEL[group]}</td>
+                  <tbody
+                    key={group}
+                    onDragOver={
+                      isAdmin
+                        ? (event) => {
+                            event.preventDefault()
+                            if (dropKey !== groupKey) setDropKey(groupKey)
+                          }
+                        : undefined
+                    }
+                    onDrop={
+                      isAdmin
+                        ? (event) => {
+                            event.preventDefault()
+                            dropOnGroup(group)
+                          }
+                        : undefined
+                    }
+                  >
+                    <tr className={`group-row${dropKey === groupKey ? ' drop-target' : ''}`}>
+                      <td colSpan={columns}>
+                        <span className="tree-row">
+                          <button
+                            type="button"
+                            className="tree-toggle"
+                            aria-expanded={!groupCollapsed}
+                            aria-label={groupCollapsed ? 'Expand group' : 'Collapse group'}
+                            onClick={() => toggle(groupKey)}
+                          >
+                            {groupCollapsed ? <IconChevronRight size={16} /> : <IconChevronDown size={16} />}
+                          </button>
+                          <span className="group-name">{BUDGET_GROUP_LABEL[group]}</span>
+                          <span className="group-meta">
+                            {buckets.length} categor{buckets.length === 1 ? 'y' : 'ies'} ·{' '}
+                            {buckets.reduce((total, bucket) => total + bucket.lines.length, 0)} items
+                          </span>
+                        </span>
+                      </td>
                     </tr>
-                    {rows.map((line) => {
-                      const remaining = Math.round((line.budget - line.spent) * 100) / 100
-                      return (
-                        <tr key={line.lineId}>
-                          <td>
-                            <div style={{ fontWeight: 600 }}>{line.name}</div>
-                            {line.code ? <div className="small muted mono">{line.code}</div> : null}
-                          </td>
-                          <td className="num">{formatMoney(line.budget)}</td>
-                          <td className="num">{formatMoney(line.spent)}</td>
-                          <td className="num">{formatMoney(line.hst)}</td>
-                          <td className={`num${remaining < 0 ? ' money-over' : ''}`}>{formatMoney(remaining)}</td>
-                          {isAdmin ? (
-                            <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                              <Button variant="ghost" size="sm" onClick={() => setModal({ line, group })}>
-                                Edit
-                              </Button>
-                              <Button
-                                variant="danger"
-                                size="sm"
-                                style={{ marginLeft: 6 }}
-                                loading={busyId === line.lineId}
-                                onClick={() => void remove(line)}
+
+                    {groupCollapsed
+                      ? null
+                      : buckets.map((bucket) => {
+                          const key = bucketKey(bucket)
+                          const catKey = `cat:${key}`
+                          const catCollapsed = collapsed.has(catKey)
+                          const remaining = round2(bucket.budget - bucket.spent)
+                          return (
+                            <Fragment key={key}>
+                              <tr
+                                className={`category-row${dropKey === catKey ? ' drop-target' : ''}`}
+                                onDragOver={
+                                  isAdmin
+                                    ? (event) => {
+                                        event.preventDefault()
+                                        event.stopPropagation()
+                                        if (dropKey !== catKey) setDropKey(catKey)
+                                      }
+                                    : undefined
+                                }
+                                onDrop={
+                                  isAdmin
+                                    ? (event) => {
+                                        event.preventDefault()
+                                        event.stopPropagation()
+                                        dropOnBucket(bucket)
+                                      }
+                                    : undefined
+                                }
                               >
-                                <IconTrash size={14} />
-                              </Button>
-                            </td>
-                          ) : null}
-                        </tr>
-                      )
-                    })}
+                                <td>
+                                  <span className="tree-row indent-1">
+                                    {isAdmin && bucket.categoryId ? (
+                                      <span
+                                        className="drag-handle"
+                                        draggable
+                                        title="Drag to reorder, or onto another group to move it"
+                                        onDragStart={() => setDrag({ kind: 'category', id: bucket.categoryId! })}
+                                        onDragEnd={resetDrag}
+                                      >
+                                        <IconGrip size={14} />
+                                      </span>
+                                    ) : (
+                                      <span className="drag-spacer" />
+                                    )}
+                                    <button
+                                      type="button"
+                                      className="tree-toggle"
+                                      aria-expanded={!catCollapsed}
+                                      aria-label={catCollapsed ? 'Expand category' : 'Collapse category'}
+                                      onClick={() => toggle(catKey)}
+                                    >
+                                      {catCollapsed ? <IconChevronRight size={15} /> : <IconChevronDown size={15} />}
+                                    </button>
+                                    <span className="category-name">{bucket.name}</span>
+                                    <span className="small muted">
+                                      {bucket.lines.length} item{bucket.lines.length === 1 ? '' : 's'}
+                                    </span>
+                                    {bucket.description ? (
+                                      <span className="small muted">· {bucket.description}</span>
+                                    ) : null}
+                                    {busyId === `movecat:${bucket.categoryId}` ? (
+                                      <span className="spinner inline-spinner" />
+                                    ) : null}
+                                  </span>
+                                </td>
+                                <td className="num">{formatMoney(bucket.budget)}</td>
+                                <td className="num">{formatMoney(bucket.spent)}</td>
+                                <td className="num">{formatMoney(bucket.hst)}</td>
+                                <td className={`num${remaining < 0 ? ' money-over' : ''}`}>
+                                  {formatMoney(remaining)}
+                                </td>
+                                {isAdmin ? (
+                                  <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      title="Add a cost line to this category"
+                                      onClick={() =>
+                                        setModal({ line: null, group, categoryId: bucket.categoryId ?? undefined })
+                                      }
+                                    >
+                                      <IconPlus size={14} />
+                                    </Button>
+                                  </td>
+                                ) : null}
+                              </tr>
+
+                              {catCollapsed
+                                ? null
+                                : bucket.lines.map((line) => {
+                                    const lineRemaining = round2(line.budget - line.spent)
+                                    const lineKey = `line:${line.lineId}`
+                                    return (
+                                      <tr
+                                        key={line.lineId}
+                                        className={`line-row${dropKey === lineKey ? ' drop-target' : ''}`}
+                                        onDragOver={
+                                          isAdmin
+                                            ? (event) => {
+                                                event.preventDefault()
+                                                event.stopPropagation()
+                                                if (dropKey !== lineKey) setDropKey(lineKey)
+                                              }
+                                            : undefined
+                                        }
+                                        onDrop={
+                                          isAdmin
+                                            ? (event) => {
+                                                event.preventDefault()
+                                                event.stopPropagation()
+                                                dropOnLine(line)
+                                              }
+                                            : undefined
+                                        }
+                                      >
+                                        <td>
+                                          <span className="tree-row indent-2">
+                                            {isAdmin ? (
+                                              <span
+                                                className="drag-handle"
+                                                draggable
+                                                title="Drag to reorder, or onto a category to re-file it"
+                                                onDragStart={() => setDrag({ kind: 'line', id: line.lineId })}
+                                                onDragEnd={resetDrag}
+                                              >
+                                                <IconGrip size={14} />
+                                              </span>
+                                            ) : (
+                                              <span className="drag-spacer" />
+                                            )}
+                                            <span className="line-name">{line.name}</span>
+                                            {line.code ? <span className="small muted mono">{line.code}</span> : null}
+                                            {busyId === `move:${line.lineId}` ? (
+                                              <span className="spinner inline-spinner" />
+                                            ) : null}
+                                          </span>
+                                        </td>
+                                        <td className="num">
+                                          <InlineAmount
+                                            value={line.budget}
+                                            canEdit={isAdmin}
+                                            onSave={(next) => saveAmount(line, 'budget', next)}
+                                            onError={setError}
+                                          />
+                                        </td>
+                                        <td className="num">
+                                          <InlineAmount
+                                            value={line.spent}
+                                            canEdit={isAdmin}
+                                            onSave={(next) => saveAmount(line, 'spent', next)}
+                                            onError={setError}
+                                          />
+                                        </td>
+                                        <td className="num">
+                                          <InlineAmount
+                                            value={line.hst}
+                                            canEdit={isAdmin}
+                                            onSave={(next) => saveAmount(line, 'hst', next)}
+                                            onError={setError}
+                                          />
+                                        </td>
+                                        <td className={`num${lineRemaining < 0 ? ' money-over' : ''}`}>
+                                          {formatMoney(lineRemaining)}
+                                        </td>
+                                        {isAdmin ? (
+                                          <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={() => setModal({ line, group, categoryId: line.categoryId })}
+                                            >
+                                              <IconEdit size={14} />
+                                            </Button>
+                                            <Button
+                                              variant="danger"
+                                              size="sm"
+                                              style={{ marginLeft: 6 }}
+                                              loading={busyId === line.lineId}
+                                              onClick={() => void remove(line)}
+                                            >
+                                              <IconTrash size={14} />
+                                            </Button>
+                                          </td>
+                                        ) : null}
+                                      </tr>
+                                    )
+                                  })}
+                            </Fragment>
+                          )
+                        })}
+
                     <tr className="subtotal">
-                      <td>Subtotal — {BUDGET_GROUP_LABEL[group]}</td>
-                      <td className="num">{formatMoney(subtotal?.budget ?? 0)}</td>
-                      <td className="num">{formatMoney(subtotal?.spent ?? 0)}</td>
-                      <td className="num">{formatMoney(subtotal?.hst ?? 0)}</td>
-                      <td className="num">{formatMoney((subtotal?.budget ?? 0) - (subtotal?.spent ?? 0))}</td>
+                      <td>
+                        Subtotal — {BUDGET_GROUP_LABEL[group]}
+                        {filtering ? ' (filtered)' : ''}
+                      </td>
+                      <td className="num">{formatMoney(groupBudget)}</td>
+                      <td className="num">{formatMoney(groupSpent)}</td>
+                      <td className="num">{formatMoney(groupHst)}</td>
+                      <td className={`num${groupRemaining < 0 ? ' money-over' : ''}`}>
+                        {formatMoney(groupRemaining)}
+                      </td>
                       {isAdmin ? <td /> : null}
                     </tr>
                   </tbody>
                 )
               })}
+
               <tfoot>
                 <tr className="grand-total">
                   <td>Total</td>
                   <td className="num">{formatMoney(summary.budgeted)}</td>
                   <td className="num">{formatMoney(summary.spent)}</td>
                   <td className="num">{formatMoney(summary.hst)}</td>
-                  <td className="num">{formatMoney(summary.remaining)}</td>
+                  <td className={`num${summary.remaining < 0 ? ' money-over' : ''}`}>
+                    {formatMoney(summary.remaining)}
+                  </td>
                   {isAdmin ? <td /> : null}
                 </tr>
               </tfoot>
@@ -894,26 +1693,36 @@ function BudgetTab({
         </Card>
       )}
 
-      {isAdmin ? (
-        <div>
-          <Button variant="ghost" onClick={() => setModal({ line: null, group: 'hard' })}>
-            <IconPlus size={16} />
-            Add cost line
-          </Button>
-        </div>
-      ) : null}
-
       {modal ? (
         <BudgetLineFormModal
           siteId={siteId}
           line={modal.line}
           defaultGroup={modal.group}
-          nextOrder={lines.length}
+          defaultCategoryId={modal.categoryId}
+          categories={categories}
           onClose={() => setModal(null)}
           onSaved={() => {
             setModal(null)
             onChanged()
           }}
+        />
+      ) : null}
+
+      {managing ? (
+        <BudgetCategoryModal
+          siteId={siteId}
+          categories={categories}
+          lines={lines}
+          onClose={() => setManaging(false)}
+          onChanged={onChanged}
+        />
+      ) : null}
+
+      {importing ? (
+        <BudgetImportModal
+          siteId={siteId}
+          onClose={() => setImporting(false)}
+          onImported={onChanged}
         />
       ) : null}
     </div>
@@ -924,18 +1733,21 @@ function BudgetLineFormModal({
   siteId,
   line,
   defaultGroup,
-  nextOrder,
+  defaultCategoryId,
+  categories,
   onClose,
   onSaved
 }: {
   siteId: string
   line: BudgetLineRecord | null
   defaultGroup: BudgetGroup
-  nextOrder: number
+  defaultCategoryId?: string
+  categories: BudgetCategoryRecord[]
   onClose: () => void
   onSaved: () => void
 }) {
   const [group, setGroup] = useState<BudgetGroup>(line?.group ?? defaultGroup)
+  const [categoryId, setCategoryId] = useState(line?.categoryId ?? defaultCategoryId ?? '')
   const [code, setCode] = useState(line?.code ?? '')
   const [name, setName] = useState(line?.name ?? '')
   const [budget, setBudget] = useState(line ? String(line.budget) : '')
@@ -943,6 +1755,8 @@ function BudgetLineFormModal({
   const [hst, setHst] = useState(line ? String(line.hst) : '')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const options = categories.filter((category) => category.group === group)
 
   async function submit(event: FormEvent) {
     event.preventDefault()
@@ -952,15 +1766,17 @@ function BudgetLineFormModal({
     }
     setBusy(true)
     setError(null)
-    const body = {
+    const body: Record<string, unknown> = {
       group,
+      categoryId: options.some((category) => category.categoryId === categoryId) ? categoryId : '',
       code: code.trim() || undefined,
       name: name.trim(),
       budget: budget === '' ? 0 : Number(budget),
       spent: spent === '' ? 0 : Number(spent),
-      hst: hst === '' ? 0 : Number(hst),
-      order: line?.order ?? nextOrder
+      hst: hst === '' ? 0 : Number(hst)
     }
+    // An edit keeps its place; a new line is appended inside its group.
+    if (line) body.order = line.order
     try {
       if (line) await api(`/sites/${siteId}/budget/${line.lineId}`, { method: 'PATCH', body })
       else await api(`/sites/${siteId}/budget`, { method: 'POST', body })
@@ -990,8 +1806,16 @@ function BudgetLineFormModal({
       <form id="budget-form" onSubmit={submit}>
         {error ? <div className="alert alert-error" style={{ marginBottom: 14 }}>{error}</div> : null}
         <div className="grid grid-2">
-          <Field label="Group">
-            <select className="select" value={group} onChange={(e) => setGroup(e.target.value as BudgetGroup)}>
+          <Field label="Cost group">
+            <select
+              className="select"
+              value={group}
+              onChange={(e) => {
+                const next = e.target.value as BudgetGroup
+                setGroup(next)
+                if (!categories.some((c) => c.group === next && c.categoryId === categoryId)) setCategoryId('')
+              }}
+            >
               {BUDGET_GROUPS.map((g) => (
                 <option key={g.value} value={g.value}>
                   {g.label}
@@ -999,19 +1823,31 @@ function BudgetLineFormModal({
               ))}
             </select>
           </Field>
+          <Field label="Category" hint={options.length === 0 ? 'Add categories under "Categories"' : 'Optional'}>
+            <select className="select" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+              <option value="">Uncategorised</option>
+              {options.map((category) => (
+                <option key={category.categoryId} value={category.categoryId}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </div>
+        <div className="grid grid-2">
+          <Field label="Item">
+            <input
+              className="input"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Framing"
+              autoFocus
+            />
+          </Field>
           <Field label="Cost code" hint="Optional, e.g. H.06 10 00">
             <input className="input" value={code} onChange={(e) => setCode(e.target.value)} />
           </Field>
         </div>
-        <Field label="Item">
-          <input
-            className="input"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Framing"
-            autoFocus
-          />
-        </Field>
         <div className="grid grid-3">
           <Field label="Budget" hint="Excl. HST">
             <input
@@ -1043,6 +1879,389 @@ function BudgetLineFormModal({
               onChange={(e) => setHst(e.target.value)}
             />
           </Field>
+        </div>
+      </form>
+    </Modal>
+  )
+}
+
+/** Per-project category list: create, rename, describe and delete. */
+function BudgetCategoryModal({
+  siteId,
+  categories,
+  lines,
+  onClose,
+  onChanged
+}: {
+  siteId: string
+  categories: BudgetCategoryRecord[]
+  lines: BudgetLineRecord[]
+  onClose: () => void
+  onChanged: () => void
+}) {
+  const [group, setGroup] = useState<BudgetGroup>('hard')
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [editing, setEditing] = useState<{ categoryId: string; name: string; description: string } | null>(null)
+  const [busy, setBusy] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const counts = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const line of lines) {
+      if (line.categoryId) map.set(line.categoryId, (map.get(line.categoryId) ?? 0) + 1)
+    }
+    return map
+  }, [lines])
+
+  async function create(event: FormEvent) {
+    event.preventDefault()
+    if (!name.trim()) {
+      setError('Give the category a name')
+      return
+    }
+    setBusy('new')
+    setError(null)
+    try {
+      await api(`/sites/${siteId}/budget/categories`, {
+        method: 'POST',
+        body: { group, name: name.trim(), description: description.trim() || undefined }
+      })
+      setName('')
+      setDescription('')
+      onChanged()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not create the category')
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  async function save(categoryId: string) {
+    if (!editing) return
+    if (!editing.name.trim()) {
+      setError('Give the category a name')
+      return
+    }
+    setBusy(categoryId)
+    setError(null)
+    try {
+      await api(`/sites/${siteId}/budget/categories/${categoryId}`, {
+        method: 'PATCH',
+        body: { name: editing.name.trim(), description: editing.description.trim() }
+      })
+      setEditing(null)
+      onChanged()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not save the category')
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  async function remove(category: BudgetCategoryRecord) {
+    const used = counts.get(category.categoryId) ?? 0
+    const question =
+      used > 0
+        ? `"${category.name}" still holds ${used} cost line${used === 1 ? '' : 's'}. Delete the category and leave those lines uncategorised?`
+        : `Delete the category "${category.name}"?`
+    if (!window.confirm(question)) return
+    setBusy(category.categoryId)
+    setError(null)
+    try {
+      const suffix = used > 0 ? '?reassign=none' : ''
+      await api(`/sites/${siteId}/budget/categories/${category.categoryId}${suffix}`, { method: 'DELETE' })
+      if (editing?.categoryId === category.categoryId) setEditing(null)
+      onChanged()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not delete the category')
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  return (
+    <Modal
+      title="Budget categories"
+      wide
+      onClose={onClose}
+      footer={
+        <Button variant="ghost" onClick={onClose}>
+          Done
+        </Button>
+      }
+    >
+      <ErrorNote message={error} />
+
+      <p className="small muted" style={{ marginBottom: 16 }}>
+        Categories sit between a cost group and its cost lines, and belong to this project only.
+      </p>
+
+      <form className="category-create" onSubmit={create}>
+        <div className="grid grid-3">
+          <Field label="Cost group">
+            <select className="select" value={group} onChange={(e) => setGroup(e.target.value as BudgetGroup)}>
+              {BUDGET_GROUPS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Category name">
+            <input
+              className="input"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Permits & fees"
+            />
+          </Field>
+          <Field label="Description" hint="Optional">
+            <input className="input" value={description} onChange={(e) => setDescription(e.target.value)} />
+          </Field>
+        </div>
+        <div className="row" style={{ justifyContent: 'flex-end', marginBottom: 20 }}>
+          <Button type="submit" loading={busy === 'new'}>
+            <IconPlus size={15} />
+            Add category
+          </Button>
+        </div>
+      </form>
+
+      <div className="category-list">
+        {categories.length === 0 ? (
+          <Empty title="No categories yet">Add one above to start grouping cost lines.</Empty>
+        ) : (
+          BUDGET_GROUP_ORDER.map((groupName) => {
+            const rows = categories.filter((category) => category.group === groupName)
+            if (rows.length === 0) return null
+            return (
+              <div key={groupName} className="category-group">
+                <div className="category-group-title">{BUDGET_GROUP_LABEL[groupName]}</div>
+                {rows.map((category) => {
+                  const used = counts.get(category.categoryId) ?? 0
+                  const draft = editing?.categoryId === category.categoryId ? editing : null
+                  return (
+                    <div key={category.categoryId} className="category-item">
+                      {draft ? (
+                        <>
+                          <input
+                            className="input"
+                            value={draft.name}
+                            autoFocus
+                            onChange={(e) => setEditing({ ...draft, name: e.target.value })}
+                          />
+                          <input
+                            className="input"
+                            value={draft.description}
+                            placeholder="Description (optional)"
+                            onChange={(e) => setEditing({ ...draft, description: e.target.value })}
+                          />
+                          <div className="row">
+                            <Button
+                              size="sm"
+                              type="button"
+                              loading={busy === category.categoryId}
+                              onClick={() => void save(category.categoryId)}
+                            >
+                              Save
+                            </Button>
+                            <Button size="sm" variant="ghost" type="button" onClick={() => setEditing(null)}>
+                              Cancel
+                            </Button>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="category-item-text">
+                            <div className="category-item-name">{category.name}</div>
+                            <div className="small muted">
+                              {used} cost line{used === 1 ? '' : 's'}
+                              {category.description ? ` · ${category.description}` : ''}
+                            </div>
+                          </div>
+                          <div className="row">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              type="button"
+                              onClick={() =>
+                                setEditing({
+                                  categoryId: category.categoryId,
+                                  name: category.name,
+                                  description: category.description ?? ''
+                                })
+                              }
+                            >
+                              <IconEdit size={14} />
+                              Rename
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="danger"
+                              type="button"
+                              loading={busy === category.categoryId}
+                              onClick={() => void remove(category)}
+                            >
+                              <IconTrash size={14} />
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          })
+        )}
+      </div>
+    </Modal>
+  )
+}
+
+/** Paste or upload a spreadsheet, then let the server validate the whole sheet. */
+function BudgetImportModal({
+  siteId,
+  onClose,
+  onImported
+}: {
+  siteId: string
+  onClose: () => void
+  onImported: () => void
+}) {
+  const [text, setText] = useState('')
+  const [mode, setMode] = useState<'append' | 'replace'>('append')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [done, setDone] = useState<string | null>(null)
+
+  const parsed = useMemo(() => parseImport(text), [text])
+
+  async function pickFile(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    setText(await file.text())
+    setError(null)
+    setDone(null)
+  }
+
+  function downloadTemplate() {
+    const sample = [
+      IMPORT_COLUMNS.join(','),
+      'Hard costs,Structure,,Framing,120000,0,0',
+      'Soft costs,Permits & fees,A.01,Building permit,9500,4200,546'
+    ].join('\r\n')
+    downloadCsv('budget-template.csv', sample)
+  }
+
+  async function submit(event: FormEvent) {
+    event.preventDefault()
+    const { rows, error: parseError } = parseImport(text)
+    if (parseError) {
+      setError(parseError)
+      return
+    }
+    if (rows.length === 0) {
+      setError('Paste or upload some rows first')
+      return
+    }
+    if (
+      mode === 'replace' &&
+      !window.confirm('Replace mode deletes every existing cost line and category on this project first. Continue?')
+    ) {
+      return
+    }
+    setBusy(true)
+    setError(null)
+    setDone(null)
+    try {
+      const res = await api<{ linesCreated: number; categoriesCreated: number }>(
+        `/sites/${siteId}/budget/import`,
+        { method: 'POST', body: { rows, mode } }
+      )
+      setDone(
+        `Imported ${res.linesCreated} cost line${res.linesCreated === 1 ? '' : 's'} and created ${res.categoriesCreated} categor${res.categoriesCreated === 1 ? 'y' : 'ies'}.`
+      )
+      onImported()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not import the budget')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Modal
+      title="Import budget"
+      wide
+      onClose={onClose}
+      footer={
+        <>
+          <Button variant="ghost" onClick={downloadTemplate} disabled={busy}>
+            <IconDownload size={15} />
+            Template
+          </Button>
+          <Button type="button" variant="ghost" onClick={onClose} disabled={busy}>
+            Cancel
+          </Button>
+          <Button form="budget-import-form" type="submit" loading={busy} disabled={parsed.rows.length === 0}>
+            Import {parsed.rows.length > 0 ? `${parsed.rows.length} row${parsed.rows.length === 1 ? '' : 's'}` : ''}
+          </Button>
+        </>
+      }
+    >
+      <form id="budget-import-form" onSubmit={submit}>
+        <ErrorNote message={error} />
+        {done ? <div className="alert alert-info" style={{ marginBottom: 14 }}>{done}</div> : null}
+
+        <p className="small muted" style={{ marginBottom: 14 }}>
+          Columns: <span className="mono">group, category, code, name, budget, spent, hst</span>. Group is
+          <em> Land</em>, <em>Soft costs</em> or <em>Hard costs</em>. Categories are created automatically when
+          they do not exist yet.
+        </p>
+
+        <Field label="Spreadsheet file" hint="CSV or tab separated. The header row is optional.">
+          <input className="input" type="file" accept=".csv,.tsv,.txt,text/csv" onChange={pickFile} />
+        </Field>
+
+        <Field label="Or paste rows">
+          <textarea
+            className="textarea"
+            value={text}
+            onChange={(e) => {
+              setText(e.target.value)
+              setError(null)
+              setDone(null)
+            }}
+            placeholder={'Hard costs,Structure,,Framing,120000,0,0'}
+          />
+        </Field>
+
+        {text.trim() ? (
+          <div className={`budget-import-preview${parsed.error ? ' is-error' : ''}`}>
+            {parsed.error
+              ? parsed.error
+              : `${parsed.rows.length} row${parsed.rows.length === 1 ? '' : 's'} parsed and ready to import.`}
+          </div>
+        ) : null}
+
+        <div className="mode-row">
+          <label className={`mode-option${mode === 'append' ? ' on' : ''}`}>
+            <input type="radio" name="budget-import-mode" checked={mode === 'append'} onChange={() => setMode('append')} />
+            <span>
+              <strong>Append</strong>
+              <span className="small muted">Keep what is already there and add the new rows.</span>
+            </span>
+          </label>
+          <label className={`mode-option${mode === 'replace' ? ' on' : ''}`}>
+            <input type="radio" name="budget-import-mode" checked={mode === 'replace'} onChange={() => setMode('replace')} />
+            <span>
+              <strong>Replace</strong>
+              <span className="small muted">Clear every cost line and category first.</span>
+            </span>
+          </label>
         </div>
       </form>
     </Modal>

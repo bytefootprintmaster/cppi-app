@@ -126,6 +126,27 @@ export const IconCheck = makeIcon(<path d="m5 12.5 4.5 4.5L19 7" />)
 export const IconX = makeIcon(<path d="M6 6l12 12M18 6 6 18" />)
 export const IconChevronRight = makeIcon(<path d="m9 5 7 7-7 7" />)
 export const IconChevronLeft = makeIcon(<path d="m15 5-7 7 7 7" />)
+export const IconChevronDown = makeIcon(<path d="m5 9 7 7 7-7" />)
+
+export const IconDownload = makeIcon(
+  <>
+    <path d="M12 4v12" />
+    <path d="m7 11 5 5 5-5" />
+    <path d="M4 17v1.5A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V17" />
+  </>
+)
+
+/** Six-dot handle used to show a row can be dragged. */
+export const IconGrip = makeIcon(
+  <g fill="currentColor" stroke="none">
+    <circle cx="9" cy="5.5" r="1.4" />
+    <circle cx="15" cy="5.5" r="1.4" />
+    <circle cx="9" cy="12" r="1.4" />
+    <circle cx="15" cy="12" r="1.4" />
+    <circle cx="9" cy="18.5" r="1.4" />
+    <circle cx="15" cy="18.5" r="1.4" />
+  </g>
+)
 
 export const IconSettings = makeIcon(
   <>
