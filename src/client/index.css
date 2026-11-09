@@ -982,6 +982,85 @@ tr.drop-target > td {
   white-space: nowrap;
 }
 
+/* --------------------------- file search & tags ------------------------- */
+
+.file-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.file-sort { width: 170px; flex-shrink: 0; }
+
+.tag-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.file-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+}
+.file-tags .chip {
+  padding: 2px 9px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Tag editor inside the modal */
+.tag-editor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 46px;
+  padding: 8px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+.tag-editor:focus-within {
+  border-color: var(--green-500);
+  box-shadow: var(--ring);
+}
+.tag-editor .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: default;
+}
+.chip-x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  line-height: 1;
+  opacity: 0.75;
+  cursor: pointer;
+}
+.chip-x:hover { opacity: 1; }
+.tag-input {
+  flex: 1;
+  min-width: 120px;
+  padding: 4px 0;
+  border: none;
+  outline: none;
+  background: none;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--ink);
+}
+.tag-suggest { margin-top: 14px; }
+
 .timeline { display: flex; flex-direction: column; gap: 14px; }
 .timeline-item { display: flex; gap: 12px; }
 .timeline-dot {
@@ -992,6 +1071,136 @@ tr.drop-target > td {
   margin-top: 6px;
   flex-shrink: 0;
   box-shadow: 0 0 0 4px var(--green-100);
+}
+
+/* --------------------- document intelligence (agent) ------------------- */
+
+/* Evidence badge on a file card. */
+.file-evidence {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+}
+.file-evidence .chip {
+  padding: 2px 9px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Expand/collapse control on an AI remark. */
+.remark-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--green-700);
+  cursor: pointer;
+}
+.remark-toggle:hover { text-decoration: underline; }
+
+.remark-details {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--green-50);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 13.5px;
+}
+.remark-details-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 3px;
+}
+.remark-source { border-top: 1px solid var(--line); padding-top: 8px; }
+
+.fact-list {
+  display: grid;
+  grid-template-columns: minmax(0, 34%) 1fr;
+  gap: 4px 12px;
+  margin: 0;
+}
+.fact-list dt { color: var(--ink-soft); font-weight: 600; }
+.fact-list dd { margin: 0; }
+.fact-verification {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.fact-verification.verified { background: var(--green-100); color: var(--green-800); }
+.fact-verification.extracted { background: #e3edff; color: #1d4ed8; }
+.fact-verification.ai_interpretation { background: #fdf0d5; color: #92610a; }
+
+.detail-bullets { margin: 0; padding-left: 18px; }
+.detail-bullets li { margin-bottom: 3px; }
+
+/* Evidence coverage + findings. */
+.coverage-block { margin-bottom: 14px; }
+.coverage-block:last-child { margin-bottom: 0; }
+.evidence-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 5px;
+}
+.evidence-chips .chip {
+  cursor: default;
+  padding: 4px 11px;
+  font-size: 12px;
+}
+
+.finding-list { display: flex; flex-direction: column; gap: 12px; }
+.finding {
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--amber);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  background: var(--surface);
+}
+.finding.resolved {
+  border-left-color: var(--line-strong);
+  opacity: 0.72;
+}
+.finding-head { display: flex; align-items: center; gap: 8px; }
+.finding-kind {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.finding-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 7px;
+  font-weight: 600;
+}
+.finding-detail { margin: 6px 0 0; font-size: 13.5px; }
+.resolved-block { margin-top: 14px; }
+.resolved-block > summary {
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin-bottom: 10px;
 }
 
 /* -------------------------------- login --------------------------------- */
@@ -1148,6 +1357,8 @@ tr.drop-target > td {
   .search-form .btn { width: 100%; }
   .search-result { padding: 14px 16px; }
 
+  .file-sort { width: 100%; }
+
   .content { padding: 14px 14px 44px; }
   .card-header { padding: 14px 16px; }
   .card-body { padding: 16px; }
@@ -1188,4 +1399,170 @@ tr.drop-target > td {
   .file-grid { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); }
   .sidebar-footer .user-chip .name { font-size: 12.5px; }
 }
+
+/* =========================================================================
+   Mobile card interactions
+   Cards open on tap (no separate "Open" button), their actions live behind a
+   3-dot menu, and nothing forces the page to scroll sideways.
+   ========================================================================= */
+
+/* Cards that open a section when tapped. */
+.is-clickable { cursor: pointer; transition: border-color 0.15s ease, box-shadow 0.15s ease; }
+.is-clickable:hover { border-color: var(--green-300); box-shadow: var(--shadow); }
+.is-clickable:focus-visible {
+  outline: none;
+  border-color: var(--green-500);
+  box-shadow: var(--ring);
+}
+
+/* 3-dot overflow menu. */
+.card-menu { position: relative; flex-shrink: 0; }
+.card-menu-btn {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.card-menu-btn:hover,
+.card-menu-btn[aria-expanded='true'] {
+  background: var(--green-50);
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+.card-menu-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 40;
+  min-width: 178px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+}
+.card-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 9px 11px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.card-menu-item:hover { background: var(--green-50); }
+.card-menu-item.danger { color: var(--red); }
+.card-menu-item.danger:hover { background: var(--red-bg); }
+.card-menu-item > svg { flex-shrink: 0; color: currentColor; }
+
+/* Project card (Projects page): whole card opens the project. */
+.project-card { display: flex; flex-direction: column; }
+.project-card .card-body { flex: 1; padding: 18px; }
+.project-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px 12px 18px;
+  border-top: 1px solid var(--line);
+}
+.project-card-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--green-700);
+}
+.project-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 14px;
+}
+
+/* KPI cards stay small and sit two-per-row on phones. */
+.kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 861px) {
+  .kpi-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 860px) {
+  .kpi { padding: 13px 14px; }
+  .kpi-value { font-size: 22px; margin-top: 5px; }
+  .kpi-foot { font-size: 11px; }
+}
+@media (max-width: 400px) {
+  .kpi { padding: 12px; }
+  .kpi-value { font-size: 19px; }
+  .kpi-foot { font-size: 10.5px; }
+}
+
+/* Dashboard project tracker: table on desktop, tappable cards on phones. */
+.tracker-cards { display: none; }
+@media (max-width: 860px) {
+  .tracker-table { display: none; }
+  .tracker-cards { display: flex; flex-direction: column; gap: 12px; }
+}
+.tracker-card {
+  display: block;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  color: inherit;
+  text-decoration: none;
+}
+.tracker-card:hover { border-color: var(--green-300); box-shadow: var(--shadow); }
+.tracker-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.tracker-card-name { font-weight: 700; }
+.tracker-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px;
+  margin-top: 14px;
+}
+.tracker-card-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.tracker-card-value { margin-top: 4px; font-weight: 600; }
+.tracker-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+/* File card: whole card opens; the 3-dot menu floats over the thumbnail. */
+.file-card { position: relative; }
+.file-card .card-menu { position: absolute; top: 8px; right: 8px; z-index: 6; }
+.file-card .card-menu-btn {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: var(--line);
+}
+.file-name { overflow-wrap: anywhere; }
 

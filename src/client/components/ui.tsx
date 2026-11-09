@@ -1,6 +1,13 @@
-import { useState, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ButtonHTMLAttributes,
+  type InputHTMLAttributes,
+  type ReactNode
+} from 'react'
 import { initials } from '../lib/format'
-import { IconEye, IconEyeOff } from './icons'
+import { IconEye, IconEyeOff, IconMore } from './icons'
 
 /* --------------------------------- button -------------------------------- */
 
@@ -45,6 +52,83 @@ export function CardHeader({ title, sub, action }: { title: string; sub?: string
         {sub ? <div className="card-sub">{sub}</div> : null}
       </div>
       {action}
+    </div>
+  )
+}
+
+/* ------------------------------- card menu ------------------------------- */
+
+export interface MenuItem {
+  label: string
+  icon?: ReactNode
+  onClick: () => void
+  danger?: boolean
+}
+
+/**
+ * A 3-dot overflow menu for card actions. Keeps a card's edit/delete actions out
+ * of the way until needed, which matters on mobile where always-visible buttons
+ * crowd the layout. Clicks are stopped from bubbling so the menu can sit inside
+ * a card that is itself clickable.
+ */
+export function CardMenu({ items, label = 'More actions' }: { items: MenuItem[]; label?: string }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    function onPointerDown(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node)) setOpen(false)
+    }
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('mousedown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [open])
+
+  if (items.length === 0) return null
+
+  return (
+    <div className="card-menu" ref={ref} onClick={(event) => event.stopPropagation()}>
+      <button
+        type="button"
+        className="card-menu-btn"
+        aria-label={label}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        title={label}
+        onClick={(event) => {
+          event.stopPropagation()
+          setOpen((value) => !value)
+        }}
+      >
+        <IconMore size={16} />
+      </button>
+      {open ? (
+        <div className="card-menu-list" role="menu">
+          {items.map((item) => (
+            <button
+              key={item.label}
+              type="button"
+              role="menuitem"
+              className={`card-menu-item${item.danger ? ' danger' : ''}`}
+              onClick={(event) => {
+                event.stopPropagation()
+                setOpen(false)
+                item.onClick()
+              }}
+            >
+              {item.icon}
+              {item.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
     </div>
   )
 }

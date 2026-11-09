@@ -89,9 +89,40 @@ export interface AssetRecord {
   stageId?: string
   /** Folder the file lives in. Unset means the project root (unsorted). */
   folderId?: string
+  /** Free-form labels for filtering and search. Deduped, case-insensitively. */
+  tags?: string[]
   uploadedBy: string
   uploadedByName: string
   uploadedAt: string
+}
+
+/**
+ * The twelve evidence classes (spec section 2). A file may carry several. The
+ * agent is code-guarded so a drawing, quotation, survey plan or certificate can
+ * never be recorded as `construction_progress`.
+ */
+export type EvidenceClass =
+  | 'land_survey'
+  | 'design'
+  | 'engineering'
+  | 'permit_approval'
+  | 'contractor_compliance'
+  | 'procurement_quote'
+  | 'executed_contract'
+  | 'commencement'
+  | 'construction_progress'
+  | 'inspection_verification'
+  | 'financial_payment'
+  | 'completion_occupancy'
+
+/** How a fact was arrived at: a verified fact, read off the document, or inferred. */
+export type VerificationStatus = 'verified' | 'extracted' | 'ai_interpretation'
+
+/** One key/value fact pulled from a document, tagged with its verification. */
+export interface ExtractedFact {
+  label: string
+  value: string
+  verification?: VerificationStatus
 }
 
 export interface RemarkRecord {
@@ -102,6 +133,118 @@ export interface RemarkRecord {
   authorId: string
   authorName: string
   authorRole: Role
+  createdAt: string
+  /** ---- Expanded document intelligence (all optional, agent-written) ---- */
+  /** One-line summary of the document this remark is about. */
+  summary?: string
+  /** Key information pulled from the file. */
+  extracted?: ExtractedFact[]
+  /** Why the file matters to this project. */
+  relevance?: string
+  /** One or more of the twelve evidence classes. */
+  evidenceClasses?: EvidenceClass[]
+  /** How the document as a whole was understood. */
+  verificationStatus?: VerificationStatus
+  /** What the document does NOT prove. */
+  limitations?: string
+  /** Suggested next steps. */
+  recommendedActions?: string[]
+  /** Other project documents this one relates to. */
+  relatedDocuments?: string[]
+  /** File name the remark is about. */
+  sourceDocument?: string
+  /** Page / image reference inside the file. */
+  sourceRef?: string
+  /** 0..1 confidence in the extraction. */
+  confidence?: number
+  /** Set when the evidence guard overrode a class (e.g. a drawing labelled as progress). */
+  classificationNotes?: string[]
+  /** Which processor produced this record, e.g. "docintel-1". */
+  processingVersion?: string
+  processedBy?: string
+}
+
+/**
+ * One row per asset: the agent's structured understanding of a single file
+ * (spec sections 1, 2, 6). Re-analysing a file updates the row and appends a
+ * revision rather than overwriting the earlier conclusions.
+ */
+export interface DocumentIntelligenceRecord {
+  siteId: string
+  assetId: string
+  s3Key?: string
+  name?: string
+  category?: AssetCategory
+  docType?: string
+  issuer?: string
+  documentDate?: string
+  referenceNumber?: string
+  property?: string
+  project?: string
+  summary?: string
+  facts?: ExtractedFact[]
+  /** Technical / regulatory / financial / contractual detail. */
+  extracts?: { kind: string; detail: string; verification?: VerificationStatus }[]
+  purpose?: string
+  relevance?: string
+  evidenceClasses?: EvidenceClass[]
+  verificationStatus?: VerificationStatus
+  missingInformation?: string[]
+  inconsistencies?: string[]
+  risks?: string[]
+  limitations?: string
+  recommendedActions?: string[]
+  confidence?: number
+  sourceRef?: string
+  classificationNotes?: string[]
+  processingVersion?: string
+  processedBy?: string
+  revisionHistory?: { at: string; processingVersion?: string; summary?: string; confidence?: number }[]
+  createdAt: string
+  updatedAt: string
+}
+
+/** What a proactive review may flag (spec section 7). */
+export type FindingKind =
+  | 'missing_document'
+  | 'expiring_certificate'
+  | 'unsigned_quotation'
+  | 'unapproved_change'
+  | 'missing_inspection'
+  | 'inconsistency'
+
+export type FindingSeverity = 'low' | 'medium' | 'high'
+export type FindingStatus = 'open' | 'resolved'
+
+/** A documentation gap the agent noticed. Advice only — never a dashboard change. */
+export interface FindingRecord {
+  siteId: string
+  findingId: string
+  kind: FindingKind
+  severity: FindingSeverity
+  title: string
+  detail?: string
+  relatedAssets?: string[]
+  status: FindingStatus
+  source?: string
+  createdBy: string
+  createdAt: string
+  updatedAt?: string
+}
+
+/** One edge of the project relationship map (spec section 4). */
+export interface RelationshipRecord {
+  siteId: string
+  relId: string
+  fromType: string
+  fromId: string
+  fromLabel?: string
+  relation: string
+  toType: string
+  toId: string
+  toLabel?: string
+  note?: string
+  createdBy: string
   createdAt: string
 }
 

@@ -32,6 +32,10 @@ export const T = {
   /** File search index. Written by the agent, read here for portal search. */
   fileIndex: `${env.TABLE_PREFIX}file_index`,
   fileTerms: `${env.TABLE_PREFIX}file_terms`,
+  /** Intelligence layer, written by the agent and read here for the dashboard. */
+  documentIntelligence: `${env.TABLE_PREFIX}document_intelligence`,
+  findings: `${env.TABLE_PREFIX}findings`,
+  relationships: `${env.TABLE_PREFIX}relationships`,
   kpis: `${env.TABLE_PREFIX}kpis`
 } as const
 

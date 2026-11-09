@@ -98,6 +98,13 @@ export const IconFolder = makeIcon(
   </>
 )
 
+export const IconTag = makeIcon(
+  <>
+    <path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z" />
+    <circle cx="7.5" cy="7.5" r="1.3" />
+  </>
+)
+
 export const IconEdit = makeIcon(
   <>
     <path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17z" />
@@ -120,6 +127,15 @@ export const IconExternal = makeIcon(
     <path d="M20 4 11 13" />
     <path d="M19 14v5a1.8 1.8 0 0 1-1.8 1.8H5.8A1.8 1.8 0 0 1 4 19V7.8A1.8 1.8 0 0 1 5.8 6H11" />
   </>
+)
+
+/** Three-dot overflow menu (kebab), used for card actions. */
+export const IconMore = makeIcon(
+  <g fill="currentColor" stroke="none">
+    <circle cx="12" cy="5" r="1.6" />
+    <circle cx="12" cy="12" r="1.6" />
+    <circle cx="12" cy="19" r="1.6" />
+  </g>
 )
 
 export const IconCheck = makeIcon(<path d="m5 12.5 4.5 4.5L19 7" />)

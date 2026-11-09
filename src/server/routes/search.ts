@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { T, getItem, queryAll } from '../db'
 import { HttpError, asyncHandler, optStr } from '../lib/http'
 import { accessibleSites } from '../services'
-import type { FileIndexRecord, FileTermRecord } from '../types'
+import type { AssetRecord, FileIndexRecord, FileTermRecord } from '../types'
 
 /**
  * Portal-side search over the file index the agent writes.
@@ -126,5 +126,15 @@ searchRouter.get('/', asyncHandler(async (req, res) => {
     )
     .filter((row): row is NonNullable<typeof row> => row !== null)
 
-  res.json({ query, count: results.length, results })
+  // Tags live on the asset row, not the index, so this reflects a tag added a
+  // moment ago without waiting for the agent to re-index the file.
+  const tagged = await Promise.all(
+    results.map(async (result) => {
+      if (!result.assetId) return result
+      const asset = await getItem<AssetRecord>(T.assets, { siteId: result.siteId, assetId: result.assetId })
+      return { ...result, tags: asset?.tags ?? [] }
+    })
+  )
+
+  res.json({ query, count: tagged.length, results: tagged })
 }))

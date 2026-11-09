@@ -24,7 +24,12 @@ import type {
   BudgetCategoryRecord,
   BudgetGroup,
   BudgetLineRecord,
+  DocumentIntelligenceRecord,
+  EvidenceClass,
+  FindingRecord,
+  FindingStatus,
   MilestoneRecord,
+  RelationshipRecord,
   RemarkRecord,
   SiteRecord,
   StageRecord
@@ -48,6 +53,34 @@ function money(value: unknown, field: string): number {
     throw new HttpError(400, `"${field}" must be a number of 0 or more`)
   }
   return Math.round(n * 100) / 100
+}
+
+const MAX_TAGS = 20
+const MAX_TAG_LENGTH = 40
+
+/**
+ * Clean a caller-supplied tag list: trim, collapse inner whitespace, drop blanks
+ * and case-insensitive duplicates, and refuse anything oversized. Returning the
+ * same set for "Survey" and "survey" keeps the filter list free of near-dupes.
+ */
+function readTags(value: unknown): string[] {
+  if (!Array.isArray(value)) throw new HttpError(400, '"tags" must be a list of strings')
+  const tags: string[] = []
+  const seen = new Set<string>()
+  for (const raw of value) {
+    if (typeof raw !== 'string') throw new HttpError(400, 'Each tag must be text')
+    const tag = raw.trim().replace(/\s+/g, ' ')
+    if (!tag) continue
+    if (tag.length > MAX_TAG_LENGTH) {
+      throw new HttpError(400, `Tags must be ${MAX_TAG_LENGTH} characters or fewer`)
+    }
+    const key = tag.toLowerCase()
+    if (seen.has(key)) continue
+    seen.add(key)
+    tags.push(tag)
+  }
+  if (tags.length > MAX_TAGS) throw new HttpError(400, `A file can have at most ${MAX_TAGS} tags`)
+  return tags
 }
 
 function listFolders(siteId: string): Promise<AssetFolderRecord[]> {
@@ -765,6 +798,23 @@ siteRouter.get('/:siteId/assets/:assetId/url', asyncHandler(async (req, res) => 
   res.json({ url: await presignDownload(asset.s3Key), name: asset.name, contentType: asset.contentType })
 }))
 
+/** Tagging is a curation step, so it follows the same rule as deleting a file. */
+siteRouter.patch('/:siteId/assets/:assetId', asyncHandler(async (req, res) => {
+  const site = await requireSiteAccess(req.user!, req.params.siteId)
+  const asset = await getItem<AssetRecord>(T.assets, { siteId: site.siteId, assetId: req.params.assetId })
+  if (!asset) throw new HttpError(404, 'File not found')
+  if (asset.uploadedBy !== req.user!.userId && req.user!.role !== 'admin') {
+    throw new HttpError(403, 'You can only tag files you uploaded')
+  }
+
+  const body = (req.body ?? {}) as Record<string, unknown>
+  if (body.tags === undefined) throw new HttpError(400, '"tags" is required')
+  const tags = readTags(body.tags)
+
+  await updateFields(T.assets, { siteId: site.siteId, assetId: asset.assetId }, { tags })
+  res.json({ assetId: asset.assetId, tags })
+}))
+
 siteRouter.delete('/:siteId/assets/:assetId', asyncHandler(async (req, res) => {
   const site = await requireSiteAccess(req.user!, req.params.siteId)
   const asset = await getItem<AssetRecord>(T.assets, { siteId: site.siteId, assetId: req.params.assetId })
@@ -816,4 +866,81 @@ siteRouter.delete('/:siteId/remarks/:remarkId', asyncHandler(async (req, res) =>
   }
   await deleteItem(T.remarks, { siteId: site.siteId, remarkId: remark.remarkId })
   res.json({ ok: true })
+}))
+
+/* ---------------------- document intelligence ----------------------- */
+
+/** Canonical order of the twelve evidence classes (spec section 2). */
+const EVIDENCE_CLASS_ORDER: EvidenceClass[] = [
+  'land_survey',
+  'design',
+  'engineering',
+  'permit_approval',
+  'contractor_compliance',
+  'procurement_quote',
+  'executed_contract',
+  'commencement',
+  'construction_progress',
+  'inspection_verification',
+  'financial_payment',
+  'completion_occupancy'
+]
+
+/** What the agent has understood about each file, plus which evidence is still missing. */
+siteRouter.get('/:siteId/intelligence', asyncHandler(async (req, res) => {
+  await requireSiteAccess(req.user!, req.params.siteId)
+  const rows = await queryAll<DocumentIntelligenceRecord>(T.documentIntelligence, {
+    KeyConditionExpression: 'siteId = :s',
+    ExpressionAttributeValues: { ':s': req.params.siteId }
+  })
+  rows.sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''))
+
+  const covered = new Set<EvidenceClass>()
+  for (const row of rows) for (const cls of row.evidenceClasses ?? []) covered.add(cls)
+
+  res.json({
+    documents: rows,
+    evidenceCovered: EVIDENCE_CLASS_ORDER.filter((cls) => covered.has(cls)),
+    evidenceMissing: EVIDENCE_CLASS_ORDER.filter((cls) => !covered.has(cls))
+  })
+}))
+
+/** Gaps the agent's review has raised (missing documents, expiring certificates, ...). */
+siteRouter.get('/:siteId/findings', asyncHandler(async (req, res) => {
+  await requireSiteAccess(req.user!, req.params.siteId)
+  const rows = await queryAll<FindingRecord>(T.findings, {
+    KeyConditionExpression: 'siteId = :s',
+    ExpressionAttributeValues: { ':s': req.params.siteId }
+  })
+  res.json({ findings: rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt)) })
+}))
+
+/** A human acknowledges or dismisses a finding. Resolving is admin-only. */
+siteRouter.patch('/:siteId/findings/:findingId', asyncHandler(async (req, res) => {
+  const site = await requireSiteAccess(req.user!, req.params.siteId)
+  if (req.user!.role !== 'admin') throw new HttpError(403, 'Only admins can update findings')
+  const finding = await getItem<FindingRecord>(T.findings, {
+    siteId: site.siteId,
+    findingId: req.params.findingId
+  })
+  if (!finding) throw new HttpError(404, 'Finding not found')
+
+  const body = (req.body ?? {}) as Record<string, unknown>
+  const status = oneOf<FindingStatus>(body.status, ['open', 'resolved'], 'status')
+  await updateFields(
+    T.findings,
+    { siteId: site.siteId, findingId: finding.findingId },
+    { status, updatedAt: nowIso() }
+  )
+  res.json({ findingId: finding.findingId, status })
+}))
+
+/** Property → project → contractor → contract → work package → document → payment. */
+siteRouter.get('/:siteId/relationships', asyncHandler(async (req, res) => {
+  await requireSiteAccess(req.user!, req.params.siteId)
+  const rows = await queryAll<RelationshipRecord>(T.relationships, {
+    KeyConditionExpression: 'siteId = :s',
+    ExpressionAttributeValues: { ':s': req.params.siteId }
+  })
+  res.json({ relationships: rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt)) })
 }))

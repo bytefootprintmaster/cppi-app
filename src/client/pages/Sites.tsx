@@ -1,24 +1,42 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+import { api } from '../lib/api'
 import { useApi } from '../lib/useApi'
 import { useAuth } from '../lib/auth'
 import { formatDate } from '../lib/format'
 import { PageBody, PageHeader } from '../components/Layout'
 import { SiteFormModal } from '../components/SiteForm'
-import { Button, Card, Empty, ErrorNote, Loading, SiteStatusBadge } from '../components/ui'
-import { IconMapPin, IconPlus } from '../components/icons'
+import { Button, Card, CardMenu, Empty, ErrorNote, Loading, SiteStatusBadge } from '../components/ui'
+import { IconChevronRight, IconEdit, IconMapPin, IconPlus, IconTrash } from '../components/icons'
 import type { SiteRecord } from '../../server/types'
 
 export function SitesPage() {
   const { user } = useAuth()
   const { data, error, loading, reload } = useApi<{ sites: SiteRecord[] }>('/sites')
   const [creating, setCreating] = useState(false)
+  const [editing, setEditing] = useState<SiteRecord | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
   const navigate = useNavigate()
   const isAdmin = user?.role === 'admin'
 
   useEffect(() => {
     document.title = 'Projects · CPPI'
   }, [])
+
+  function open(site: SiteRecord) {
+    navigate(`/sites/${site.siteId}`, { state: { site } })
+  }
+
+  async function removeSite(site: SiteRecord) {
+    if (!window.confirm(`Delete "${site.name}" and everything in it? This cannot be undone.`)) return
+    setActionError(null)
+    try {
+      await api(`/sites/${site.siteId}`, { method: 'DELETE' })
+      await reload()
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Could not delete the project')
+    }
+  }
 
   return (
     <>
@@ -36,7 +54,7 @@ export function SitesPage() {
       />
 
       <PageBody>
-        <ErrorNote message={error} />
+        <ErrorNote message={error || actionError} />
 
         {loading && !data ? (
           <Loading />
@@ -59,8 +77,20 @@ export function SitesPage() {
         ) : (
           <div className="grid grid-3">
             {data.sites.map((site) => (
-              <Card key={site.siteId}>
-                <div className="card-body">
+              <Card key={site.siteId} className="is-clickable project-card">
+                <div
+                  className="card-body"
+                  role="link"
+                  tabIndex={0}
+                  aria-label={`Open ${site.name}`}
+                  onClick={() => open(site)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      open(site)
+                    }
+                  }}
+                >
                   <div className="row-between" style={{ alignItems: 'flex-start' }}>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontWeight: 700, fontSize: 16 }}>{site.name}</div>
@@ -85,11 +115,26 @@ export function SitesPage() {
                     <span>Target {formatDate(site.targetDate)}</span>
                   </div>
                 </div>
-                <div className="card-header" style={{ borderBottom: 'none', borderTop: '1px solid var(--line)' }}>
+                <div className="project-card-foot">
                   <span className="small muted">Updated {formatDate(site.updatedAt)}</span>
-                  <Link className="btn btn-ghost btn-sm" to={`/sites/${site.siteId}`} state={{ site }}>
-                    Open
-                  </Link>
+                  {isAdmin ? (
+                    <CardMenu
+                      items={[
+                        { label: 'Edit', icon: <IconEdit size={14} />, onClick: () => setEditing(site) },
+                        {
+                          label: 'Delete',
+                          icon: <IconTrash size={14} />,
+                          danger: true,
+                          onClick: () => void removeSite(site)
+                        }
+                      ]}
+                    />
+                  ) : (
+                    <span className="project-card-open">
+                      <span className="small muted">Open</span>
+                      <IconChevronRight size={16} />
+                    </span>
+                  )}
                 </div>
               </Card>
             ))}
@@ -108,6 +153,17 @@ export function SitesPage() {
             setCreating(false)
             void reload()
             navigate('/sites')
+          }}
+        />
+      ) : null}
+
+      {editing ? (
+        <SiteFormModal
+          site={editing}
+          onClose={() => setEditing(null)}
+          onSaved={() => {
+            setEditing(null)
+            void reload()
           }}
         />
       ) : null}

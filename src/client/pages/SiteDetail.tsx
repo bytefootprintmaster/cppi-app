@@ -1,4 +1,13 @@
-import { Fragment, useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
+import {
+  Fragment,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+  type KeyboardEvent
+} from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api } from '../lib/api'
 import { useApi } from '../lib/useApi'
@@ -13,6 +22,7 @@ import {
   Button,
   Card,
   CardHeader,
+  CardMenu,
   Empty,
   ErrorNote,
   Field,
@@ -24,7 +34,9 @@ import {
   StageStatusBadge
 } from '../components/ui'
 import {
+  IconAlert,
   IconBuilding,
+  IconCheck,
   IconChevronDown,
   IconChevronRight,
   IconDownload,
@@ -36,6 +48,7 @@ import {
   IconLayers,
   IconPlus,
   IconSearch,
+  IconTag,
   IconTrash,
   IconUpload,
   IconX
@@ -47,12 +60,18 @@ import type {
   BudgetCategoryRecord,
   BudgetGroup,
   BudgetLineRecord,
+  DocumentIntelligenceRecord,
+  EvidenceClass,
+  FindingKind,
+  FindingRecord,
+  FindingSeverity,
   MilestoneRecord,
   MilestoneStatus,
   RemarkRecord,
   SiteRecord,
   StageRecord,
-  StageStatus
+  StageStatus,
+  VerificationStatus
 } from '../../server/types'
 
 interface SiteDetailResponse {
@@ -82,7 +101,51 @@ const BUDGET_GROUPS: Array<{ value: BudgetGroup; label: string }> = [
 
 const BUDGET_GROUP_LABEL: Record<BudgetGroup, string> = { land: 'Land', soft: 'Soft costs', hard: 'Hard costs' }
 
-type Tab = 'overview' | 'framework' | 'budget' | 'files' | 'remarks'
+/* ---- document intelligence labels (spec sections 2, 5, 6) ---- */
+
+const EVIDENCE_LABEL: Record<EvidenceClass, string> = {
+  land_survey: 'Land & survey',
+  design: 'Design',
+  engineering: 'Engineering',
+  permit_approval: 'Permit & approvals',
+  contractor_compliance: 'Contractor compliance',
+  procurement_quote: 'Quotation',
+  executed_contract: 'Executed contract',
+  commencement: 'Commencement',
+  construction_progress: 'Construction progress',
+  inspection_verification: 'Inspection',
+  financial_payment: 'Financial',
+  completion_occupancy: 'Completion & occupancy'
+}
+
+const VERIFICATION_LABEL: Record<VerificationStatus, string> = {
+  verified: 'Verified',
+  extracted: 'Extracted',
+  ai_interpretation: 'AI interpretation'
+}
+
+const VERIFICATION_TONE: Record<VerificationStatus, 'green' | 'blue' | 'amber'> = {
+  verified: 'green',
+  extracted: 'blue',
+  ai_interpretation: 'amber'
+}
+
+const FINDING_KIND_LABEL: Record<FindingKind, string> = {
+  missing_document: 'Missing document',
+  expiring_certificate: 'Expiring certificate',
+  unsigned_quotation: 'Unsigned quotation',
+  unapproved_change: 'Unapproved change',
+  missing_inspection: 'Missing inspection',
+  inconsistency: 'Inconsistency'
+}
+
+const FINDING_SEVERITY_TONE: Record<FindingSeverity, 'red' | 'amber' | 'gray'> = {
+  high: 'red',
+  medium: 'amber',
+  low: 'gray'
+}
+
+type Tab = 'overview' | 'framework' | 'budget' | 'files' | 'remarks' | 'findings'
 
 export function SiteDetailPage() {
   const { siteId = '' } = useParams()
@@ -172,6 +235,7 @@ export function SiteDetailPage() {
               ['framework', 'Framework'],
               ['budget', 'Budget'],
               ['files', 'Files'],
+              ['findings', 'Findings'],
               ['remarks', 'Remarks']
             ] as Array<[Tab, string]>
           ).map(([key, label]) => (
@@ -196,6 +260,7 @@ export function SiteDetailPage() {
           />
         ) : null}
         {tab === 'files' ? <FilesTab siteId={site.siteId} canWrite={canWrite} isAdmin={isAdmin} /> : null}
+        {tab === 'findings' ? <FindingsTab siteId={site.siteId} isAdmin={isAdmin} /> : null}
         {tab === 'remarks' ? <RemarksTab siteId={site.siteId} stages={stages} canWrite={canWrite} /> : null}
       </PageBody>
 
@@ -378,33 +443,32 @@ function FrameworkTab({
                   <div className="row">
                     <StageStatusBadge status={stage.status} />
                     {isAdmin ? (
-                      <>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setMilestoneModal({ milestone: null, stageId: stage.stageId })}
-                        >
-                          <IconPlus size={14} />
-                          Milestone
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => setStageModal({ stage })}>
-                          Edit
-                        </Button>
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          loading={busyId === stage.stageId}
-                          onClick={() => {
-                            if (!window.confirm(`Delete stage "${stage.name}" and its milestones?`)) return
-                            void run(
-                              () => api(`/sites/${siteId}/stages/${stage.stageId}`, { method: 'DELETE' }),
-                              stage.stageId
-                            )
-                          }}
-                        >
-                          <IconTrash size={14} />
-                        </Button>
-                      </>
+                      <CardMenu
+                        items={[
+                          {
+                            label: 'Add milestone',
+                            icon: <IconPlus size={14} />,
+                            onClick: () => setMilestoneModal({ milestone: null, stageId: stage.stageId })
+                          },
+                          {
+                            label: 'Edit stage',
+                            icon: <IconEdit size={14} />,
+                            onClick: () => setStageModal({ stage })
+                          },
+                          {
+                            label: 'Delete stage',
+                            icon: <IconTrash size={14} />,
+                            danger: true,
+                            onClick: () => {
+                              if (!window.confirm(`Delete stage "${stage.name}" and its milestones?`)) return
+                              void run(
+                                () => api(`/sites/${siteId}/stages/${stage.stageId}`, { method: 'DELETE' }),
+                                stage.stageId
+                              )
+                            }
+                          }
+                        ]}
+                      />
                     ) : null}
                   </div>
                 }
@@ -460,28 +524,27 @@ function FrameworkTab({
                           </td>
                         {isAdmin ? (
                           <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setMilestoneModal({ milestone: m, stageId: stage.stageId })}
-                            >
-                              Edit
-                            </Button>
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              style={{ marginLeft: 6 }}
-                              loading={busyId === m.milestoneId}
-                              onClick={() => {
-                                if (!window.confirm(`Delete milestone "${m.name}"?`)) return
-                                void run(
-                                  () => api(`/sites/${siteId}/milestones/${m.milestoneId}`, { method: 'DELETE' }),
-                                  m.milestoneId
-                                )
-                              }}
-                            >
-                              <IconTrash size={14} />
-                            </Button>
+                            <CardMenu
+                              items={[
+                                {
+                                  label: 'Edit milestone',
+                                  icon: <IconEdit size={14} />,
+                                  onClick: () => setMilestoneModal({ milestone: m, stageId: stage.stageId })
+                                },
+                                {
+                                  label: 'Delete milestone',
+                                  icon: <IconTrash size={14} />,
+                                  danger: true,
+                                  onClick: () => {
+                                    if (!window.confirm(`Delete milestone "${m.name}"?`)) return
+                                    void run(
+                                      () => api(`/sites/${siteId}/milestones/${m.milestoneId}`, { method: 'DELETE' }),
+                                      m.milestoneId
+                                    )
+                                  }
+                                }
+                              ]}
+                            />
                           </td>
                         ) : null}
                       </tr>
@@ -1279,7 +1342,7 @@ function BudgetTab({
     <div className="stack">
       <ErrorNote message={error} />
 
-      <div className="grid grid-4">
+      <div className="grid grid-4 kpi-grid">
         <div className="kpi">
           <div className="kpi-label">Total budget</div>
           <div className="kpi-value">{formatMoney(summary.budgeted, { compact: true })}</div>
@@ -1634,22 +1697,22 @@ function BudgetTab({
                                         </td>
                                         {isAdmin ? (
                                           <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                                            <Button
-                                              variant="ghost"
-                                              size="sm"
-                                              onClick={() => setModal({ line, group, categoryId: line.categoryId })}
-                                            >
-                                              <IconEdit size={14} />
-                                            </Button>
-                                            <Button
-                                              variant="danger"
-                                              size="sm"
-                                              style={{ marginLeft: 6 }}
-                                              loading={busyId === line.lineId}
-                                              onClick={() => void remove(line)}
-                                            >
-                                              <IconTrash size={14} />
-                                            </Button>
+                                            <CardMenu
+                                              items={[
+                                                {
+                                                  label: 'Edit line',
+                                                  icon: <IconEdit size={14} />,
+                                                  onClick: () =>
+                                                    setModal({ line, group, categoryId: line.categoryId })
+                                                },
+                                                {
+                                                  label: 'Delete line',
+                                                  icon: <IconTrash size={14} />,
+                                                  danger: true,
+                                                  onClick: () => void remove(line)
+                                                }
+                                              ]}
+                                            />
                                           </td>
                                         ) : null}
                                       </tr>
@@ -2355,6 +2418,141 @@ function FolderFormModal({
   )
 }
 
+type FileSort = 'newest' | 'oldest' | 'name' | 'size'
+
+/**
+ * Free-form tag editor for a single file. Tags already on the file show as
+ * removable chips; typing suggests tags already used elsewhere on the project
+ * so the vocabulary stays consistent without forcing a fixed list.
+ */
+function TagEditorModal({
+  siteId,
+  asset,
+  suggestions,
+  onClose,
+  onSaved
+}: {
+  siteId: string
+  asset: AssetRecord
+  suggestions: string[]
+  onClose: () => void
+  onSaved: (tags: string[]) => void
+}) {
+  const [tags, setTags] = useState<string[]>(asset.tags ?? [])
+  const [draft, setDraft] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const typed = draft.trim().toLowerCase()
+  const options = suggestions.filter(
+    (tag) =>
+      !tags.some((t) => t.toLowerCase() === tag.toLowerCase()) &&
+      (typed === '' || tag.toLowerCase().includes(typed))
+  )
+
+  function add(raw: string) {
+    const tag = raw.trim().replace(/\s+/g, ' ')
+    if (!tag) return
+    setTags((prev) =>
+      prev.some((t) => t.toLowerCase() === tag.toLowerCase()) ? prev : [...prev, tag]
+    )
+    setDraft('')
+  }
+
+  function remove(tag: string) {
+    setTags((prev) => prev.filter((t) => t !== tag))
+  }
+
+  function onKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key === 'Enter' || event.key === ',') {
+      event.preventDefault()
+      add(draft)
+    } else if (event.key === 'Backspace' && !draft && tags.length) {
+      remove(tags[tags.length - 1])
+    }
+  }
+
+  async function submit(event: FormEvent) {
+    event.preventDefault()
+    setBusy(true)
+    setError(null)
+    // Whatever is still in the box gets saved too, so the last tag isn't lost.
+    const next = draft.trim() ? [...tags, draft.trim()] : tags
+    try {
+      const res = await api<{ tags: string[] }>(`/sites/${siteId}/assets/${asset.assetId}`, {
+        method: 'PATCH',
+        body: { tags: next }
+      })
+      onSaved(res.tags)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not save tags')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Modal
+      title="Tags"
+      onClose={onClose}
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose} disabled={busy}>
+            Cancel
+          </Button>
+          <Button form="tag-form" type="submit" loading={busy}>
+            Save tags
+          </Button>
+        </>
+      }
+    >
+      <form id="tag-form" onSubmit={submit}>
+        {error ? <div className="alert alert-error" style={{ marginBottom: 14 }}>{error}</div> : null}
+        <p className="small muted" style={{ marginTop: 0 }}>
+          {asset.name}
+        </p>
+        <Field label="Tags" hint="Press Enter or comma to add. Tags help the whole team find this file.">
+          <div className="tag-editor">
+            {tags.map((tag) => (
+              <span className="chip on" key={tag}>
+                {tag}
+                <button
+                  type="button"
+                  className="chip-x"
+                  onClick={() => remove(tag)}
+                  aria-label={`Remove ${tag}`}
+                >
+                  <IconX size={12} />
+                </button>
+              </span>
+            ))}
+            <input
+              className="tag-input"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={onKeyDown}
+              placeholder={tags.length ? 'Add another…' : 'e.g. survey, permit'}
+              autoFocus
+            />
+          </div>
+        </Field>
+        {options.length > 0 ? (
+          <div className="tag-suggest">
+            <div className="small muted" style={{ marginBottom: 6 }}>Used on this project</div>
+            <div className="tag-bar">
+              {options.slice(0, 12).map((tag) => (
+                <button key={tag} type="button" className="chip" onClick={() => add(tag)}>
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </form>
+    </Modal>
+  )
+}
+
 function FilesTab({
   siteId,
   canWrite,
@@ -2364,9 +2562,19 @@ function FilesTab({
   canWrite: boolean
   isAdmin: boolean
 }) {
-  const { data, error, loading, reload } = useApi<{ assets: AssetRecord[] }>(`/sites/${siteId}/assets`)
+  const { data, setData, error, loading, reload } = useApi<{ assets: AssetRecord[] }>(
+    `/sites/${siteId}/assets`
+  )
   const { data: folderData, reload: reloadFolders } = useApi<{ folders: AssetFolderRecord[] }>(
     `/sites/${siteId}/folders`
+  )
+  // What the agent understood about each file, shown as an evidence badge on its card.
+  const { data: intelData } = useApi<{ documents: DocumentIntelligenceRecord[] }>(
+    `/sites/${siteId}/intelligence`
+  )
+  const intelByAsset = useMemo(
+    () => new Map((intelData?.documents ?? []).map((doc) => [doc.assetId, doc])),
+    [intelData]
   )
   const { user } = useAuth()
   const [urls, setUrls] = useState<Record<string, string>>({})
@@ -2375,6 +2583,10 @@ function FilesTab({
   const [actionError, setActionError] = useState<string | null>(null)
   const [creatingFolder, setCreatingFolder] = useState(false)
   const [editingFolder, setEditingFolder] = useState<AssetFolderRecord | null>(null)
+  const [needle, setNeedle] = useState('')
+  const [sort, setSort] = useState<FileSort>('newest')
+  const [tagFilter, setTagFilter] = useState<string | null>(null)
+  const [tagging, setTagging] = useState<AssetRecord | null>(null)
 
   // Thumbnails need a signed URL each. Requesting them all at once saturates the
   // browser's connection pool and stalls every other call, so they are fetched by
@@ -2459,9 +2671,40 @@ function FilesTab({
   const countIn = (folderId: string) => assets.filter((a) => a.folderId === folderId).length
   // A folder that vanished (deleted elsewhere) silently falls back to the full list.
   const activeFolder = folders.find((f) => f.folderId === selected) ?? null
-  const visible = activeFolder ? assets.filter((a) => a.folderId === activeFolder.folderId) : assets
+  const inFolder = activeFolder ? assets.filter((a) => a.folderId === activeFolder.folderId) : assets
   const folderName = (folderId?: string) =>
     folderId ? folders.find((f) => f.folderId === folderId)?.name : undefined
+
+  const canTag = (asset: AssetRecord) => user?.role === 'admin' || asset.uploadedBy === user?.userId
+  // Every tag in use on the project, so the filter bar and the editor agree.
+  const allTags = [...new Set(assets.flatMap((a) => a.tags ?? []))].sort((a, b) =>
+    a.localeCompare(b, undefined, { sensitivity: 'base' })
+  )
+
+  const needleLc = needle.trim().toLowerCase()
+  const filtering = needleLc !== '' || tagFilter !== null
+  const matches = inFolder.filter((asset) => {
+    if (tagFilter && !(asset.tags ?? []).some((t) => t.toLowerCase() === tagFilter.toLowerCase())) {
+      return false
+    }
+    if (!needleLc) return true
+    return (
+      asset.name.toLowerCase().includes(needleLc) ||
+      (asset.tags ?? []).some((t) => t.toLowerCase().includes(needleLc))
+    )
+  })
+  const visible = [...matches].sort((a, b) => {
+    switch (sort) {
+      case 'oldest':
+        return a.uploadedAt.localeCompare(b.uploadedAt)
+      case 'name':
+        return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+      case 'size':
+        return (b.size ?? 0) - (a.size ?? 0)
+      default:
+        return b.uploadedAt.localeCompare(a.uploadedAt)
+    }
+  })
 
   return (
     <div className="stack">
@@ -2520,38 +2763,35 @@ function FilesTab({
         <CardHeader
           title={activeFolder ? activeFolder.name : 'Project files'}
           sub={
-            `${visible.length} item${visible.length === 1 ? '' : 's'}` +
-            (activeFolder ? ` · ${assets.length} in project` : '')
+            filtering
+              ? `${visible.length} of ${inFolder.length} shown`
+              : `${visible.length} item${visible.length === 1 ? '' : 's'}` +
+                (activeFolder ? ` · ${assets.length} in project` : '')
           }
           action={
             activeFolder && isAdmin ? (
-              <div className="row" style={{ gap: 8 }}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  disabled={busyId === activeFolder.folderId}
-                  onClick={() => setEditingFolder(activeFolder)}
-                >
-                  <IconEdit size={14} />
-                  Edit folder
-                </Button>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  disabled={busyId === activeFolder.folderId}
-                  onClick={() => void removeFolder(activeFolder)}
-                >
-                  <IconTrash size={14} />
-                  Delete folder
-                </Button>
-              </div>
+              <CardMenu
+                items={[
+                  {
+                    label: 'Edit folder',
+                    icon: <IconEdit size={14} />,
+                    onClick: () => setEditingFolder(activeFolder)
+                  },
+                  {
+                    label: 'Delete folder',
+                    icon: <IconTrash size={14} />,
+                    danger: true,
+                    onClick: () => void removeFolder(activeFolder)
+                  }
+                ]}
+              />
             ) : undefined
           }
         />
         <div className="card-body">
           {loading && !data ? (
             <Loading />
-          ) : visible.length === 0 ? (
+          ) : inFolder.length === 0 && !filtering ? (
             <Empty title={activeFolder ? 'This folder is empty' : 'No files yet'}>
               {canWrite
                 ? activeFolder
@@ -2560,58 +2800,160 @@ function FilesTab({
                 : 'Nothing has been uploaded yet.'}
             </Empty>
           ) : (
-            <div className="file-grid">
-              {visible.map((asset) => (
-                <div className="file-card" key={asset.assetId}>
-                  <div className="file-thumb">
-                    {asset.type === 'image' && urls[asset.assetId] ? (
-                      <img src={urls[asset.assetId]} alt={asset.name} />
-                    ) : asset.type === 'image' ? (
-                      <IconImage size={26} />
-                    ) : (
-                      <IconFile size={26} />
-                    )}
-                  </div>
-                  <div className="file-meta">
-                    <div className="file-name" title={asset.name}>
-                      {asset.name}
-                    </div>
-                    <div className="small muted" style={{ marginTop: 3 }}>
-                      {humanBytes(asset.size)} · {relativeTime(asset.uploadedAt)}
-                    </div>
-                    <div className="small muted" style={{ marginTop: 2 }}>
-                      {asset.uploadedByName}
-                    </div>
-                    {!activeFolder && folderName(asset.folderId) ? (
-                      <div className="file-folder">
-                        <IconFolder size={12} />
-                        {folderName(asset.folderId)}
-                      </div>
-                    ) : null}
-                    <div className="row" style={{ marginTop: 8, gap: 6 }}>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        loading={busyId === asset.assetId}
-                        onClick={() => void openAsset(asset)}
-                      >
-                        Open
-                      </Button>
-                      {user?.role === 'admin' || asset.uploadedBy === user?.userId ? (
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          disabled={busyId === asset.assetId}
-                          onClick={() => void removeAsset(asset)}
-                        >
-                          <IconTrash size={14} />
-                        </Button>
-                      ) : null}
-                    </div>
-                  </div>
+            <>
+              <div className="file-toolbar">
+                <div className="search-form-field">
+                  <IconSearch size={16} className="search-form-icon" />
+                  <input
+                    className="input search-form-input"
+                    placeholder="Search files by name or tag"
+                    value={needle}
+                    onChange={(event) => setNeedle(event.target.value)}
+                    aria-label="Search files"
+                  />
                 </div>
-              ))}
-            </div>
+                <select
+                  className="input file-sort"
+                  value={sort}
+                  onChange={(event) => setSort(event.target.value as FileSort)}
+                  aria-label="Sort files"
+                >
+                  <option value="newest">Newest first</option>
+                  <option value="oldest">Oldest first</option>
+                  <option value="name">Name A–Z</option>
+                  <option value="size">Largest first</option>
+                </select>
+              </div>
+
+              {allTags.length > 0 ? (
+                <div className="tag-bar">
+                  <button
+                    className={`chip${tagFilter === null ? ' on' : ''}`}
+                    onClick={() => setTagFilter(null)}
+                  >
+                    All tags
+                  </button>
+                  {allTags.map((tag) => (
+                    <button
+                      key={tag}
+                      className={`chip${tagFilter === tag ? ' on' : ''}`}
+                      onClick={() => setTagFilter(tagFilter === tag ? null : tag)}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+
+              {visible.length === 0 ? (
+                <Empty title="No files match these filters">
+                  Try a different word, or clear the tag filter.
+                </Empty>
+              ) : (
+                <div className="file-grid">
+                  {visible.map((asset) => (
+                    <div
+                      className="file-card is-clickable"
+                      key={asset.assetId}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Open ${asset.name}`}
+                      aria-busy={busyId === asset.assetId}
+                      onClick={() => void openAsset(asset)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault()
+                          void openAsset(asset)
+                        }
+                      }}
+                    >
+                      <CardMenu
+                        items={[
+                          { label: 'Open', icon: <IconDownload size={14} />, onClick: () => void openAsset(asset) },
+                          ...(canTag(asset)
+                            ? [
+                                { label: 'Tag', icon: <IconTag size={14} />, onClick: () => setTagging(asset) },
+                                {
+                                  label: 'Delete',
+                                  icon: <IconTrash size={14} />,
+                                  danger: true,
+                                  onClick: () => void removeAsset(asset)
+                                }
+                              ]
+                            : [])
+                        ]}
+                      />
+                      <div className="file-thumb">
+                        {asset.type === 'image' && urls[asset.assetId] ? (
+                          <img src={urls[asset.assetId]} alt={asset.name} />
+                        ) : asset.type === 'image' ? (
+                          <IconImage size={26} />
+                        ) : (
+                          <IconFile size={26} />
+                        )}
+                      </div>
+                      <div className="file-meta">
+                        <div className="file-name" title={asset.name}>
+                          {asset.name}
+                        </div>
+                        <div className="small muted" style={{ marginTop: 3 }}>
+                          {humanBytes(asset.size)} · {relativeTime(asset.uploadedAt)}
+                        </div>
+                        <div className="small muted" style={{ marginTop: 2 }}>
+                          {asset.uploadedByName}
+                        </div>
+                        {!activeFolder && folderName(asset.folderId) ? (
+                          <div className="file-folder">
+                            <IconFolder size={12} />
+                            {folderName(asset.folderId)}
+                          </div>
+                        ) : null}
+                        {asset.tags?.length ? (
+                          <div className="file-tags">
+                            {asset.tags.map((tag) => (
+                              <button
+                                key={tag}
+                                className={`chip${tagFilter === tag ? ' on' : ''}`}
+                                title={`Show files tagged "${tag}"`}
+                                onClick={(event) => {
+                                  event.stopPropagation()
+                                  setTagFilter(tagFilter === tag ? null : tag)
+                                }}
+                              >
+                                {tag}
+                              </button>
+                            ))}
+                          </div>
+                        ) : null}
+                        {(() => {
+                          const intel = intelByAsset.get(asset.assetId)
+                          if (!intel) return null
+                          return (
+                            <div className="file-evidence">
+                              {intel.verificationStatus ? (
+                                <Badge tone={VERIFICATION_TONE[intel.verificationStatus]}>
+                                  {VERIFICATION_LABEL[intel.verificationStatus]}
+                                </Badge>
+                              ) : null}
+                              {(intel.evidenceClasses ?? []).map((cls) => (
+                                <span className="chip on" key={cls}>
+                                  {EVIDENCE_LABEL[cls]}
+                                </span>
+                              ))}
+                              {intel.docType ? (
+                                <div className="small muted" style={{ marginTop: 2 }}>
+                                  {intel.docType}
+                                </div>
+                              ) : null}
+                            </div>
+                          )
+                        })()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       </Card>
@@ -2639,11 +2981,344 @@ function FilesTab({
           }}
         />
       ) : null}
+
+      {tagging ? (
+        <TagEditorModal
+          siteId={siteId}
+          asset={tagging}
+          suggestions={allTags}
+          onClose={() => setTagging(null)}
+          onSaved={(tags) => {
+            const assetId = tagging.assetId
+            setData((prev) =>
+              prev
+                ? { assets: prev.assets.map((a) => (a.assetId === assetId ? { ...a, tags } : a)) }
+                : prev
+            )
+            setTagging(null)
+          }}
+        />
+      ) : null}
+    </div>
+  )
+}
+
+/* -------------------------------- findings -------------------------------- */
+
+function FindingsTab({ siteId, isAdmin }: { siteId: string; isAdmin: boolean }) {
+  const { data, error, loading, reload } = useApi<{ findings: FindingRecord[] }>(`/sites/${siteId}/findings`)
+  const { data: intel, error: intelError } = useApi<{
+    documents: DocumentIntelligenceRecord[]
+    evidenceCovered: EvidenceClass[]
+    evidenceMissing: EvidenceClass[]
+  }>(`/sites/${siteId}/intelligence`)
+  const [busyId, setBusyId] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
+
+  async function setStatus(finding: FindingRecord, status: 'open' | 'resolved') {
+    setBusyId(finding.findingId)
+    setActionError(null)
+    try {
+      await api(`/sites/${siteId}/findings/${finding.findingId}`, { method: 'PATCH', body: { status } })
+      await reload()
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Could not update the finding')
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  const findings = data?.findings ?? []
+  const open = findings.filter((f) => f.status !== 'resolved')
+  const resolved = findings.filter((f) => f.status === 'resolved')
+  const covered = intel?.evidenceCovered ?? []
+  const missing = intel?.evidenceMissing ?? []
+
+  function row(finding: FindingRecord) {
+    const done = finding.status === 'resolved'
+    return (
+      <div className={`finding${done ? ' resolved' : ''}`} key={finding.findingId}>
+        <div className="finding-head">
+          <Badge tone={done ? 'gray' : FINDING_SEVERITY_TONE[finding.severity]}>
+            {finding.severity.toUpperCase()}
+          </Badge>
+          <span className="finding-kind">{FINDING_KIND_LABEL[finding.kind]}</span>
+          <span className="small muted" style={{ marginLeft: 'auto' }}>
+            {relativeTime(finding.createdAt)}
+          </span>
+        </div>
+        <div className="finding-title">
+          {done ? <IconCheck size={15} /> : <IconAlert size={15} />}
+          {finding.title}
+        </div>
+        {finding.detail ? <p className="finding-detail">{finding.detail}</p> : null}
+        {finding.relatedAssets?.length ? (
+          <div className="small muted">Related: {finding.relatedAssets.join(', ')}</div>
+        ) : null}
+        {isAdmin ? (
+          <div className="row" style={{ marginTop: 8 }}>
+            <Button
+              variant="ghost"
+              size="sm"
+              loading={busyId === finding.findingId}
+              onClick={() => void setStatus(finding, done ? 'open' : 'resolved')}
+            >
+              {done ? 'Reopen' : 'Mark resolved'}
+            </Button>
+          </div>
+        ) : null}
+      </div>
+    )
+  }
+
+  return (
+    <div className="stack">
+      <ErrorNote message={error ?? intelError ?? actionError} />
+
+      <Card>
+        <CardHeader
+          title="Evidence on file"
+          sub="What the agent has classified from this project's documents, and what the lifecycle still expects"
+        />
+        <div className="card-body">
+          {missing.length === 0 && covered.length === 0 ? (
+            <Empty title="No documents analysed yet">
+              Evidence classes appear once the agent has processed this project's files.
+            </Empty>
+          ) : (
+            <>
+              <div className="coverage-block">
+                <div className="small muted">On file</div>
+                <div className="evidence-chips">
+                  {covered.length === 0 ? (
+                    <span className="small muted">Nothing classified yet.</span>
+                  ) : (
+                    covered.map((cls) => (
+                      <span className="chip on" key={cls}>
+                        {EVIDENCE_LABEL[cls]}
+                      </span>
+                    ))
+                  )}
+                </div>
+              </div>
+              <div className="coverage-block">
+                <div className="small muted">Not yet provided</div>
+                <div className="evidence-chips">
+                  {missing.map((cls) => (
+                    <span className="chip" key={cls}>
+                      {EVIDENCE_LABEL[cls]}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </Card>
+
+      <Card>
+        <CardHeader
+          title="Findings"
+          sub={
+            open.length === 0
+              ? 'No open findings'
+              : `${open.length} open${resolved.length ? ` · ${resolved.length} resolved` : ''}`
+          }
+        />
+        <div className="card-body">
+          {loading && !data ? (
+            <Loading />
+          ) : findings.length === 0 ? (
+            <Empty title="Nothing flagged">
+              The weekly review raises a finding here when a document is missing, a certificate is
+              expiring or two records disagree.
+            </Empty>
+          ) : (
+            <div className="finding-list">
+              {open.map(row)}
+              {resolved.length ? (
+                <details className="resolved-block">
+                  <summary>{resolved.length} resolved</summary>
+                  <div className="finding-list">{resolved.map(row)}</div>
+                </details>
+              ) : null}
+            </div>
+          )}
+        </div>
+      </Card>
     </div>
   )
 }
 
 /* -------------------------------- remarks -------------------------------- */
+
+function RemarkItem({
+  remark,
+  stageName,
+  canDelete,
+  onRemove
+}: {
+  remark: RemarkRecord
+  stageName?: string
+  canDelete: boolean
+  onRemove: () => void
+}) {
+  const [open, setOpen] = useState(false)
+  const facts = remark.extracted ?? []
+  const evidence = remark.evidenceClasses ?? []
+  const actions = remark.recommendedActions ?? []
+  const related = remark.relatedDocuments ?? []
+  const notes = remark.classificationNotes ?? []
+  // A plain human note has none of this; only agent-written remarks expand.
+  const hasDetails = Boolean(
+    remark.summary ||
+      facts.length ||
+      remark.relevance ||
+      evidence.length ||
+      remark.limitations ||
+      actions.length ||
+      related.length ||
+      notes.length ||
+      remark.sourceDocument ||
+      remark.confidence !== undefined
+  )
+
+  return (
+    <div className="timeline-item">
+      <span className="timeline-dot" />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div className="row-between">
+          <div className="row" style={{ gap: 8 }}>
+            <Avatar name={remark.authorName} />
+            <div>
+              <div style={{ fontWeight: 600 }}>{remark.authorName}</div>
+              <div className="small muted">
+                {relativeTime(remark.createdAt)} · {remark.authorRole}
+                {stageName ? ` · ${stageName}` : ''}
+              </div>
+            </div>
+          </div>
+          {canDelete ? (
+            <Button variant="ghost" size="sm" onClick={onRemove}>
+              <IconTrash size={14} />
+            </Button>
+          ) : null}
+        </div>
+
+        <p style={{ marginTop: 8, whiteSpace: 'pre-wrap' }}>{remark.text}</p>
+
+        {evidence.length || remark.verificationStatus ? (
+          <div className="row wrap" style={{ gap: 6, marginTop: 8 }}>
+            {remark.verificationStatus ? (
+              <Badge tone={VERIFICATION_TONE[remark.verificationStatus]}>
+                {VERIFICATION_LABEL[remark.verificationStatus]}
+              </Badge>
+            ) : null}
+            {evidence.map((cls) => (
+              <span className="chip on" key={cls}>
+                {EVIDENCE_LABEL[cls]}
+              </span>
+            ))}
+          </div>
+        ) : null}
+
+        {hasDetails ? (
+          <>
+            <button className="remark-toggle" onClick={() => setOpen(!open)} aria-expanded={open}>
+              {open ? <IconChevronDown size={14} /> : <IconChevronRight size={14} />}
+              {open ? 'Hide details' : 'View details'}
+            </button>
+
+            {open ? (
+              <div className="remark-details">
+                {remark.summary ? <p style={{ margin: 0 }}>{remark.summary}</p> : null}
+
+                {facts.length ? (
+                  <div>
+                    <div className="remark-details-label">Extracted information</div>
+                    <dl className="fact-list">
+                      {facts.map((fact, index) => (
+                        <Fragment key={`${fact.label}-${index}`}>
+                          <dt>{fact.label}</dt>
+                          <dd>
+                            {fact.value}
+                            {fact.verification ? (
+                              <span className={`fact-verification ${fact.verification}`}>
+                                {VERIFICATION_LABEL[fact.verification]}
+                              </span>
+                            ) : null}
+                          </dd>
+                        </Fragment>
+                      ))}
+                    </dl>
+                  </div>
+                ) : null}
+
+                {remark.relevance ? (
+                  <div>
+                    <div className="remark-details-label">Project relevance</div>
+                    <p style={{ margin: 0 }}>{remark.relevance}</p>
+                  </div>
+                ) : null}
+
+                {remark.limitations ? (
+                  <div>
+                    <div className="remark-details-label">Limitations</div>
+                    <p style={{ margin: 0 }}>{remark.limitations}</p>
+                  </div>
+                ) : null}
+
+                {actions.length ? (
+                  <div>
+                    <div className="remark-details-label">Recommended actions</div>
+                    <ul className="detail-bullets">
+                      {actions.map((action) => (
+                        <li key={action}>{action}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+
+                {related.length ? (
+                  <div>
+                    <div className="remark-details-label">Related documents</div>
+                    <div className="row wrap" style={{ gap: 6 }}>
+                      {related.map((doc) => (
+                        <span className="chip" key={doc}>
+                          {doc}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {notes.length ? (
+                  <div>
+                    <div className="remark-details-label">Reviewer notes</div>
+                    {notes.map((note) => (
+                      <p className="small muted" key={note} style={{ margin: 0 }}>
+                        {note}
+                      </p>
+                    ))}
+                  </div>
+                ) : null}
+
+                <div className="small muted remark-source">
+                  {remark.sourceDocument ? `Source: ${remark.sourceDocument}` : null}
+                  {remark.sourceRef ? ` · ${remark.sourceRef}` : null}
+                  {remark.confidence !== undefined
+                    ? ` · Confidence ${Math.round(remark.confidence * 100)}%`
+                    : ''}
+                  {remark.processingVersion ? ` · ${remark.processingVersion}` : ''}
+                </div>
+              </div>
+            ) : null}
+          </>
+        ) : null}
+      </div>
+    </div>
+  )
+}
 
 function RemarksTab({
   siteId,
@@ -2738,34 +3413,15 @@ function RemarksTab({
             </Empty>
           ) : (
             <div className="timeline">
-              {remarks.map((remark) => {
-                const stage = stages.find((s) => s.stageId === remark.stageId)
-                return (
-                  <div className="timeline-item" key={remark.remarkId}>
-                    <span className="timeline-dot" />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div className="row-between">
-                        <div className="row" style={{ gap: 8 }}>
-                          <Avatar name={remark.authorName} />
-                          <div>
-                            <div style={{ fontWeight: 600 }}>{remark.authorName}</div>
-                            <div className="small muted">
-                              {relativeTime(remark.createdAt)} · {remark.authorRole}
-                              {stage ? ` · ${stage.name}` : ''}
-                            </div>
-                          </div>
-                        </div>
-                        {user?.role === 'admin' || remark.authorId === user?.userId ? (
-                          <Button variant="ghost" size="sm" onClick={() => void remove(remark)}>
-                            <IconTrash size={14} />
-                          </Button>
-                        ) : null}
-                      </div>
-                      <p style={{ marginTop: 8, whiteSpace: 'pre-wrap' }}>{remark.text}</p>
-                    </div>
-                  </div>
-                )
-              })}
+              {remarks.map((remark) => (
+                <RemarkItem
+                  key={remark.remarkId}
+                  remark={remark}
+                  stageName={stages.find((s) => s.stageId === remark.stageId)?.name}
+                  canDelete={user?.role === 'admin' || remark.authorId === user?.userId}
+                  onRemove={() => void remove(remark)}
+                />
+              ))}
             </div>
           )}
         </div>

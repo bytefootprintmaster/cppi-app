@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useApi } from '../lib/useApi'
 import { humanBytes, relativeTime } from '../lib/format'
@@ -21,7 +21,10 @@ interface SearchResult {
   indexedAt?: string
   matched: string[]
   snippet: string
+  tags?: string[]
 }
+
+type ResultSort = 'relevance' | 'newest' | 'oldest' | 'name' | 'size'
 
 interface SearchResponse {
   query: string
@@ -45,6 +48,8 @@ export function SearchPage() {
   const [input, setInput] = useState('')
   const [query, setQuery] = useState('')
   const [siteId, setSiteId] = useState('')
+  const [sort, setSort] = useState<ResultSort>('relevance')
+  const [tagFilter, setTagFilter] = useState<string | null>(null)
   const sites = useApi<{ sites: SiteRecord[] }>('/sites')
 
   useEffect(() => {
@@ -57,6 +62,42 @@ export function SearchPage() {
     ? `/search?q=${encodeURIComponent(query)}${siteId ? `&siteId=${encodeURIComponent(siteId)}` : ''}`
     : null
   const { data, error, loading } = useApi<SearchResponse>(path)
+
+  // A fresh search replaces the result set, so any tag picked from the last one
+  // would silently filter everything out.
+  useEffect(() => {
+    setTagFilter(null)
+  }, [query, siteId])
+
+  // Every tag present in the current results, so the filter only offers tags
+  // that can actually narrow the list.
+  const availableTags = useMemo(() => {
+    const set = new Set<string>()
+    for (const result of data?.results ?? []) for (const tag of result.tags ?? []) set.add(tag)
+    return [...set].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
+  }, [data])
+
+  const results = useMemo(() => {
+    const all = data?.results ?? []
+    const filtered = tagFilter
+      ? all.filter((result) =>
+          (result.tags ?? []).some((tag) => tag.toLowerCase() === tagFilter.toLowerCase())
+        )
+      : all
+    if (sort === 'relevance') return filtered
+    return [...filtered].sort((a, b) => {
+      switch (sort) {
+        case 'oldest':
+          return (a.uploadedAt ?? a.indexedAt ?? '').localeCompare(b.uploadedAt ?? b.indexedAt ?? '')
+        case 'name':
+          return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+        case 'size':
+          return (b.size ?? 0) - (a.size ?? 0)
+        default:
+          return (b.uploadedAt ?? b.indexedAt ?? '').localeCompare(a.uploadedAt ?? a.indexedAt ?? '')
+      }
+    })
+  }, [data, sort, tagFilter])
 
   return (
     <>
@@ -124,45 +165,116 @@ export function SearchPage() {
             <div className="card-header">
               <div>
                 <div className="card-title">
-                  {data.count} file{data.count === 1 ? '' : 's'} found
+                  {results.length} file{results.length === 1 ? '' : 's'} found
+                  {tagFilter ? ` of ${data.count}` : ''}
                 </div>
                 <div className="card-sub">Matching “{data.query}”</div>
               </div>
+              <select
+                className="input file-sort"
+                value={sort}
+                onChange={(event) => setSort(event.target.value as ResultSort)}
+                aria-label="Sort results"
+              >
+                <option value="relevance">Best match</option>
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+                <option value="name">Name A–Z</option>
+                <option value="size">Largest first</option>
+              </select>
             </div>
-            <div className="search-results">
-              {data.results.map((result) => (
-                <Link key={result.s3Key} className="search-result" to={`/sites/${result.siteId}`}>
-                  <div className="search-result-icon">
-                    {result.kind === 'image' ? <IconImage size={18} /> : <IconFile size={18} />}
-                  </div>
-                  <div className="search-result-main">
-                    <div className="row-between" style={{ gap: 10, alignItems: 'flex-start' }}>
-                      <div className="search-result-name">{result.name}</div>
-                      {result.siteName ? <Badge tone="green">{result.siteName}</Badge> : null}
+
+            {availableTags.length > 0 ? (
+              <div className="card-body" style={{ paddingTop: 14, paddingBottom: 0 }}>
+                <div className="tag-bar" style={{ marginBottom: 12 }}>
+                  <button
+                    className={`chip${tagFilter === null ? ' on' : ''}`}
+                    onClick={() => setTagFilter(null)}
+                  >
+                    All tags
+                  </button>
+                  {availableTags.map((tag) => (
+                    <button
+                      key={tag}
+                      className={`chip${tagFilter === tag ? ' on' : ''}`}
+                      onClick={() => setTagFilter(tagFilter === tag ? null : tag)}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {results.length === 0 ? (
+              <div className="card-body">
+                <Empty title={`No files tagged “${tagFilter}”`}>
+                  Clear the tag filter to see every result for this search.
+                </Empty>
+              </div>
+            ) : (
+              <div className="search-results">
+                {results.map((result) => (
+                  <Link key={result.s3Key} className="search-result" to={`/sites/${result.siteId}`}>
+                    <div className="search-result-icon">
+                      {result.kind === 'image' ? <IconImage size={18} /> : <IconFile size={18} />}
                     </div>
-                    <div className="search-result-meta small muted">
-                      <span>{result.kind === 'image' ? 'Image' : 'Document'}</span>
-                      <span>·</span>
-                      <span>{humanBytes(result.size)}</span>
-                      <span>·</span>
-                      <span>{relativeTime(result.uploadedAt ?? result.indexedAt)}</span>
-                    </div>
-                    {result.snippet ? (
-                      <p className="search-result-snippet">{highlight(result.snippet, result.matched)}</p>
-                    ) : null}
-                    {result.matched.length > 0 ? (
-                      <div className="search-result-terms">
-                        {result.matched.map((term) => (
-                          <Badge key={term} tone="gray">
-                            {term}
-                          </Badge>
-                        ))}
+                    <div className="search-result-main">
+                      <div className="row-between" style={{ gap: 10, alignItems: 'flex-start' }}>
+                        <div className="search-result-name">{result.name}</div>
+                        {result.siteName ? <Badge tone="green">{result.siteName}</Badge> : null}
                       </div>
-                    ) : null}
-                  </div>
-                </Link>
-              ))}
-            </div>
+                      <div className="search-result-meta small muted">
+                        <span>{result.kind === 'image' ? 'Image' : 'Document'}</span>
+                        <span>·</span>
+                        <span>{humanBytes(result.size)}</span>
+                        <span>·</span>
+                        <span>{relativeTime(result.uploadedAt ?? result.indexedAt)}</span>
+                      </div>
+                      {result.tags?.length ? (
+                        <div className="file-tags">
+                          {result.tags.map((tag) => (
+                            <span
+                              key={tag}
+                              role="button"
+                              tabIndex={0}
+                              className={`chip${tagFilter === tag ? ' on' : ''}`}
+                              onClick={(event) => {
+                                event.preventDefault()
+                                event.stopPropagation()
+                                setTagFilter(tagFilter === tag ? null : tag)
+                              }}
+                              onKeyDown={(event) => {
+                                if (event.key === 'Enter' || event.key === ' ') {
+                                  event.preventDefault()
+                                  setTagFilter(tagFilter === tag ? null : tag)
+                                }
+                              }}
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      ) : null}
+                      {result.snippet ? (
+                        <p className="search-result-snippet">
+                          {highlight(result.snippet, result.matched)}
+                        </p>
+                      ) : null}
+                      {result.matched.length > 0 ? (
+                        <div className="search-result-terms">
+                          {result.matched.map((term) => (
+                            <Badge key={term} tone="gray">
+                              {term}
+                            </Badge>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
           </Card>
         )}
       </PageBody>

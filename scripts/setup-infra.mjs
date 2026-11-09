@@ -54,6 +54,13 @@ const TABLE_DEFS = [
   // file_terms: the inverted index, one row per (word, file) pair.
   { name: `${prefix}file_index`, hash: 'siteId', range: 'docId' },
   { name: `${prefix}file_terms`, hash: 'term', range: 'ref' },
+  // Intelligence layer, written by the agent.
+  // document_intelligence: what the agent understood about one file (one row per asset).
+  // findings: gaps its proactive review has raised (missing doc, expiring certificate, ...).
+  // relationships: the property -> project -> contractor -> payment map.
+  { name: `${prefix}document_intelligence`, hash: 'siteId', range: 'assetId' },
+  { name: `${prefix}findings`, hash: 'siteId', range: 'findingId' },
+  { name: `${prefix}relationships`, hash: 'siteId', range: 'relId' },
   { name: `${prefix}kpis`, hash: 'userId' }
 ]
 

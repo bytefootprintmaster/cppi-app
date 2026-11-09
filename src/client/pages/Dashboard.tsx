@@ -6,7 +6,14 @@ import { useAuth } from '../lib/auth'
 import { formatDate, formatMoney, relativeTime } from '../lib/format'
 import { PageBody, PageHeader } from '../components/Layout'
 import { Button, Card, CardHeader, Empty, ErrorNote, Loading, Progress, SiteStatusBadge } from '../components/ui'
-import { IconAlert, IconBuilding, IconPlus, IconSettings, IconTarget } from '../components/icons'
+import {
+  IconAlert,
+  IconBuilding,
+  IconChevronRight,
+  IconPlus,
+  IconSettings,
+  IconTarget
+} from '../components/icons'
 import type { SiteRecord } from '../../server/types'
 import type { BudgetSummary } from '../../server/services'
 
@@ -193,7 +200,7 @@ export function DashboardPage() {
       />
 
       <PageBody>
-        <div className="grid grid-4" style={{ marginBottom: 22 }}>
+        <div className="grid grid-4 kpi-grid" style={{ marginBottom: 22 }}>
           {visible.map((id) => {
             const meta = KPI_META[id]
             return (
@@ -223,7 +230,8 @@ export function DashboardPage() {
                 : 'You have not been given access to any project yet. Ask an administrator for an invitation.'}
             </Empty>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
+            <>
+            <div className="table-wrap tracker-table">
               <table className="table">
                 <thead>
                   <tr>
@@ -291,6 +299,71 @@ export function DashboardPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* Phones: the same rows as tappable cards — no sideways scrolling. */}
+            <div className="tracker-cards">
+              {rows.map((row) => (
+                <Link className="tracker-card" to={`/sites/${row.site.siteId}`} key={row.site.siteId}>
+                  <div className="tracker-card-top">
+                    <div style={{ minWidth: 0 }}>
+                      <div className="tracker-card-name">{row.site.name}</div>
+                      <div className="small muted">
+                        {[row.site.code, row.site.location].filter(Boolean).join(' · ') ||
+                          'No location set'}
+                      </div>
+                    </div>
+                    <SiteStatusBadge status={row.site.status} />
+                  </div>
+
+                  <div className="tracker-card-grid">
+                    <div>
+                      <div className="tracker-card-label">Progress</div>
+                      <div className="tracker-card-value">{row.progress.percent}%</div>
+                      <div className="small muted">
+                        {row.progress.milestonesCompleted}/{row.progress.milestones} milestones
+                      </div>
+                    </div>
+                    <div>
+                      <div className="tracker-card-label">Budget</div>
+                      {row.budget.lines === 0 ? (
+                        <div className="tracker-card-value muted">Not budgeted</div>
+                      ) : (
+                        <>
+                          <div className="tracker-card-value">
+                            {formatMoney(row.budget.spent, { compact: true })}
+                          </div>
+                          <div className="small muted">
+                            of {formatMoney(row.budget.budgeted, { compact: true })} ·{' '}
+                            {row.budget.percentUsed}%
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    <div>
+                      <div className="tracker-card-label">Next milestone</div>
+                      {row.nextMilestone ? (
+                        <>
+                          <div className="tracker-card-value">{row.nextMilestone.name}</div>
+                          <div className="small muted">Due {formatDate(row.nextMilestone.dueDate)}</div>
+                        </>
+                      ) : (
+                        <div className="tracker-card-value muted">—</div>
+                      )}
+                    </div>
+                    <div>
+                      <div className="tracker-card-label">Activity</div>
+                      <div className="tracker-card-value">{relativeTime(row.lastActivity)}</div>
+                    </div>
+                  </div>
+
+                  <div className="tracker-card-foot">
+                    <span className="small muted">Open project</span>
+                    <IconChevronRight size={16} />
+                  </div>
+                </Link>
+              ))}
+            </div>
+            </>
           )}
         </Card>
 
