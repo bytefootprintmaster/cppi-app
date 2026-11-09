@@ -16,6 +16,7 @@ import { formatDate, formatDateTime, formatMoney, humanBytes, relativeTime } fro
 import { PageBody, PageHeader } from '../components/Layout'
 import { SiteFormModal } from '../components/SiteForm'
 import { Uploader } from '../components/Uploader'
+import { MapView, type MapSite } from '../components/MapView'
 import {
   Avatar,
   Badge,
@@ -47,6 +48,7 @@ import {
   IconGrip,
   IconImage,
   IconLayers,
+  IconMapPin,
   IconPlus,
   IconSearch,
   IconTag,
@@ -250,7 +252,9 @@ export function SiteDetailPage() {
           ))}
         </div>
 
-        {tab === 'overview' ? <OverviewTab site={site} progress={progress} budget={budget} /> : null}
+        {tab === 'overview' ? (
+          <OverviewTab site={site} progress={progress} budget={budget} isAdmin={isAdmin} onChanged={reload} />
+        ) : null}
         {tab === 'framework' ? (
           <FrameworkTab siteId={site.siteId} stages={stages} milestones={milestones} isAdmin={isAdmin} onChanged={reload} />
         ) : null}
@@ -288,12 +292,20 @@ export function SiteDetailPage() {
 function OverviewTab({
   site,
   progress,
-  budget
+  budget,
+  isAdmin,
+  onChanged
 }: {
   site: SiteRecord
   progress: SiteDetailResponse['progress']
   budget: BudgetSummary
+  isAdmin: boolean
+  onChanged: () => void
 }) {
+  const [locating, setLocating] = useState(false)
+  const [locateError, setLocateError] = useState<string | null>(null)
+  const hasPin = typeof site.lat === 'number' && typeof site.lng === 'number'
+
   const facts: Array<[string, string]> = [
     ['Location', site.location || '—'],
     ['Start date', formatDate(site.startDate)],
@@ -304,61 +316,121 @@ function OverviewTab({
     ['Last updated', formatDateTime(site.updatedAt)]
   ]
 
-  return (
-    <div className="grid grid-2">
-      <Card>
-        <CardHeader title="Progress" sub="Milestones drive completion; stages are the fallback" />
-        <div className="card-body">
-          <div className="row-between" style={{ marginBottom: 8 }}>
-            <span className="small muted">Overall completion</span>
-            <strong>{progress.percent}%</strong>
-          </div>
-          <Progress percent={progress.percent} />
-          <div className="grid grid-2" style={{ marginTop: 18 }}>
-            <div>
-              <div className="kpi-label">Milestones</div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--green-900)' }}>
-                {progress.milestonesCompleted}
-                <span className="muted" style={{ fontSize: 15 }}>
-                  /{progress.milestones}
-                </span>
-              </div>
-            </div>
-            <div>
-              <div className="kpi-label">Stages</div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--green-900)' }}>
-                {progress.stagesCompleted}
-                <span className="muted" style={{ fontSize: 15 }}>
-                  /{progress.stages}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Card>
+  const mapSite: MapSite = {
+    siteId: site.siteId,
+    name: site.name,
+    code: site.code,
+    location: site.location,
+    status: site.status,
+    lat: site.lat as number,
+    lng: site.lng as number,
+    budgeted: budget.budgeted
+  }
 
-      <Card>
-        <CardHeader title="Project details" />
-        <div className="card-body">
-          <div className="grid grid-2">
-            {facts.map(([label, value]) => (
-              <div key={label} style={{ marginBottom: 14 }}>
-                <div className="kpi-label">{label}</div>
-                <div style={{ fontWeight: 600, marginTop: 3 }}>{value}</div>
-              </div>
-            ))}
-          </div>
-          {site.description ? (
-            <div style={{ marginTop: 4 }}>
-              <div className="kpi-label">Description</div>
-              <p className="muted" style={{ marginTop: 6 }}>
-                {site.description}
-              </p>
+  async function locate() {
+    setLocating(true)
+    setLocateError(null)
+    try {
+      await api(`/sites/${site.siteId}/geocode`, { method: 'POST' })
+      onChanged()
+    } catch (err) {
+      setLocateError(err instanceof Error ? err.message : 'Could not locate this project')
+    } finally {
+      setLocating(false)
+    }
+  }
+
+  return (
+    <>
+      <div className="grid grid-2">
+        <Card>
+          <CardHeader title="Progress" sub="Milestones drive completion; stages are the fallback" />
+          <div className="card-body">
+            <div className="row-between" style={{ marginBottom: 8 }}>
+              <span className="small muted">Overall completion</span>
+              <strong>{progress.percent}%</strong>
             </div>
-          ) : null}
+            <Progress percent={progress.percent} />
+            <div className="grid grid-2" style={{ marginTop: 18 }}>
+              <div>
+                <div className="kpi-label">Milestones</div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--green-900)' }}>
+                  {progress.milestonesCompleted}
+                  <span className="muted" style={{ fontSize: 15 }}>
+                    /{progress.milestones}
+                  </span>
+                </div>
+              </div>
+              <div>
+                <div className="kpi-label">Stages</div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--green-900)' }}>
+                  {progress.stagesCompleted}
+                  <span className="muted" style={{ fontSize: 15 }}>
+                    /{progress.stages}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        <Card>
+          <CardHeader title="Project details" />
+          <div className="card-body">
+            <div className="grid grid-2">
+              {facts.map(([label, value]) => (
+                <div key={label} style={{ marginBottom: 14 }}>
+                  <div className="kpi-label">{label}</div>
+                  <div style={{ fontWeight: 600, marginTop: 3 }}>{value}</div>
+                </div>
+              ))}
+            </div>
+            {site.description ? (
+              <div style={{ marginTop: 4 }}>
+                <div className="kpi-label">Description</div>
+                <p className="muted" style={{ marginTop: 6 }}>
+                  {site.description}
+                </p>
+              </div>
+            ) : null}
+          </div>
+        </Card>
+      </div>
+
+      <Card className="map-card">
+        <CardHeader
+          title="Location"
+          sub={site.location || 'No address set'}
+          action={
+            isAdmin && site.location ? (
+              <Button variant="ghost" size="sm" loading={locating} onClick={locate}>
+                <IconMapPin size={16} />
+                {hasPin ? 'Locate again' : 'Locate on map'}
+              </Button>
+            ) : undefined
+          }
+        />
+        <div className="card-body">
+          {locateError ? <ErrorNote message={locateError} /> : null}
+          {hasPin ? (
+            <>
+              <MapView sites={[mapSite]} mode="single" height={300} />
+              {site.geocodeLabel ? (
+                <div className="small muted map-credit">Matched: {site.geocodeLabel}</div>
+              ) : null}
+            </>
+          ) : (
+            <div className="empty-inline">
+              {site.location
+                ? isAdmin
+                  ? 'This project has no map pin yet — use "Locate on map" to place it.'
+                  : 'This project has no map pin yet.'
+                : 'Add an address to this project to place it on the map.'}
+            </div>
+          )}
         </div>
       </Card>
-    </div>
+    </>
   )
 }
 

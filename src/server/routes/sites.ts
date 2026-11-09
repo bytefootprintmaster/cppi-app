@@ -15,6 +15,7 @@ import {
   requireSiteAccess
 } from '../services'
 import { applyStandardFramework } from '../framework'
+import { geocodeAddress } from '../geocode'
 import { buildObjectKey, deleteObject, presignDownload, presignUpload } from '../s3'
 import type {
   AssetCategory,
@@ -102,6 +103,26 @@ function sitePatchFrom(body: Record<string, unknown>): Record<string, unknown> {
   return patch
 }
 
+/**
+ * Resolve a site's free-text location to coordinates and persist the result.
+ * Best-effort by design: an address the geocoder cannot find clears the pin
+ * (so a stale one from a previous address never lingers) rather than failing.
+ */
+async function locateSite(site: SiteRecord): Promise<SiteRecord> {
+  const location = site.location?.trim()
+  if (!location) return site
+
+  const hit = await geocodeAddress(location)
+  const geocodedAt = nowIso()
+  await updateFields(T.sites, { siteId: site.siteId }, {
+    lat: hit?.lat ?? null,
+    lng: hit?.lng ?? null,
+    geocodeLabel: hit?.label ?? null,
+    geocodedAt
+  })
+  return { ...site, lat: hit?.lat, lng: hit?.lng, geocodeLabel: hit?.label, geocodedAt }
+}
+
 /* ------------------------------- sites ------------------------------- */
 
 siteRouter.get('/', asyncHandler(async (req, res) => {
@@ -128,7 +149,25 @@ siteRouter.post('/', requireAdmin, asyncHandler(async (req, res) => {
   // Every project starts on the standard development framework; admins can edit
   // the seeded stages and milestones afterwards.
   await applyStandardFramework(site.siteId)
-  res.json({ site })
+  const located = await locateSite(site)
+  res.json({ site: located })
+}))
+
+/** Admin: locate every project that has no coordinates yet (one request/second). */
+siteRouter.post('/geocode-missing', requireAdmin, asyncHandler(async (req, res) => {
+  const sites = await accessibleSites(req.user!)
+  const missing = sites.filter(
+    (s) => s.location?.trim() && (typeof s.lat !== 'number' || typeof s.lng !== 'number')
+  )
+
+  let located = 0
+  let failed = 0
+  for (const site of missing) {
+    const updated = await locateSite(site)
+    if (typeof updated.lat === 'number' && typeof updated.lng === 'number') located += 1
+    else failed += 1
+  }
+  res.json({ located, failed, considered: missing.length })
 }))
 
 siteRouter.get('/:siteId', asyncHandler(async (req, res) => {
@@ -152,8 +191,27 @@ siteRouter.get('/:siteId', asyncHandler(async (req, res) => {
 
 siteRouter.patch('/:siteId', requireAdmin, asyncHandler(async (req, res) => {
   const site = await requireSiteAccess(req.user!, req.params.siteId)
-  await updateFields(T.sites, { siteId: site.siteId }, sitePatchFrom((req.body ?? {}) as Record<string, unknown>))
-  res.json({ ok: true })
+  const patch = sitePatchFrom((req.body ?? {}) as Record<string, unknown>)
+  await updateFields(T.sites, { siteId: site.siteId }, patch)
+
+  // A new address means the pin must be re-resolved, so the map follows the record.
+  let updated: SiteRecord = { ...site, ...patch }
+  if (typeof patch.location === 'string' && patch.location !== site.location) {
+    updated = await locateSite(updated)
+  }
+  res.json({ ok: true, site: updated })
+}))
+
+/** Admin: re-resolve one project's address (e.g. after fixing a typo). */
+siteRouter.post('/:siteId/geocode', requireAdmin, asyncHandler(async (req, res) => {
+  const site = await requireSiteAccess(req.user!, req.params.siteId)
+  if (!site.location?.trim()) throw new HttpError(400, 'This project has no location to look up')
+
+  const located = await locateSite(site)
+  if (typeof located.lat !== 'number' || typeof located.lng !== 'number') {
+    throw new HttpError(422, `Could not find "${site.location}" on the map`)
+  }
+  res.json({ site: located })
 }))
 
 siteRouter.delete('/:siteId', requireAdmin, asyncHandler(async (req, res) => {

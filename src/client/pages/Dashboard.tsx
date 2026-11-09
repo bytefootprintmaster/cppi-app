@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../lib/api'
 import { useApi } from '../lib/useApi'
 import { useAuth } from '../lib/auth'
 import { formatDate, formatMoney, relativeTime } from '../lib/format'
 import { PageBody, PageHeader } from '../components/Layout'
 import { Button, Card, CardHeader, Empty, ErrorNote, Loading, Progress, SiteStatusBadge } from '../components/ui'
+import { MapView, type MapSite } from '../components/MapView'
 import {
   IconAlert,
   IconBuilding,
   IconChevronRight,
+  IconMapPin,
   IconPlus,
   IconSettings,
   IconTarget
@@ -132,15 +134,38 @@ const KPI_META: Record<string, KpiMeta> = {
 
 export function DashboardPage() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const { data, error, loading, reload, setData } = useApi<DashboardResponse>('/dashboard')
   const [pickerOpen, setPickerOpen] = useState(false)
   const [draft, setDraft] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [view, setView] = useState<'tracker' | 'map'>('tracker')
+  const [locating, setLocating] = useState(false)
+  const [locateMsg, setLocateMsg] = useState<string | null>(null)
 
   useEffect(() => {
     document.title = 'Dashboard · CPPI'
   }, [])
+
+  async function locateMissing() {
+    setLocating(true)
+    setLocateMsg(null)
+    try {
+      const res = await api<{ located: number; failed: number; considered: number }>(
+        '/sites/geocode-missing',
+        { method: 'POST' }
+      )
+      setLocateMsg(
+        `Located ${res.located} of ${res.considered} project${res.considered === 1 ? '' : 's'}${res.failed ? `, ${res.failed} could not be found` : ''}.`
+      )
+      await reload()
+    } catch (err) {
+      setLocateMsg(err instanceof Error ? err.message : 'Could not locate the projects')
+    } finally {
+      setLocating(false)
+    }
+  }
 
   function openPicker() {
     setDraft(data?.kpis ?? [])
@@ -179,6 +204,19 @@ export function DashboardPage() {
 
   const { rows, totals, kpis, availableKpis } = data
   const visible = kpis.filter((id) => KPI_META[id])
+  const isAdmin = user?.role === 'admin'
+  const mapSites: MapSite[] = rows
+    .filter((row) => typeof row.site.lat === 'number' && typeof row.site.lng === 'number')
+    .map((row) => ({
+      siteId: row.site.siteId,
+      name: row.site.name,
+      code: row.site.code,
+      location: row.site.location,
+      status: row.site.status,
+      lat: row.site.lat as number,
+      lng: row.site.lng as number,
+      budgeted: row.budget.budgeted
+    }))
 
   return (
     <>
@@ -213,6 +251,80 @@ export function DashboardPage() {
           })}
         </div>
 
+        <div className="tabs" style={{ marginBottom: 16 }}>
+          <button
+            className={`tab${view === 'tracker' ? ' active' : ''}`}
+            onClick={() => setView('tracker')}
+          >
+            Tracker
+          </button>
+          <button className={`tab${view === 'map' ? ' active' : ''}`} onClick={() => setView('map')}>
+            Map
+          </button>
+        </div>
+
+        {view === 'map' ? (
+          <Card>
+            <CardHeader
+              title="Portfolio map"
+              sub={
+                rows.length > 0 && mapSites.length === rows.length
+                  ? `${rows.length} project${rows.length === 1 ? '' : 's'} on the map`
+                  : `${mapSites.length} of ${rows.length} projects located`
+              }
+              action={
+                isAdmin && mapSites.length < rows.length ? (
+                  <Button variant="ghost" size="sm" loading={locating} onClick={locateMissing}>
+                    <IconMapPin size={16} />
+                    Locate missing
+                  </Button>
+                ) : undefined
+              }
+            />
+            <div className="card-body">
+              {locateMsg ? (
+                <div className="alert alert-info" style={{ marginBottom: 12 }}>
+                  {locateMsg}
+                </div>
+              ) : null}
+              {mapSites.length === 0 ? (
+                <Empty title="Nothing on the map yet">
+                  {isAdmin
+                    ? 'Give a project an address, then use "Locate missing" to drop it on the map.'
+                    : 'Projects will appear here once an administrator adds their addresses.'}
+                </Empty>
+              ) : (
+                <>
+                  <MapView
+                    sites={mapSites}
+                    mode="portfolio"
+                    height={520}
+                    onSelect={(id) => navigate(`/sites/${id}`)}
+                  />
+                  <div className="map-legend">
+                    <span>
+                      <i className="map-pin-planning" />
+                      Planning
+                    </span>
+                    <span>
+                      <i className="map-pin-active" />
+                      In progress
+                    </span>
+                    <span>
+                      <i className="map-pin-hold" />
+                      On hold
+                    </span>
+                    <span>
+                      <i className="map-pin-done" />
+                      Completed
+                    </span>
+                    <span className="muted">Pin size reflects budget</span>
+                  </div>
+                </>
+              )}
+            </div>
+          </Card>
+        ) : (
         <Card>
           <CardHeader
             title="Project tracker"
@@ -366,6 +478,7 @@ export function DashboardPage() {
             </>
           )}
         </Card>
+        )}
 
         {rows.length > 0 && totals.attention > 0 ? (
           <div className="alert alert-info" style={{ marginTop: 18, display: 'flex', gap: 10, alignItems: 'center' }}>

@@ -32,6 +32,12 @@ export interface SiteRecord {
   code?: string
   description?: string
   location?: string
+  /** Coordinates resolved from `location` by the geocoder; absent until located. */
+  lat?: number
+  lng?: number
+  /** What the geocoder actually matched, so a wrong pin can be spotted. */
+  geocodeLabel?: string
+  geocodedAt?: string
   status: SiteStatus
   startDate?: string
   targetDate?: string
