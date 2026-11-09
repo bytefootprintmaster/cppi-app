@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
-import type { Map as MapLibreMap, Marker } from 'maplibre-gl'
+import type { GeoJSONSource, Map as MapLibreMap, MapGeoJSONFeature } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 // MapLibre parses tiles in a web worker and, once bundled, looks for the worker
 // file sitting beside its own chunk — a file Vite never emits. Importing it as
@@ -41,13 +41,58 @@ const STATUS_LABEL: Record<SiteStatus, string> = {
  */
 const STYLE_URL = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 
-const MIN_PIN = 18
-const MAX_PIN = 40
+const PROJECT_SOURCE = 'cppi-projects'
 
-function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/g, (c) =>
-    c === '&' ? '&amp;' : c === '<' ? '&lt;' : c === '>' ? '&gt;' : c === '"' ? '&quot;' : '&#39;'
-  )
+function popupContent(sites: MapSite[], onSelect?: (siteId: string) => void): HTMLElement {
+  const root = document.createElement('div')
+  root.className = 'map-pop'
+
+  const heading = document.createElement('div')
+  heading.className = 'map-pop-name'
+  heading.textContent = sites.length === 1 ? sites[0].name : `${sites.length} projects at this location`
+  root.appendChild(heading)
+
+  for (const site of sites) {
+    const item = document.createElement('div')
+    item.className = 'map-pop-item'
+
+    if (sites.length > 1) {
+      const name = document.createElement('div')
+      name.className = 'map-pop-item-name'
+      name.textContent = site.name
+      item.appendChild(name)
+    }
+
+    const status = document.createElement('div')
+    status.className = `map-pop-status map-pop-status-${STATUS_CLASS[site.status]}`
+    status.textContent = STATUS_LABEL[site.status]
+    item.appendChild(status)
+
+    if (site.location) {
+      const location = document.createElement('div')
+      location.className = 'map-pop-meta'
+      location.textContent = site.location
+      item.appendChild(location)
+    }
+    if (site.budgeted) {
+      const budget = document.createElement('div')
+      budget.className = 'map-pop-meta'
+      budget.textContent = `Budget ${formatMoney(site.budgeted, { compact: true })}`
+      item.appendChild(budget)
+    }
+
+    if (onSelect) {
+      const open = document.createElement('button')
+      open.type = 'button'
+      open.className = 'map-pop-open'
+      open.textContent = 'Open project'
+      open.addEventListener('click', () => onSelect(site.siteId))
+      item.appendChild(open)
+    }
+    root.appendChild(item)
+  }
+
+  return root
 }
 
 /** The MapLibre module namespace, captured when the on-demand import resolves. */
@@ -66,9 +111,9 @@ interface MapViewProps {
 }
 
 /**
- * A thin React wrapper around MapLibre GL JS. Markers are DOM elements rather
- * than GL layers: a portfolio is tens of projects, not thousands, and DOM pins
- * let the pins carry the app's own styling and real popups.
+ * A thin React wrapper around MapLibre GL JS. The clustered source keeps
+ * co-located projects individually accessible instead of drawing pins on top
+ * of each other.
  *
  * The library itself is imported on demand, so its weight is only paid on the
  * pages that actually show a map.
@@ -77,14 +122,16 @@ export function MapView({ sites, mode = 'portfolio', height = 460, onSelect }: M
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapLibreMap | null>(null)
   const moduleRef = useRef<MapLibre | null>(null)
-  const markersRef = useRef<Marker[]>([])
+  const sitesRef = useRef(sites)
+  sitesRef.current = sites
   const [ready, setReady] = useState(false)
+  const siteSignature = JSON.stringify(sites)
 
   // Keep the latest callback without forcing a redraw when the parent re-renders.
   const selectRef = useRef(onSelect)
   selectRef.current = onSelect
 
-  // Create the map once; markers are rebuilt by the effect below.
+  // Create the map and clustered layers once; the data effect updates features.
   useEffect(() => {
     let cancelled = false
     void (async () => {
@@ -100,7 +147,104 @@ export function MapView({ sites, mode = 'portfolio', height = 460, onSelect }: M
         attributionControl: { compact: true }
       })
       map.addControl(new maplibre.NavigationControl({ showCompass: false }), 'top-right')
-      map.on('load', () => setReady(true))
+      map.on('load', () => {
+        map.addSource(PROJECT_SOURCE, {
+          type: 'geojson',
+          data: { type: 'FeatureCollection', features: [] },
+          cluster: true,
+          clusterRadius: 44,
+          clusterMaxZoom: 14
+        })
+        map.addLayer({
+          id: 'project-clusters',
+          type: 'circle',
+          source: PROJECT_SOURCE,
+          filter: ['has', 'point_count'],
+          paint: {
+            'circle-color': '#0f6b48',
+            'circle-radius': ['step', ['get', 'point_count'], 19, 5, 23, 15, 28],
+            'circle-stroke-color': '#ffffff',
+            'circle-stroke-width': 2
+          }
+        })
+        map.addLayer({
+          id: 'project-cluster-count',
+          type: 'symbol',
+          source: PROJECT_SOURCE,
+          filter: ['has', 'point_count'],
+          layout: {
+            'text-field': ['get', 'point_count_abbreviated'],
+            'text-size': 13
+          },
+          paint: { 'text-color': '#ffffff' }
+        })
+        map.addLayer({
+          id: 'project-points',
+          type: 'circle',
+          source: PROJECT_SOURCE,
+          filter: ['!', ['has', 'point_count']],
+          paint: {
+            'circle-color': [
+              'match',
+              ['get', 'status'],
+              'planning', '#94a3b8',
+              'in_progress', '#10935f',
+              'on_hold', '#b45309',
+              'completed', '#1d4ed8',
+              '#10935f'
+            ],
+            'circle-radius': [
+              'interpolate',
+              ['linear'],
+              ['get', 'budgeted'],
+              0, 9,
+              100000, 12,
+              1000000, 16,
+              5000000, 20
+            ],
+            'circle-stroke-color': '#ffffff',
+            'circle-stroke-width': 2
+          }
+        })
+
+        map.on('click', 'project-clusters', (event) => {
+          const feature = event.features?.[0] as MapGeoJSONFeature | undefined
+          if (!feature) return
+          const clusterId = Number(feature.properties?.cluster_id)
+          const coordinates = feature.geometry.type === 'Point' ? feature.geometry.coordinates : null
+          const source = map.getSource(PROJECT_SOURCE) as GeoJSONSource
+          if (!Number.isFinite(clusterId) || !coordinates) return
+          void source.getClusterLeaves(clusterId, 100, 0).then((leaves) => {
+            const projects = leaves
+              .map((leaf) => leaf.properties as unknown as MapSite | null)
+              .filter((site): site is MapSite => Boolean(site?.siteId))
+            if (!projects.length) return
+            new maplibre.Popup({ offset: 18, closeButton: true })
+              .setLngLat(coordinates as [number, number])
+              .setDOMContent(popupContent(projects, selectRef.current))
+              .addTo(map)
+          })
+        })
+        map.on('click', 'project-points', (event) => {
+          const feature = event.features?.[0] as MapGeoJSONFeature | undefined
+          if (!feature || feature.geometry.type !== 'Point') return
+          const site = feature.properties as unknown as MapSite
+          new maplibre.Popup({ offset: 18, closeButton: true })
+            .setLngLat(feature.geometry.coordinates as [number, number])
+            .setDOMContent(popupContent([site], selectRef.current))
+            .addTo(map)
+        })
+
+        for (const layer of ['project-clusters', 'project-points']) {
+          map.on('mouseenter', layer, () => {
+            map.getCanvas().style.cursor = 'pointer'
+          })
+          map.on('mouseleave', layer, () => {
+            map.getCanvas().style.cursor = ''
+          })
+        }
+        setReady(true)
+      })
       mapRef.current = map
     })()
     return () => {
@@ -108,68 +252,41 @@ export function MapView({ sites, mode = 'portfolio', height = 460, onSelect }: M
       mapRef.current?.remove()
       mapRef.current = null
       moduleRef.current = null
-      markersRef.current = []
     }
   }, [])
 
   useEffect(() => {
     const map = mapRef.current
     const maplibre = moduleRef.current
-    if (!map || !maplibre || !ready || sites.length === 0) return
+    if (!map || !maplibre || !ready) return
+    const source = map.getSource(PROJECT_SOURCE) as GeoJSONSource | undefined
+    const currentSites = sitesRef.current
+    if (!source || currentSites.length === 0) return
 
-    for (const marker of markersRef.current) marker.remove()
-    markersRef.current = []
+    void source.setData({
+      type: 'FeatureCollection',
+      features: currentSites.map((site) => ({
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [site.lng, site.lat] },
+        properties: {
+          siteId: site.siteId,
+          name: site.name,
+          code: site.code ?? '',
+          location: site.location ?? '',
+          status: site.status,
+          budgeted: site.budgeted ?? 0
+        }
+      }))
+    })
 
-    // Scale pin size by budget so a glance shows which projects are the big ones.
-    const maxBudget = Math.max(1, ...sites.map((s) => s.budgeted ?? 0))
-
-    for (const site of sites) {
-      const size =
-        MIN_PIN + (MAX_PIN - MIN_PIN) * Math.sqrt(Math.max(0, site.budgeted ?? 0) / maxBudget)
-
-      const el = document.createElement('button')
-      el.type = 'button'
-      el.className = `map-pin map-pin-${STATUS_CLASS[site.status]}${mode === 'single' ? ' map-pin-single' : ''}`
-      el.style.width = `${Math.round(size)}px`
-      el.style.height = `${Math.round(size)}px`
-      el.setAttribute('aria-label', `${site.name} — ${STATUS_LABEL[site.status]}`)
-
-      const budget =
-        typeof site.budgeted === 'number' && site.budgeted > 0
-          ? `<div class="map-pop-meta">Budget ${escapeHtml(formatMoney(site.budgeted, { compact: true }))}</div>`
-          : ''
-
-      const node = document.createElement('div')
-      node.className = 'map-pop'
-      node.innerHTML = `
-        <div class="map-pop-name">${escapeHtml(site.name)}</div>
-        <div class="map-pop-status map-pop-status-${STATUS_CLASS[site.status]}">${STATUS_LABEL[site.status]}</div>
-        ${site.location ? `<div class="map-pop-meta">${escapeHtml(site.location)}</div>` : ''}
-        ${budget}
-      `
-      const open = document.createElement('button')
-      open.type = 'button'
-      open.className = 'map-pop-open'
-      open.textContent = 'Open project'
-      open.addEventListener('click', () => selectRef.current?.(site.siteId))
-      node.appendChild(open)
-
-      const marker = new maplibre.Marker({ element: el, anchor: 'center' })
-        .setLngLat([site.lng, site.lat])
-        .setPopup(new maplibre.Popup({ offset: size / 2 + 6, closeButton: false }).setDOMContent(node))
-        .addTo(map)
-
-      markersRef.current.push(marker)
-    }
-
-    if (sites.length === 1 || mode === 'single') {
-      map.easeTo({ center: [sites[0].lng, sites[0].lat], zoom: 13 })
+    if (currentSites.length === 1 || mode === 'single') {
+      map.easeTo({ center: [currentSites[0].lng, currentSites[0].lat], zoom: 13 })
     } else {
       const bounds = new maplibre.LngLatBounds()
-      for (const site of sites) bounds.extend([site.lng, site.lat])
+      for (const site of currentSites) bounds.extend([site.lng, site.lat])
       map.fitBounds(bounds, { padding: 60, maxZoom: 13, duration: 0 })
     }
-  }, [sites, mode, ready])
+  }, [siteSignature, mode, ready])
 
   // MapLibre measures its container once; tell it when the box changes (e.g.
   // the map is inside a tab that was hidden when the page first rendered).

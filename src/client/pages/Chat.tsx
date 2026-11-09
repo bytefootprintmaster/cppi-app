@@ -43,6 +43,14 @@ interface OverlayTurn {
   thinking?: boolean
 }
 
+interface ChatServiceStatus {
+  configured: boolean
+  reachable: boolean
+  storageReady: boolean
+  storageError?: string
+  reason?: 'storage_unavailable' | 'missing_agent_token' | 'agent_unreachable' | 'ready'
+}
+
 /* -------------------------------- bubbles -------------------------------- */
 
 function Thinking() {
@@ -170,8 +178,23 @@ export function ChatPage() {
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const sites = useApi<{ sites: SiteRecord[] }>('/sites')
-  const status = useApi<{ configured: boolean; reachable: boolean }>('/chat/status')
+  const status = useApi<ChatServiceStatus>('/chat/status')
   const threads = useApi<{ threads: ChatThreadRecord[] }>('/chat/threads')
+  const assistantReady = Boolean(
+    status.data?.configured && status.data.reachable && status.data.storageReady
+  )
+
+  const serviceMessage = status.error
+    ? `Could not check assistant availability: ${status.error}`
+    : status.data?.storageError
+      ? `Could not verify chat storage: ${status.data.storageError}`
+      : status.data && !status.data.storageReady
+        ? 'Assistant chat storage is not ready. Ask an administrator to run the portal infrastructure setup.'
+        : status.data && !status.data.configured
+          ? 'The portal is missing AGENT_API_TOKEN. Configure it to match HTTP_API_TOKEN in the agent environment.'
+          : status.data && !status.data.reachable
+            ? 'The agent service is not reachable. Confirm HTTP_API_ENABLED=true and restart the agent service.'
+            : null
 
   useEffect(() => {
     document.title = 'Assistant · CPPI'
@@ -232,6 +255,10 @@ export function ChatPage() {
   async function send() {
     const text = draft.trim()
     if (!text || sending) return
+    if (!assistantReady) {
+      setError(serviceMessage ?? 'The assistant is not ready yet.')
+      return
+    }
     setSending(true)
     setError(null)
     setDraft('')
@@ -301,7 +328,6 @@ export function ChatPage() {
 
   const threadList = threads.data?.threads ?? []
   const conversationStarted = messages.length > 0 || overlay.length > 0
-  const assistantOffline = status.data ? !status.data.configured || !status.data.reachable : false
 
   return (
     <>
@@ -325,10 +351,9 @@ export function ChatPage() {
       <PageBody>
         <ErrorNote message={error} />
 
-        {assistantOffline ? (
-          <div className="alert alert-info" style={{ marginBottom: 14 }}>
-            The assistant service is not reachable right now. Your messages are still saved, but no reply
-            will come until it is back online.
+        {serviceMessage ? (
+          <div className="alert alert-info chat-service-notice" role="status" style={{ marginBottom: 14 }}>
+            <strong>Assistant unavailable.</strong> {serviceMessage}
           </div>
         ) : null}
 
@@ -477,7 +502,7 @@ export function ChatPage() {
                   rows={2}
                   placeholder="Ask a question, describe what you see, or ask for a report…"
                   value={draft}
-                  disabled={sending}
+                  disabled={sending || !assistantReady}
                   onChange={(event) => setDraft(event.target.value)}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' && !event.shiftKey) {
@@ -486,7 +511,12 @@ export function ChatPage() {
                     }
                   }}
                 />
-                <Button type="submit" loading={sending} disabled={!draft.trim()} className="chat-send">
+                <Button
+                  type="submit"
+                  loading={sending || status.loading}
+                  disabled={!draft.trim() || !assistantReady}
+                  className="chat-send"
+                >
                   <IconSend size={16} />
                   Send
                 </Button>

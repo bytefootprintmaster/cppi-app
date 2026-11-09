@@ -1,8 +1,9 @@
-import { Router, type Request, type Response } from 'express'
+import { Router, type NextFunction, type Request, type Response } from 'express'
 import { randomUUID } from 'node:crypto'
-import { T, deleteItem, getItem, putItem, queryAll, updateFields } from '../db'
+import { T, deleteItem, getItem, putItem, queryAll, tableIsActive, updateFields } from '../db'
 import { env } from '../env'
 import { HttpError, asyncHandler, optStr, str } from '../lib/http'
+import { requireAuth } from '../auth'
 import { canWrite, requireSiteAccess } from '../services'
 import type {
   ChatArtifact,
@@ -34,7 +35,7 @@ const now = () => new Date().toISOString()
 
 /** Only the user who owns a thread may read or write it. */
 async function loadThread(userId: string, threadId: string): Promise<ChatThreadRecord> {
-  const thread = await getItem<ChatThreadRecord>(T.chatThreads, { threadId })
+  const thread = await getItem<ChatThreadRecord>(T.chatThreads, { threadId }, true)
   if (!thread || thread.userId !== userId) throw new HttpError(404, 'Conversation not found')
   return thread
 }
@@ -42,7 +43,8 @@ async function loadThread(userId: string, threadId: string): Promise<ChatThreadR
 function listMessages(threadId: string): Promise<ChatMessageRecord[]> {
   return queryAll<ChatMessageRecord>(T.chatMessages, {
     KeyConditionExpression: 'threadId = :t',
-    ExpressionAttributeValues: { ':t': threadId }
+    ExpressionAttributeValues: { ':t': threadId },
+    ConsistentRead: true
   }).then((rows) => rows.sort((a, b) => a.createdAt.localeCompare(b.createdAt)))
 }
 
@@ -164,19 +166,41 @@ async function callAgent(input: {
 /* -------------------------------- routes -------------------------------- */
 
 chatRouter.get('/status', asyncHandler(async (_req, res) => {
-  if (!env.AGENT_API_TOKEN) {
-    res.json({ configured: false, reachable: false })
-    return
-  }
-  let reachable = false
+  let storageReady = false
+  let storageError: string | undefined
   try {
-    const r = await fetch(`${env.AGENT_API_URL}/health`, { signal: AbortSignal.timeout(4000) })
-    reachable = r.ok
-  } catch {
-    reachable = false
+    const [threadsReady, messagesReady] = await Promise.all([
+      tableIsActive(T.chatThreads),
+      tableIsActive(T.chatMessages)
+    ])
+    storageReady = threadsReady && messagesReady
+  } catch (err) {
+    storageError = err instanceof Error ? err.message : String(err)
   }
-  res.json({ configured: true, reachable })
+
+  const configured = Boolean(env.AGENT_API_TOKEN)
+  let reachable = false
+  if (configured) {
+    try {
+      const r = await fetch(`${env.AGENT_API_URL}/health`, { signal: AbortSignal.timeout(4000) })
+      reachable = r.ok
+    } catch {
+      reachable = false
+    }
+  }
+
+  res.json({
+    configured,
+    reachable,
+    storageReady,
+    storageError,
+    reason: !storageReady ? 'storage_unavailable' : !configured ? 'missing_agent_token' : !reachable ? 'agent_unreachable' : 'ready'
+  })
 }))
+
+// Status is intentionally public for the page's setup banner; all transcript
+// and action routes require a valid portal session.
+chatRouter.use(requireAuth)
 
 chatRouter.get('/threads', asyncHandler(async (req, res) => {
   const rows = await queryAll<ChatThreadRecord>(T.chatThreads, {
@@ -346,3 +370,13 @@ chatRouter.post(
   '/threads/:threadId/actions/:actionId/reject',
   asyncHandler((req, res) => resolveAction(req, res, 'reject'))
 )
+
+chatRouter.use((err: unknown, _req: Request, res: Response, next: NextFunction) => {
+  if (err instanceof Error && err.name === 'ResourceNotFoundException') {
+    res.status(503).json({
+      error: 'Assistant chat storage is not initialized. Run the portal infrastructure setup, then retry.'
+    })
+    return
+  }
+  next(err)
+})

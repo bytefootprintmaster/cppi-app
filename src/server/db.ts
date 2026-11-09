@@ -1,4 +1,4 @@
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
+import { DescribeTableCommand, DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import {
   DeleteCommand,
   DynamoDBDocumentClient,
@@ -42,8 +42,12 @@ export const T = {
   chatMessages: `${env.TABLE_PREFIX}chat_messages`
 } as const
 
-export async function getItem<Item>(table: string, key: Record<string, unknown>): Promise<Item | undefined> {
-  const res = await ddb.send(new GetCommand({ TableName: table, Key: key }))
+export async function getItem<Item>(
+  table: string,
+  key: Record<string, unknown>,
+  consistentRead = false
+): Promise<Item | undefined> {
+  const res = await ddb.send(new GetCommand({ TableName: table, Key: key, ConsistentRead: consistentRead }))
   return res.Item as Item | undefined
 }
 
@@ -87,6 +91,7 @@ interface QueryOpts {
   ExpressionAttributeValues: Record<string, unknown>
   ExpressionAttributeNames?: Record<string, string>
   IndexName?: string
+  ConsistentRead?: boolean
 }
 
 export async function queryAll<Item>(table: string, opts: QueryOpts): Promise<Item[]> {
@@ -111,4 +116,18 @@ export async function scanAll<Item>(table: string): Promise<Item[]> {
     ExclusiveStartKey = res.LastEvaluatedKey as Record<string, unknown> | undefined
   } while (ExclusiveStartKey)
   return items
+}
+
+/** Return whether a table and all of its GSIs are ready to serve requests. */
+export async function tableIsActive(table: string): Promise<boolean> {
+  try {
+    const result = await base.send(new DescribeTableCommand({ TableName: table }))
+    return (
+      result.Table?.TableStatus === 'ACTIVE' &&
+      (result.Table.GlobalSecondaryIndexes ?? []).every((index) => index.IndexStatus === 'ACTIVE')
+    )
+  } catch (err) {
+    if (err instanceof Error && err.name === 'ResourceNotFoundException') return false
+    throw err
+  }
 }

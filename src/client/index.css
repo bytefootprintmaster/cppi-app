@@ -1924,28 +1924,12 @@ tr.drop-target > td {
   border-bottom-color: var(--surface);
 }
 
-/* Pin shape lives on .map-pin, colour on the status class, so the legend can
-   reuse the colour classes without inheriting the marker geometry. */
-.map-pin {
-  display: block;
-  padding: 0;
-  border-radius: 50%;
-  border: 2px solid #fff;
-  box-shadow: 0 2px 8px rgba(10, 40, 28, 0.35);
-  cursor: pointer;
-  transition: transform 0.15s ease;
-}
-.map-pin:hover { transform: scale(1.12); }
-.map-pin:focus-visible { outline: none; box-shadow: var(--ring), 0 2px 8px rgba(10, 40, 28, 0.35); }
-.map-pin-single { box-shadow: 0 0 0 6px rgba(16, 147, 95, 0.18), 0 2px 8px rgba(10, 40, 28, 0.35); }
-
-.map-pin-planning { background: #94a3b8; }
-.map-pin-active { background: var(--green-500); }
-.map-pin-hold { background: var(--amber); }
-.map-pin-done { background: var(--blue); }
-
-.map-pop { min-width: 176px; max-width: 236px; font-size: 13px; }
+/* Project popup content; marker colours are rendered by MapLibre layers. */
+.map-pop { min-width: 176px; max-width: 250px; max-height: 280px; overflow-y: auto; font-size: 13px; }
 .map-pop-name { font-weight: 700; font-size: 14px; color: var(--ink); }
+.map-pop-item { padding-top: 8px; }
+.map-pop-item + .map-pop-item { margin-top: 10px; border-top: 1px solid var(--line); }
+.map-pop-item-name { margin-bottom: 3px; font-weight: 700; color: var(--ink); }
 .map-pop-status {
   display: inline-block;
   margin: 5px 0 6px;
@@ -1974,10 +1958,15 @@ tr.drop-target > td {
   cursor: pointer;
 }
 .map-pop-open:hover { background: var(--green-700); }
+.map-pop-open:disabled { opacity: 0.6; cursor: default; }
 
 .map-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 14px; }
 .map-legend span { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink-soft); }
-.map-legend i { width: 11px; height: 11px; border-radius: 50%; border: 2px solid #fff; box-shadow: var(--shadow-sm); }
+.map-legend .map-legend-dot { width: 11px; height: 11px; border-radius: 50%; border: 2px solid #fff; box-shadow: var(--shadow-sm); }
+.map-dot-planning { background: #94a3b8; }
+.map-dot-active { background: var(--green-500); }
+.map-dot-hold { background: var(--amber); }
+.map-dot-done { background: var(--blue); }
 
 .map-credit { margin-top: 10px; }
 
@@ -1991,7 +1980,6 @@ tr.drop-target > td {
 }
 
 @media (max-width: 640px) {
-  .map-shell { height: min(var(--map-h, 460px), 62vh); border-radius: var(--radius-sm); }
+  .map-shell { height: min(var(--map-h, 460px), max(320px, 48vh)); border-radius: var(--radius-sm); }
   .map-legend { gap: 6px 12px; }
 }
-

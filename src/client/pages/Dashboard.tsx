@@ -303,22 +303,22 @@ export function DashboardPage() {
                   />
                   <div className="map-legend">
                     <span>
-                      <i className="map-pin-planning" />
+                      <i className="map-legend-dot map-dot-planning" />
                       Planning
                     </span>
                     <span>
-                      <i className="map-pin-active" />
+                      <i className="map-legend-dot map-dot-active" />
                       In progress
                     </span>
                     <span>
-                      <i className="map-pin-hold" />
+                      <i className="map-legend-dot map-dot-hold" />
                       On hold
                     </span>
                     <span>
-                      <i className="map-pin-done" />
+                      <i className="map-legend-dot map-dot-done" />
                       Completed
                     </span>
-                    <span className="muted">Pin size reflects budget</span>
+                    <span className="muted">Pin size reflects budget · clusters show nearby projects</span>
                   </div>
                 </>
               )}
