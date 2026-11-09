@@ -3,7 +3,7 @@ import { api } from '../lib/api'
 import { useApi } from '../lib/useApi'
 import { formatDate, relativeTime } from '../lib/format'
 import { PageBody, PageHeader } from '../components/Layout'
-import { Badge, Button, Card, CardHeader, Empty, ErrorNote, Field, Loading, Modal, RoleBadge } from '../components/ui'
+import { Badge, Button, Card, CardHeader, CardMenu, Empty, ErrorNote, Field, Loading, Modal, RoleBadge, type MenuItem } from '../components/ui'
 import { IconCopy, IconMail, IconPlus, IconTrash } from '../components/icons'
 import type { InviteRecord, Role, SiteRecord } from '../../server/types'
 
@@ -56,6 +56,20 @@ export function AdminInvitesPage() {
   const invites = data?.invites ?? []
   const sites = siteData?.sites ?? []
 
+  function inviteMenuItems(invite: InviteWithUrl): MenuItem[] {
+    const items: MenuItem[] = [
+      {
+        label: copied === invite.token ? 'Copied' : 'Copy link',
+        icon: <IconCopy size={14} />,
+        onClick: () => void copyLink(invite)
+      }
+    ]
+    if (invite.status === 'pending') {
+      items.push({ label: 'Revoke', icon: <IconTrash size={14} />, danger: true, onClick: () => void revoke(invite) })
+    }
+    return items
+  }
+
   return (
     <>
       <PageHeader
@@ -81,64 +95,96 @@ export function AdminInvitesPage() {
               Create an invitation, then share the generated link with your contractor or colleague.
             </Empty>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Role</th>
-                    <th>Email</th>
-                    <th>Projects</th>
-                    <th>Status</th>
-                    <th>Expires</th>
-                    <th />
-                  </tr>
-                </thead>
-                <tbody>
-                  {invites.map((invite) => (
-                    <tr key={invite.token}>
-                      <td>
-                        <RoleBadge role={invite.role} />
-                      </td>
-                      <td>
-                        <div>{invite.email || <span className="muted small">Open link</span>}</div>
-                        {invite.note ? <div className="small muted">{invite.note}</div> : null}
-                      </td>
-                      <td className="small">
-                        {invite.siteIds.length === 0 ? (
-                          <span className="muted">No projects {invite.role === 'admin' ? '(sees all)' : ''}</span>
-                        ) : (
-                          `${invite.siteIds.length} project(s)`
-                        )}
-                      </td>
-                      <td>
-                        <Badge tone={INVITE_TONE[invite.status] ?? 'gray'}>{invite.status}</Badge>
-                        <div className="small muted" style={{ marginTop: 3 }}>
-                          {relativeTime(invite.createdAt)}
-                        </div>
-                      </td>
-                      <td className="small">{formatDate(invite.expiresAt)}</td>
-                      <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                        <Button variant="ghost" size="sm" onClick={() => void copyLink(invite)}>
-                          <IconCopy size={14} />
-                          {copied === invite.token ? 'Copied' : 'Copy link'}
-                        </Button>
-                        {invite.status === 'pending' ? (
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            style={{ marginLeft: 6 }}
-                            loading={busyToken === invite.token}
-                            onClick={() => void revoke(invite)}
-                          >
-                            <IconTrash size={14} />
-                          </Button>
-                        ) : null}
-                      </td>
+            <>
+              {/* Desktop: full table. */}
+              <div className="table-wrap invites-table">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Role</th>
+                      <th>Email</th>
+                      <th>Projects</th>
+                      <th>Status</th>
+                      <th>Expires</th>
+                      <th />
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {invites.map((invite) => (
+                      <tr key={invite.token}>
+                        <td>
+                          <RoleBadge role={invite.role} />
+                        </td>
+                        <td>
+                          <div>{invite.email || <span className="muted small">Open link</span>}</div>
+                          {invite.note ? <div className="small muted">{invite.note}</div> : null}
+                        </td>
+                        <td className="small">
+                          {invite.siteIds.length === 0 ? (
+                            <span className="muted">No projects {invite.role === 'admin' ? '(sees all)' : ''}</span>
+                          ) : (
+                            `${invite.siteIds.length} project(s)`
+                          )}
+                        </td>
+                        <td>
+                          <Badge tone={INVITE_TONE[invite.status] ?? 'gray'}>{invite.status}</Badge>
+                          <div className="small muted" style={{ marginTop: 3 }}>
+                            {relativeTime(invite.createdAt)}
+                          </div>
+                        </td>
+                        <td className="small">{formatDate(invite.expiresAt)}</td>
+                        <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                          <CardMenu items={inviteMenuItems(invite)} />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Phones: the same invitations as cards — no sideways scrolling. */}
+              <div className="invites-cards">
+                {invites.map((invite) => (
+                  <div className="user-card" key={invite.token}>
+                    <div className="user-card-top">
+                      <div style={{ minWidth: 0 }}>
+                        <div className="user-card-name">{invite.email || 'Open link'}</div>
+                        {invite.note ? <div className="small muted user-card-email">{invite.note}</div> : null}
+                      </div>
+                      <CardMenu items={inviteMenuItems(invite)} />
+                    </div>
+                    <div className="user-card-grid">
+                      <div>
+                        <div className="user-card-label">Role</div>
+                        <div className="user-card-value">
+                          <RoleBadge role={invite.role} />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="user-card-label">Status</div>
+                        <div className="user-card-value">
+                          <Badge tone={INVITE_TONE[invite.status] ?? 'gray'}>{invite.status}</Badge>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="user-card-label">Projects</div>
+                        <div className="user-card-value small">
+                          {invite.siteIds.length === 0 ? (
+                            <span className="muted">No projects {invite.role === 'admin' ? '(sees all)' : ''}</span>
+                          ) : (
+                            `${invite.siteIds.length} project(s)`
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="user-card-label">Expires</div>
+                        <div className="user-card-value small">{formatDate(invite.expiresAt)}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </Card>
 
