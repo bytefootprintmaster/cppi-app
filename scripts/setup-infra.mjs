@@ -61,7 +61,11 @@ const TABLE_DEFS = [
   { name: `${prefix}document_intelligence`, hash: 'siteId', range: 'assetId' },
   { name: `${prefix}findings`, hash: 'siteId', range: 'findingId' },
   { name: `${prefix}relationships`, hash: 'siteId', range: 'relId' },
-  { name: `${prefix}kpis`, hash: 'userId' }
+  { name: `${prefix}kpis`, hash: 'userId' },
+  // Assistant chat. chat_threads: one row per saved conversation (listed per user).
+  // chat_messages: the turns inside a thread, oldest first.
+  { name: `${prefix}chat_threads`, hash: 'threadId', gsis: [{ name: 'user-index', hash: 'userId' }] },
+  { name: `${prefix}chat_messages`, hash: 'threadId', range: 'messageId' }
 ]
 
 async function ensureTables() {

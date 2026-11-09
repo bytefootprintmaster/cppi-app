@@ -36,6 +36,7 @@ import {
 import {
   IconAlert,
   IconBuilding,
+  IconChat,
   IconCheck,
   IconChevronDown,
   IconChevronRight,
@@ -198,6 +199,10 @@ export function SiteDetailPage() {
             <Link className="btn btn-ghost" to="/sites">
               <IconBuilding size={16} />
               All projects
+            </Link>
+            <Link className="btn btn-ghost" to={`/chat?siteId=${encodeURIComponent(site.siteId)}`}>
+              <IconChat size={16} />
+              Ask assistant
             </Link>
             {isAdmin ? (
               <>

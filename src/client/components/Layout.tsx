@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import { Avatar, Button } from './ui'
-import { IconBuilding, IconDashboard, IconLogOut, IconMail, IconSearch, IconUsers } from './icons'
+import { IconBuilding, IconChat, IconDashboard, IconLogOut, IconMail, IconSearch, IconUsers } from './icons'
 
 function NavItem({ to, end, icon, label }: { to: string; end?: boolean; icon: ReactNode; label: string }) {
   return (
@@ -32,6 +32,7 @@ export function Layout() {
           <NavItem to="/" end icon={<IconDashboard />} label="Dashboard" />
           <NavItem to="/sites" icon={<IconBuilding />} label="Projects" />
           <NavItem to="/search" icon={<IconSearch />} label="Search" />
+          <NavItem to="/chat" icon={<IconChat />} label="Assistant" />
 
           {user?.role === 'admin' ? (
             <>

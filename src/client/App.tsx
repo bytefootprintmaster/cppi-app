@@ -9,6 +9,7 @@ import { DashboardPage } from './pages/Dashboard'
 import { SitesPage } from './pages/Sites'
 import { SiteDetailPage } from './pages/SiteDetail'
 import { SearchPage } from './pages/Search'
+import { ChatPage } from './pages/Chat'
 import { AdminInvitesPage } from './pages/AdminInvites'
 import { AdminUsersPage } from './pages/AdminUsers'
 import { InviteAcceptPage } from './pages/InviteAccept'
@@ -41,6 +42,7 @@ export default function App() {
           <Route path="/sites" element={<SitesPage />} />
           <Route path="/sites/:siteId" element={<SiteDetailPage />} />
           <Route path="/search" element={<SearchPage />} />
+          <Route path="/chat" element={<ChatPage />} />
           <Route
             path="/admin/invites"
             element={

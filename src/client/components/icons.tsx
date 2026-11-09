@@ -251,3 +251,19 @@ export const IconEyeOff = makeIcon(
     <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
   </>
 )
+
+/** Speech bubble — the Assistant nav item and chat page. */
+export const IconChat = makeIcon(
+  <>
+    <path d="M20 14.5A2.5 2.5 0 0 1 17.5 17H8.5L4.5 20.5V6.5A2.5 2.5 0 0 1 7 4h10.5A2.5 2.5 0 0 1 20 6.5Z" />
+    <path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01" />
+  </>
+)
+
+/** Paper plane — send the composed message. */
+export const IconSend = makeIcon(
+  <>
+    <path d="M21.5 2.5 10.5 13" />
+    <path d="M21.5 2.5 14.5 21l-4-8-8-4Z" />
+  </>
+)

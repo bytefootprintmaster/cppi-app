@@ -347,6 +347,63 @@ export interface KpiConfig {
   updatedAt: string
 }
 
+/* ------------------------------- assistant chat ------------------------------- */
+
+export type ChatRole = 'user' | 'assistant'
+export type ChatMessageStatus = 'ok' | 'error'
+export type ChatPendingStatus = 'pending' | 'approved' | 'rejected' | 'expired'
+
+/** One saved conversation in the portal's Assistant page. */
+export interface ChatThreadRecord {
+  threadId: string
+  userId: string
+  title: string
+  /** Project the conversation was started from, when the user was on a page. */
+  siteId?: string
+  messageCount: number
+  createdAt: string
+  updatedAt: string
+}
+
+/** A dashboard change the agent parked for the user to approve. */
+export interface ChatPendingAction {
+  actionId: string
+  tool: string
+  preview: string
+  status: ChatPendingStatus
+  resolution?: string
+  resolvedAt?: string
+}
+
+/** A file the agent produced during a turn (currently PDF reports). */
+export interface ChatArtifact {
+  kind: 'report'
+  siteId: string
+  assetId?: string
+  s3Key?: string
+  name: string
+  title?: string
+  reportType?: string
+  size?: number
+}
+
+export interface ChatMessageRecord {
+  threadId: string
+  messageId: string
+  role: ChatRole
+  text: string
+  userId: string
+  /** Agent that handled the turn ("progress" / "general"). Assistant messages only. */
+  agent?: string
+  status?: ChatMessageStatus
+  /** Approvals raised by this turn, still resolvable from the chat. */
+  pending?: ChatPendingAction[]
+  /** Reports the agent created during this turn. */
+  artifacts?: ChatArtifact[]
+  costUsd?: number
+  createdAt: string
+}
+
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {

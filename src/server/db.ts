@@ -36,7 +36,10 @@ export const T = {
   documentIntelligence: `${env.TABLE_PREFIX}document_intelligence`,
   findings: `${env.TABLE_PREFIX}findings`,
   relationships: `${env.TABLE_PREFIX}relationships`,
-  kpis: `${env.TABLE_PREFIX}kpis`
+  kpis: `${env.TABLE_PREFIX}kpis`,
+  /** Assistant chat: saved conversation threads and their messages. */
+  chatThreads: `${env.TABLE_PREFIX}chat_threads`,
+  chatMessages: `${env.TABLE_PREFIX}chat_messages`
 } as const
 
 export async function getItem<Item>(table: string, key: Record<string, unknown>): Promise<Item | undefined> {

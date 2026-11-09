@@ -32,7 +32,10 @@ export const env = {
   BOOTSTRAP_ADMIN_EMAIL: (process.env.BOOTSTRAP_ADMIN_EMAIL ?? '').trim().toLowerCase(),
   BOOTSTRAP_ADMIN_PASSWORD: process.env.BOOTSTRAP_ADMIN_PASSWORD ?? '',
   BOOTSTRAP_ADMIN_NAME: (process.env.BOOTSTRAP_ADMIN_NAME ?? 'Harikrishnan Midhun').trim(),
-  TABLE_PREFIX: process.env.TABLE_PREFIX ?? 'cppi_'
+  TABLE_PREFIX: process.env.TABLE_PREFIX ?? 'cppi_',
+  // The Python agent's optional HTTP ingress, which backs the Assistant chat.
+  AGENT_API_URL: (process.env.AGENT_API_URL ?? 'http://127.0.0.1:8790').replace(/\/+$/, ''),
+  AGENT_API_TOKEN: process.env.AGENT_API_TOKEN ?? ''
 }
 
 if (isProd && env.JWT_SECRET === 'dev-insecure-secret-change-me') {
@@ -41,4 +44,8 @@ if (isProd && env.JWT_SECRET === 'dev-insecure-secret-change-me') {
 
 if (!env.GOOGLE_CLIENT_ID) {
   console.warn('[cppi] WARNING: GOOGLE_CLIENT_ID is not set — Google sign-in will not work.')
+}
+
+if (!env.AGENT_API_TOKEN) {
+  console.warn('[cppi] WARNING: AGENT_API_TOKEN is not set — the Assistant chat will be unavailable.')
 }
