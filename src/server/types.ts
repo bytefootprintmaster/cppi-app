@@ -399,6 +399,8 @@ export interface ChatMessageRecord {
   role: ChatRole
   text: string
   userId: string
+  /** Project assets attached to this turn. */
+  attachments?: Array<Pick<AssetRecord, 'siteId' | 'assetId' | 'name' | 'type' | 'contentType' | 'size' | 'tags'>>
   /** Agent that handled the turn ("progress" / "general"). Assistant messages only. */
   agent?: string
   status?: ChatMessageStatus

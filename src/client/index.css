@@ -1761,6 +1761,29 @@ tr.drop-target > td {
 }
 .chat-meta { font-size: 11px; color: var(--muted); padding: 0 4px; }
 .chat-extras { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.chat-attachment-list { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.chat-attachment {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+.chat-attachment-open {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.chat-attachment-open > svg { flex-shrink: 0; color: var(--green-600); }
+.chat-attachment-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 600; }
+.chat-attachment-tags { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0 0 25px; }
+.chat-attachment-tags .chip { padding: 1px 7px; font-size: 10.5px; }
 
 /* Approval card for a parked dashboard change. */
 .chat-pending {
@@ -1822,6 +1845,45 @@ tr.drop-target > td {
   color: var(--green-700);
   font-weight: 600;
 }
+.chat-upload-tools { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; flex-wrap: wrap; }
+.chat-file-input { display: none; }
+.chat-tag-field {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: 1;
+  min-width: 190px;
+  color: var(--green-700);
+}
+.chat-tag-field .input { min-width: 0; height: 34px; }
+.chat-selected-files { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 8px; }
+.chat-file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 5px 7px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--canvas);
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+.chat-file-chip > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat-file-chip > small { color: var(--muted); }
+.chat-file-chip > svg { flex-shrink: 0; color: var(--green-600); }
+.chat-file-chip button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 1px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.chat-file-chip.uploaded { border-color: var(--green-200); background: var(--green-50); }
 .chat-compose-row { display: flex; align-items: flex-end; gap: 10px; }
 .chat-input { flex: 1; min-width: 0; min-height: 52px; max-height: 180px; }
 .chat-send { flex-shrink: 0; }
@@ -1885,6 +1947,8 @@ tr.drop-target > td {
   .chat-compose-row { flex-direction: column; align-items: stretch; }
   .chat-send { width: 100%; justify-content: center; }
   .chat-context { flex-direction: column; align-items: stretch; gap: 6px; }
+  .chat-upload-tools { align-items: stretch; }
+  .chat-tag-field { order: 3; flex-basis: 100%; }
 }
 
 /* ============================================================

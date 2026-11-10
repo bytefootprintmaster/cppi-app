@@ -5,8 +5,21 @@ import { useApi } from '../lib/useApi'
 import { relativeTime } from '../lib/format'
 import { PageBody, PageHeader } from '../components/Layout'
 import { Badge, Button, Empty, ErrorNote, Loading, Modal } from '../components/ui'
-import { IconChat, IconCheck, IconDownload, IconPlus, IconSend, IconTrash, IconX } from '../components/icons'
+import {
+  IconChat,
+  IconCheck,
+  IconDownload,
+  IconFile,
+  IconImage,
+  IconPlus,
+  IconSend,
+  IconTag,
+  IconTrash,
+  IconUpload,
+  IconX
+} from '../components/icons'
 import type {
+  AssetRecord,
   ChatArtifact,
   ChatMessageRecord,
   ChatPendingAction,
@@ -41,7 +54,10 @@ interface OverlayTurn {
   role: 'user' | 'assistant'
   text: string
   thinking?: boolean
+  attachments?: ChatAttachment[]
 }
+
+type ChatAttachment = Pick<AssetRecord, 'siteId' | 'assetId' | 'name' | 'type' | 'contentType' | 'size' | 'tags'>
 
 interface ChatServiceStatus {
   configured: boolean
@@ -118,6 +134,36 @@ function ArtifactCard({ artifact, onDownload }: { artifact: ChatArtifact; onDown
   )
 }
 
+function ChatAttachmentList({
+  attachments,
+  onOpen
+}: {
+  attachments: ChatAttachment[]
+  onOpen: (attachment: ChatAttachment) => void
+}) {
+  if (!attachments.length) return null
+  return (
+    <div className="chat-attachment-list">
+      {attachments.map((attachment) => (
+        <div className="chat-attachment" key={attachment.assetId}>
+          <button type="button" className="chat-attachment-open" onClick={() => onOpen(attachment)}>
+            {attachment.type === 'image' ? <IconImage size={17} /> : <IconFile size={17} />}
+            <span className="chat-attachment-name" title={attachment.name}>{attachment.name}</span>
+            {attachment.size ? (
+              <span className="small muted">{Math.max(1, Math.round(attachment.size / 1024))} KB</span>
+            ) : null}
+          </button>
+          {attachment.tags?.length ? (
+            <div className="chat-attachment-tags">
+              {attachment.tags.map((tag) => <span className="chip" key={tag}>{tag}</span>)}
+            </div>
+          ) : null}
+        </div>
+      ))}
+    </div>
+  )
+}
+
 /* ------------------------------ thread sidebar --------------------------- */
 
 function ThreadList({
@@ -163,9 +209,14 @@ export function ChatPage() {
   const [params] = useSearchParams()
   const paramSiteId = params.get('siteId') ?? ''
 
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [activeId, setActiveId] = useState<string | null>(null)
   const [siteId, setSiteId] = useState(paramSiteId)
   const [draft, setDraft] = useState('')
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [tagDraft, setTagDraft] = useState('')
+  const [chatAttachments, setChatAttachments] = useState<ChatAttachment[]>([])
+  const [uploadingFiles, setUploadingFiles] = useState(false)
   const [sending, setSending] = useState(false)
   const [overlay, setOverlay] = useState<OverlayTurn[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -183,6 +234,11 @@ export function ChatPage() {
   const assistantReady = Boolean(
     status.data?.configured && status.data.reachable && status.data.storageReady
   )
+  const uploadSiteId = activeId
+    ? thread?.threadId === activeId
+      ? thread.siteId ?? ''
+      : ''
+    : siteId
 
   const serviceMessage = status.error
     ? `Could not check assistant availability: ${status.error}`
@@ -252,20 +308,113 @@ export function ChatPage() {
     return created.threadId
   }
 
+  function chooseFiles(files: FileList | null) {
+    if (!files?.length) return
+    const existingKeys = new Set(selectedFiles.map((file) => `${file.name}:${file.size}:${file.lastModified}`))
+    const additions = Array.from(files).filter(
+      (file) => !existingKeys.has(`${file.name}:${file.size}:${file.lastModified}`)
+    )
+    if (chatAttachments.length + selectedFiles.length + additions.length > 5) {
+      setError('A chat turn can include at most 5 files.')
+      return
+    }
+    const currentBytes = chatAttachments.reduce((total, attachment) => total + (attachment.size ?? 0), 0)
+    const selectedBytes = [...selectedFiles, ...additions].reduce((total, file) => total + file.size, 0)
+    if (currentBytes + selectedBytes > 40_000_000) {
+      setError('Chat attachments cannot exceed 40 MB in total.')
+      return
+    }
+    setSelectedFiles((current) => [...current, ...additions])
+    setError(null)
+  }
+
+  async function uploadFiles() {
+    if (!uploadSiteId || !selectedFiles.length || uploadingFiles) return
+    const tags = [...new Set(tagDraft.split(/[,\n]/).map((tag) => tag.trim().replace(/\s+/g, ' ')).filter(Boolean))]
+    if (tags.length > 20 || tags.some((tag) => tag.length > 40)) {
+      setError('Use at most 20 tags, with no more than 40 characters per tag.')
+      return
+    }
+    setUploadingFiles(true)
+    setError(null)
+    try {
+      for (const file of selectedFiles) {
+        const type = file.type.startsWith('image/') || /\.(png|jpe?g|gif|webp|avif|bmp|svg)$/i.test(file.name)
+          ? 'image'
+          : 'document'
+        const contentType = file.type || 'application/octet-stream'
+        const { key, uploadUrl } = await api<{ key: string; uploadUrl: string }>(
+          `/sites/${uploadSiteId}/assets/presign`,
+          { method: 'POST', body: { fileName: file.name, contentType, type } }
+        )
+        const uploaded = await fetch(uploadUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': contentType },
+          body: file
+        })
+        if (!uploaded.ok) throw new Error(`S3 upload failed (${uploaded.status})`)
+
+        const { asset } = await api<{ asset: AssetRecord }>(`/sites/${uploadSiteId}/assets`, {
+          method: 'POST',
+          body: {
+            key,
+            name: file.name,
+            type,
+            contentType,
+            size: file.size,
+            category: type === 'image' ? 'progress' : 'other',
+            tags
+          }
+        })
+        setChatAttachments((current) => [
+          ...current,
+          {
+            siteId: asset.siteId,
+            assetId: asset.assetId,
+            name: asset.name,
+            type: asset.type,
+            contentType: asset.contentType,
+            size: asset.size,
+            tags: asset.tags
+          }
+        ])
+        setSelectedFiles((current) => current.filter((candidate) => candidate !== file))
+      }
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not upload the selected file')
+    } finally {
+      setUploadingFiles(false)
+    }
+  }
+
   async function send() {
     const text = draft.trim()
-    if (!text || sending) return
+    if ((!text && !chatAttachments.length) || sending || uploadingFiles) return
     if (!assistantReady) {
       setError(serviceMessage ?? 'The assistant is not ready yet.')
       return
     }
+    if (chatAttachments.some((attachment) => attachment.siteId !== uploadSiteId)) {
+      setError('Start a new project conversation before sending these attachments.')
+      return
+    }
+    const messageText = text || 'Please review the attached project files.'
+    const turnAttachments = chatAttachments
     setSending(true)
     setError(null)
     setDraft('')
-    setOverlay([{ role: 'user', text }, { role: 'assistant', text: '', thinking: true }])
+    setOverlay([
+      { role: 'user', text: messageText, attachments: turnAttachments },
+      { role: 'assistant', text: '', thinking: true }
+    ])
     try {
       const tid = await ensureThread()
-      await api(`/chat/threads/${tid}/messages`, { method: 'POST', body: { message: text } })
+      await api(`/chat/threads/${tid}/messages`, {
+        method: 'POST',
+        body: { message: messageText, attachments: turnAttachments.map((attachment) => attachment.assetId) }
+      })
+      setChatAttachments([])
       setActiveId(tid)
       await loadThread(tid)
       setOverlay([])
@@ -274,7 +423,10 @@ export function ChatPage() {
       const detail = err instanceof Error ? err.message : 'Something went wrong'
       setError(detail)
       // Keep the user's words on screen and explain the failure in a reply bubble.
-      setOverlay([{ role: 'user', text }, { role: 'assistant', text: detail }])
+      setOverlay([
+        { role: 'user', text: messageText, attachments: turnAttachments },
+        { role: 'assistant', text: detail }
+      ])
     } finally {
       setSending(false)
     }
@@ -305,6 +457,18 @@ export function ChatPage() {
     }
   }
 
+  async function downloadAttachment(attachment: ChatAttachment) {
+    setError(null)
+    try {
+      const { url } = await api<{ url: string }>(
+        `/sites/${attachment.siteId}/assets/${attachment.assetId}/url`
+      )
+      window.open(url, '_blank', 'noopener,noreferrer')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not open the project file')
+    }
+  }
+
   async function removeThread(id: string) {
     setError(null)
     try {
@@ -323,6 +487,9 @@ export function ChatPage() {
     setOverlay([])
     setError(null)
     setDraft('')
+    setSelectedFiles([])
+    setChatAttachments([])
+    setTagDraft('')
     setListOpen(false)
   }
 
@@ -373,6 +540,8 @@ export function ChatPage() {
                 activeId={activeId}
                 onSelect={(id) => {
                   setActiveId(id)
+                  setSelectedFiles([])
+                  setChatAttachments([])
                   setOverlay([])
                   setError(null)
                 }}
@@ -425,6 +594,9 @@ export function ChatPage() {
                       >
                         {m.text}
                       </div>
+                      {m.attachments?.length ? (
+                        <ChatAttachmentList attachments={m.attachments} onOpen={downloadAttachment} />
+                      ) : null}
                       {m.pending?.length ? (
                         <div className="chat-extras">
                           {m.pending.map((action) => (
@@ -464,6 +636,9 @@ export function ChatPage() {
                       >
                         {turn.thinking ? <Thinking /> : turn.text}
                       </div>
+                      {turn.attachments?.length ? (
+                        <ChatAttachmentList attachments={turn.attachments} onOpen={downloadAttachment} />
+                      ) : null}
                     </div>
                   ))}
                 </>
@@ -480,7 +655,15 @@ export function ChatPage() {
               {!activeId ? (
                 <label className="chat-context">
                   <span className="small muted">Project context</span>
-                  <select className="select" value={siteId} onChange={(event) => setSiteId(event.target.value)}>
+                  <select
+                    className="select"
+                    value={siteId}
+                    onChange={(event) => {
+                      setSiteId(event.target.value)
+                      setSelectedFiles([])
+                      setChatAttachments([])
+                    }}
+                  >
                     <option value="">General (no specific project)</option>
                     {(sites.data?.sites ?? []).map((site) => (
                       <option key={site.siteId} value={site.siteId}>
@@ -493,6 +676,89 @@ export function ChatPage() {
                 <div className="chat-context-static small">
                   <IconChat size={14} />
                   {siteNameFor(thread.siteId)}
+                </div>
+              ) : null}
+
+              <div className="chat-upload-tools">
+                <input
+                  ref={fileInputRef}
+                  className="chat-file-input"
+                  type="file"
+                  multiple
+                  accept="image/*,.pdf,.docx,.xlsx,.csv,.txt,.md,.json"
+                  onChange={(event) => chooseFiles(event.target.files)}
+                  disabled={uploadingFiles || sending}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={!uploadSiteId || uploadingFiles || sending || chatAttachments.length + selectedFiles.length >= 5}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <IconPlus size={15} />
+                  Add files
+                </Button>
+                <label className="chat-tag-field">
+                  <IconTag size={15} />
+                  <input
+                    className="input"
+                    value={tagDraft}
+                    onChange={(event) => setTagDraft(event.target.value)}
+                    placeholder="Tags for selected files (comma separated)"
+                    disabled={uploadingFiles || sending}
+                  />
+                </label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={!uploadSiteId || !selectedFiles.length || uploadingFiles || sending}
+                  loading={uploadingFiles}
+                  onClick={() => void uploadFiles()}
+                >
+                  <IconUpload size={15} />
+                  Upload
+                </Button>
+              </div>
+              {!uploadSiteId ? (
+                <div className="small muted chat-hint">Choose a project to upload project files.</div>
+              ) : null}
+              {selectedFiles.length ? (
+                <div className="chat-selected-files">
+                  {selectedFiles.map((file) => (
+                    <span className="chat-file-chip" key={`${file.name}:${file.size}:${file.lastModified}`}>
+                      <IconFile size={14} />
+                      <span title={file.name}>{file.name}</span>
+                      {!uploadingFiles ? (
+                        <button
+                          type="button"
+                          aria-label={`Remove ${file.name}`}
+                          onClick={() => setSelectedFiles((current) => current.filter((item) => item !== file))}
+                        >
+                          <IconX size={13} />
+                        </button>
+                      ) : null}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+              {chatAttachments.length ? (
+                <div className="chat-selected-files">
+                  {chatAttachments.map((attachment) => (
+                    <span className="chat-file-chip uploaded" key={attachment.assetId}>
+                      {attachment.type === 'image' ? <IconImage size={14} /> : <IconFile size={14} />}
+                      <span title={attachment.name}>{attachment.name}</span>
+                      {attachment.tags?.length ? <small>{attachment.tags.join(', ')}</small> : null}
+                      <button
+                        type="button"
+                        aria-label={`Remove ${attachment.name} from this message`}
+                        onClick={() => setChatAttachments((current) => current.filter((item) => item.assetId !== attachment.assetId))}
+                      >
+                        <IconX size={13} />
+                      </button>
+                    </span>
+                  ))}
                 </div>
               ) : null}
 
@@ -514,7 +780,7 @@ export function ChatPage() {
                 <Button
                   type="submit"
                   loading={sending || status.loading}
-                  disabled={!draft.trim() || !assistantReady}
+                  disabled={(!draft.trim() && !chatAttachments.length) || !assistantReady || uploadingFiles}
                   className="chat-send"
                 >
                   <IconSend size={16} />

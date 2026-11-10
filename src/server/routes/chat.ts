@@ -6,6 +6,7 @@ import { HttpError, asyncHandler, optStr, str } from '../lib/http'
 import { requireAuth } from '../auth'
 import { canWrite, requireSiteAccess } from '../services'
 import type {
+  AssetRecord,
   ChatArtifact,
   ChatMessageRecord,
   ChatPendingAction,
@@ -27,6 +28,7 @@ import type {
 export const chatRouter = Router()
 
 const MAX_MESSAGE_CHARS = 8000
+const MAX_CHAT_ATTACHMENTS = 5
 const DEFAULT_TITLE = 'New conversation'
 /** A turn can run many tool steps, so this is generous; the agent caps itself too. */
 const AGENT_TIMEOUT_MS = 240_000
@@ -103,6 +105,7 @@ async function callAgent(input: {
   sessionId: string
   siteId?: string
   siteName?: string
+  attachments?: Array<Pick<AssetRecord, 'name' | 's3Key' | 'contentType' | 'size' | 'tags'>>
 }): Promise<AgentReply> {
   if (!env.AGENT_API_TOKEN) {
     return {
@@ -131,7 +134,18 @@ async function callAgent(input: {
       body: JSON.stringify({
         message: text,
         session_id: input.sessionId,
-        ...(input.siteId ? { context: { siteId: input.siteId, siteName: input.siteName } } : {})
+        ...(input.siteId ? { context: { siteId: input.siteId, siteName: input.siteName } } : {}),
+        ...(input.attachments?.length
+          ? {
+              attachments: input.attachments.map((asset) => ({
+                s3_key: asset.s3Key,
+                name: asset.name,
+                content_type: asset.contentType,
+                size: asset.size,
+                tags: asset.tags
+              }))
+            }
+          : {})
       }),
       signal: controller.signal
     })
@@ -249,7 +263,38 @@ chatRouter.delete('/threads/:threadId', asyncHandler(async (req, res) => {
 chatRouter.post('/threads/:threadId/messages', asyncHandler(async (req, res) => {
   if (!canWrite(req.user!)) throw new HttpError(403, 'You do not have permission to use the assistant')
   const thread = await loadThread(req.user!.userId, req.params.threadId)
-  const message = str(req.body?.message, 'message', MAX_MESSAGE_CHARS)
+  const body = (req.body ?? {}) as Record<string, unknown>
+  const attachmentIds = body.attachments === undefined
+    ? []
+    : (() => {
+        if (!Array.isArray(body.attachments)) throw new HttpError(400, '"attachments" must be a list')
+        if (body.attachments.length > MAX_CHAT_ATTACHMENTS) {
+          throw new HttpError(400, `A chat turn can include at most ${MAX_CHAT_ATTACHMENTS} files`)
+        }
+        return [...new Set(body.attachments.map((id) => str(id, 'attachment id', 60)))]
+      })()
+  const message = body.message === undefined && attachmentIds.length
+    ? 'Please review the attached project files.'
+    : str(body.message, 'message', MAX_MESSAGE_CHARS)
+
+  let attachedAssets: AssetRecord[] = []
+  if (attachmentIds.length) {
+    if (!thread.siteId) throw new HttpError(400, 'Choose a project before attaching files')
+    await requireSiteAccess(req.user!, thread.siteId)
+    attachedAssets = await Promise.all(
+      attachmentIds.map(async (assetId) => {
+        const asset = await getItem<AssetRecord>(T.assets, { siteId: thread.siteId!, assetId })
+        if (!asset) throw new HttpError(404, 'An attached project file could not be found')
+        if (!asset.s3Key.startsWith(`sites/${thread.siteId}/`)) {
+          throw new HttpError(400, 'An attached file does not belong to this project')
+        }
+        return asset
+      })
+    )
+    if (attachedAssets.reduce((total, asset) => total + (asset.size ?? 0), 0) > 40_000_000) {
+      throw new HttpError(400, 'Chat attachments exceed the 40 MB total limit')
+    }
+  }
 
   const userMessage: ChatMessageRecord = {
     threadId: thread.threadId,
@@ -257,6 +302,15 @@ chatRouter.post('/threads/:threadId/messages', asyncHandler(async (req, res) => 
     role: 'user',
     text: message,
     userId: req.user!.userId,
+    attachments: attachedAssets.map(({ siteId, assetId, name, type, contentType, size, tags }) => ({
+      siteId,
+      assetId,
+      name,
+      type,
+      contentType,
+      size,
+      tags
+    })),
     createdAt: now()
   }
   await putItem(T.chatMessages, userMessage)
@@ -282,7 +336,14 @@ chatRouter.post('/threads/:threadId/messages', asyncHandler(async (req, res) => 
     message,
     sessionId: thread.threadId,
     siteId: thread.siteId,
-    siteName
+    siteName,
+    attachments: attachedAssets.map(({ name, s3Key, contentType, size, tags }) => ({
+      name,
+      s3Key,
+      contentType,
+      size,
+      tags
+    }))
   })
 
   const assistantMessage: ChatMessageRecord = {

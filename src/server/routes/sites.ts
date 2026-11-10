@@ -840,6 +840,7 @@ siteRouter.post('/:siteId/assets', asyncHandler(async (req, res) => {
     size: body.size !== undefined ? Number(body.size) : undefined,
     stageId: optStr(body.stageId, 60),
     folderId,
+    tags: body.tags === undefined ? undefined : readTags(body.tags),
     uploadedBy: req.user!.userId,
     uploadedByName: req.user!.name,
     uploadedAt: nowIso()
