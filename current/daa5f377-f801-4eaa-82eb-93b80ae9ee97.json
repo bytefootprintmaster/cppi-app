@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-11-12T17:41:56Z",
+  "updatedAt": "2026-11-12T17:42:34Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 57,
-    "remarkCount": 83,
+    "remarkCount": 84,
     "latestRemark": {
-      "remarkId": "eca36a46-256b-4412-b552-491dacbee618",
-      "text": "RONA / Simpson EWP Studio I-joist floor and roof placement layout for 25 Mandrake St (project 202640390), 4 pages: Ground, Second, Third floors and Roof, MAX-CORE IB400 joists. A design/supply drawing only; it does not show any framing as installed.",
+      "remarkId": "508a04ae-8e48-48c0-9d1b-82872bae0144",
+      "text": "RONA / Simpson EWP Studio I-joist layout for 27 Mandrake St (project 202640391), 4 pages: Ground, Second, Third floors and Roof, MAX-CORE IB400 joists. A design/supply drawing only; it does not show any framing as installed.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-12T17:41:50Z"
+      "createdAt": "2026-11-12T17:42:29Z"
     }
   }
 }

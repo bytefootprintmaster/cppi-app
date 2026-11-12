@@ -1,0 +1,494 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "recordedAt": "2026-11-12T17:42:34Z",
+  "jobId": "e679da7d78da",
+  "trigger": "s3",
+  "task": "progress_update_from_file",
+  "agent": "progress",
+  "model": "claude-sonnet-5-5",
+  "source": {
+    "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+    "s3Key": "sites/daa5f377-f801-4eaa-82eb-93b80ae9ee97/document/785e7d4f-be47-4548-b963-692433f13a77-27_Mandrake_St-202640391-Layout.pdf",
+    "fileName": "27_Mandrake_St-202640391-Layout.pdf",
+    "kind": "document",
+    "etag": "e2c0d28f3d7c2e2dd90df990da72cab5",
+    "size": 593202
+  },
+  "summary": "Recorded the 27 Mandrake St RONA I-joist layout (already on the dashboard) as a design/engineering remark. Document intelligence and the project link failed, and no status changes were proposed.",
+  "confidence": 0.85,
+  "steps": 4,
+  "actions": [
+    {
+      "tool": "get_project_state",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97"
+      },
+      "status": "ok"
+    },
+    {
+      "tool": "get_project_intelligence",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97"
+      },
+      "status": "error",
+      "error": "ResourceNotFoundException: An error occurred (ResourceNotFoundException) when calling the Query operation: Requested resource not found"
+    },
+    {
+      "tool": "register_asset",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "name": "27 Mandrake St-202640391-Layout.pdf",
+        "s3Key": "sites/daa5f377-f801-4eaa-82eb-93b80ae9ee97/document/785e7d4f-be47-4548-b963-692433f13a77-27_Mandrake_St-202640391-Layout.pdf",
+        "type": "document",
+        "category": "plan",
+        "contentType": "application/pdf",
+        "size": 593202
+      },
+      "status": "already_registered",
+      "result": {
+        "status": "already_registered",
+        "assetId": "ecd6196c-88cb-40c8-843d-576be6b4fd20"
+      }
+    },
+    {
+      "tool": "add_progress_remark",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "text": "RONA / Simpson EWP Studio I-joist layout for 27 Mandrake St (project 202640391), 4 pages: Ground, Second, Third floors and Roof, MAX-CORE IB400 joists. A design/supply drawing only; it does not show any framing as installed.",
+        "summary": "Engineered wood (I-joist) placement plans for 27 Mandrake St, Ajax: four sheets with joist, rim board, blocking and hanger schedules.",
+        "category": "plan",
+        "evidenceClasses": [
+          "design",
+          "engineering"
+        ],
+        "verificationStatus": "extracted",
+        "confidence": 0.85,
+        "sourceDocument": "27_Mandrake_St-202640391-Layout.pdf",
+        "sourceRef": "Pages 1-4",
+        "extracted": [
+          {
+            "label": "Document type",
+            "value": "I-joist floor/roof placement layout (EWP Studio, Simpson Strong-Tie)",
+            "verification": "extracted"
+          },
+          {
+            "label": "Supplier / brand",
+            "value": "RONA",
+            "verification": "extracted"
+          },
+          {
+            "label": "Project no. / layout",
+            "value": "202640391 / 27 Mandrake St -202640391",
+            "verification": "extracted"
+          },
+          {
+            "label": "Builder / Sales rep / Designer",
+            "value": "S.Sindhu / Hong Bang / MP",
+            "verification": "extracted"
+          },
+          {
+            "label": "Shipping",
+            "value": "27 Mandrake St - Ajax, ON",
+            "verification": "extracted"
+          },
+          {
+            "label": "Joists",
+            "value": "MAX-CORE IB400, 2.5 x 11.875 in; total LF: Ground 1068', Second 992', Third 1038', Roof 1272'",
+            "verification": "extracted"
+          },
+          {
+            "label": "Rim board",
+            "value": "TJ Rim Board 1.125 x 11.875; R1 14 (ground), 15 (second), 15 (third), 15 (roof) pcs of 12'",
+            "verification": "extracted"
+          },
+          {
+            "label": "Design basis",
+            "value": "LSD (Canada), NBCC 2020 / 2024 OBC; floor live 40, dead 20; roof snow 33, dead 18; 3/4 in floor plywood, 5/8 in roof plywood",
+            "verification": "extracted"
+          },
+          {
+            "label": "Hangers",
+            "value": "LT251188, HGUS410 on floors; roof adds MIT311.88, SUL/SUR2.56/11, SUL/SUR1.81/11, HUS1.81/10",
+            "verification": "extracted"
+          }
+        ],
+        "relevance": "Supports the Structural Framing stage (floor structure, roof framing) as a planned/supplied-material record; frames the floor system for a three-storey building.",
+        "limitations": "Shows what is designed and to be supplied, not what is installed. Not a stamped structural drawing, permit, or inspection; the plan states it is an installation guide only and the building design professional is responsible for structural stability.",
+        "recommendedActions": [
+          "Confirm layout against the stamped structural drawings and permit set",
+          "Contractor to verify all lengths and quantities before installation (note 11)",
+          "Obtain a RONA quotation/PO and delivery record for this EWP package"
+        ],
+        "relatedDocuments": [
+          "25 Mandrake St-202640390-Layout Rona.pdf"
+        ]
+      },
+      "status": "added",
+      "result": {
+        "status": "added",
+        "remarkId": "508a04ae-8e48-48c0-9d1b-82872bae0144",
+        "evidenceClasses": [
+          "design",
+          "engineering"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "tool": "record_document_intelligence",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "assetId": "ecd6196c-88cb-40c8-843d-576be6b4fd20",
+        "evidenceClasses": [
+          "design",
+          "engineering"
+        ],
+        "docType": "I-joist floor and roof placement layout",
+        "issuer": "RONA / Simpson Strong-Tie EWP Studio (designer MP)",
+        "referenceNumber": "202640391",
+        "property": "27 Mandrake St, Ajax, ON",
+        "project": "25 & 27 Mandrake",
+        "summary": "Four-sheet EWP placement plan (Ground, Second, Third, Roof) with MAX-CORE IB400 joist, rim board, blocking and hanger schedules.",
+        "purpose": "Installation guide and material list for the engineered floor and roof joist package.",
+        "relevance": "Planned floor/roof structure for the Structural Framing stage; not evidence of construction.",
+        "facts": [
+          {
+            "label": "Builder",
+            "value": "S.Sindhu",
+            "verification": "extracted"
+          },
+          {
+            "label": "Sales rep",
+            "value": "Hong Bang",
+            "verification": "extracted"
+          },
+          {
+            "label": "Ground floor joists",
+            "value": "J3 x3 (4'), J1 x4 (12'), J2 x63 (16'); 1068 LF",
+            "verification": "extracted"
+          },
+          {
+            "label": "Second floor joists",
+            "value": "J3 x3, J4 x6, J1 x4, J2 x56; 992 LF",
+            "verification": "extracted"
+          },
+          {
+            "label": "Third floor joists",
+            "value": "J4 x5, J1 x4, J2 x60; 1038 LF",
+            "verification": "extracted"
+          },
+          {
+            "label": "Roof joists",
+            "value": "J5 x5, J3 x46, J2 x1, J6 x59; 1272 LF; B12 x3 (12 LF)",
+            "verification": "extracted"
+          },
+          {
+            "label": "Joist spacing",
+            "value": "16 in o.c. typical",
+            "verification": "extracted"
+          }
+        ],
+        "extracts": [
+          {
+            "kind": "technical",
+            "detail": "MAX-CORE IB400 2.5 x 11.875 in I-joists; TJ rim board 1.125 x 11.875; 3/4 in SPF plywood nailed & glued floors; 5/8 in roof sheathing; stair openings on ground, second (two) and third floors.",
+            "verification": "extracted"
+          },
+          {
+            "kind": "regulatory",
+            "detail": "Design method LSD (Canada), NBCC 2020 / 2024 OBC; deflection limits joist LL L/480, TL L/240; girders LL L/360.",
+            "verification": "extracted"
+          },
+          {
+            "kind": "technical",
+            "detail": "Loads: floor live 40, dead 20; roof live 0, dead 18, snow 33.",
+            "verification": "extracted"
+          }
+        ],
+        "missingInformation": [
+          "No engineer's stamp or sign-off",
+          "No date or revision on the layout",
+          "No pricing, PO or delivery information"
+        ],
+        "inconsistencies": [
+          "Roof sheet also prints a 'Floor' loads/decking block (3/4 in) alongside roof values, likely a template artifact",
+          "Sheets are not marked with units for loads (assumed psf)"
+        ],
+        "limitations": "Design/supply drawing only; proves nothing about installation, inspection or permit status. Document states it is an installation guide and does not replace architectural/structural drawings.",
+        "recommendedActions": [
+          "Cross-check against stamped structural drawings",
+          "Verify quantities before ordering/installation"
+        ],
+        "verificationStatus": "extracted",
+        "confidence": 0.85,
+        "sourceRef": "Pages 1-4"
+      },
+      "status": "error",
+      "error": "ResourceNotFoundException: An error occurred (ResourceNotFoundException) when calling the GetItem operation: Requested resource not found"
+    },
+    {
+      "tool": "link_project_items",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "fromType": "document",
+        "fromId": "ecd6196c-88cb-40c8-843d-576be6b4fd20",
+        "fromLabel": "27 Mandrake St-202640391-Layout.pdf",
+        "relation": "part_of",
+        "toType": "work_package",
+        "toId": "structural-framing-ewp",
+        "toLabel": "Structural Framing - I-joist floor/roof package"
+      },
+      "status": "error",
+      "error": "ResourceNotFoundException: An error occurred (ResourceNotFoundException) when calling the Query operation: Requested resource not found"
+    },
+    {
+      "tool": "finish",
+      "input": {
+        "summary": "Recorded the 27 Mandrake St RONA I-joist layout (already on the dashboard) as a design/engineering remark. Document intelligence and the project link failed, and no status changes were proposed.",
+        "confidence": 0.85,
+        "notes": "record_document_intelligence, link_project_items and get_project_intelligence all returned ResourceNotFoundException (the backing table appears to be missing), so those details were not stored and need a re-run once the table exists. The asset is still categorised 'other' rather than 'plan' because it was already registered. The file is a design/supply drawing only and does not evidence framing progress."
+      },
+      "status": "done",
+      "result": {
+        "status": "done",
+        "summary": "Recorded the 27 Mandrake St RONA I-joist layout (already on the dashboard) as a design/engineering remark. Document intelligence and the project link failed, and no status changes were proposed.",
+        "confidence": 0.85
+      }
+    }
+  ],
+  "pendingApprovals": [],
+  "costUsd": 0.153002,
+  "tokens": {
+    "input": 29817,
+    "output": 3963,
+    "cacheWrite": 13569,
+    "cacheRead": 99079
+  },
+  "dashboard": {
+    "progress": {
+      "stages": 10,
+      "stagesCompleted": 0,
+      "milestones": 31,
+      "milestonesCompleted": 1,
+      "percent": 3
+    },
+    "siteStatus": "in_progress",
+    "stages": [
+      {
+        "stageId": "43d4e0d2-cc81-4912-a186-3ae3a89cd9a2",
+        "name": "Feasibility & Due Diligence",
+        "status": "not_started"
+      },
+      {
+        "stageId": "8e037d3e-3511-4c7e-86d1-111e11c26597",
+        "name": "Design & Permits",
+        "status": "not_started"
+      },
+      {
+        "stageId": "3739c5da-64f6-48a4-886f-7bd24138526d",
+        "name": "Site Preparation & Excavation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "08ded4a9-c0f5-4f46-9e8d-70c7c6209fda",
+        "name": "Foundation",
+        "status": "in_progress"
+      },
+      {
+        "stageId": "245c2de5-98b8-43cb-b4af-89f17d55f4bd",
+        "name": "Structural Framing",
+        "status": "not_started"
+      },
+      {
+        "stageId": "6fa286ae-566d-4da2-927e-20af34b228c1",
+        "name": "Building Envelope",
+        "status": "not_started"
+      },
+      {
+        "stageId": "1f414a15-de86-49d7-af51-39a9f5ab5ac6",
+        "name": "Rough-In Services",
+        "status": "not_started"
+      },
+      {
+        "stageId": "74a52551-4007-4d44-aeb3-9cad6ac26f43",
+        "name": "Interior Finishes",
+        "status": "not_started"
+      },
+      {
+        "stageId": "99083336-f837-4297-9b92-1c0bfa2ca966",
+        "name": "Landscaping & Exterior Works",
+        "status": "not_started"
+      },
+      {
+        "stageId": "2424b179-6eb8-4095-8a17-5a46de64555f",
+        "name": "Handover & Closeout",
+        "status": "not_started"
+      }
+    ],
+    "milestones": [
+      {
+        "milestoneId": "83fa64f5-b1ce-4bbb-a81f-15dce5e871e2",
+        "name": "Site survey & boundary confirmed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9874d4ae-c81a-40f5-b916-cab949a9a0ea",
+        "name": "Zoning & by-law review completed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "d77c7fbe-62ab-45bf-84fc-a1477109157f",
+        "name": "Feasibility budget approved",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "a62b8d24-c2f9-47a9-bb2d-98d5309a2d39",
+        "name": "Architectural drawings issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "7b7014dc-d118-4140-b460-d533d9c8fbf2",
+        "name": "Structural & MEP drawings complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c4d8aac7-142e-48f7-bf53-24e6b3cee321",
+        "name": "Building permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "db7dcb04-9bcc-4754-b868-f40815e04c8d",
+        "name": "Utilities & services located",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "6601fc85-dce7-4b1b-91e6-6414c23b7a57",
+        "name": "Clearing & demolition complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "374ebe09-f209-41a1-b0b1-e74b7dcdec69",
+        "name": "Excavation & shoring inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "d4e01db8-7c90-491d-8421-20839f85bc20",
+        "name": "Footings inspected",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "9a846ed5-a529-4f09-9221-5a2ac30f4d48",
+        "name": "Foundation walls poured & waterproofed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "04c36fa6-0623-4769-bf97-4bd67362d468",
+        "name": "Backfill & drainage complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "85f717e3-4e87-4382-a10b-9f6eecb38473",
+        "name": "Floor structure complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "1402eab7-cff8-4d3e-a1b3-ab5b64ccff42",
+        "name": "Framing erected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "b90105d8-4d61-4bea-a52b-1acba54b2fc2",
+        "name": "Framing inspection passed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "1cc6cc34-2f3f-44e4-a382-1fad92cf4a61",
+        "name": "Roof trusses & sheathing complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "144849e1-3aac-4a3a-b4b3-c77b2742dfbd",
+        "name": "Roofing watertight",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "3ee0d7ef-842e-46d6-9db5-fa77df484a74",
+        "name": "Windows & exterior doors installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "78a2cba7-3b6c-4be8-8c93-7ae07f21c39f",
+        "name": "Cladding & insulation complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9f91afc3-6474-40e8-9a38-63d6fa8e9420",
+        "name": "Electrical rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "066825dd-e916-4600-8e02-cfd21dd62c15",
+        "name": "Plumbing rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "e73f9394-6db6-4700-885c-e594ba02c73f",
+        "name": "HVAC rough-in complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "715d3b61-a6ee-43e5-8c0f-3619a65ede21",
+        "name": "Drywall & plaster complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "50a2d07b-82ef-4ea5-94a0-ef04c1b1b11e",
+        "name": "Cabinetry & millwork installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "47020274-79ca-45da-ad2e-046573160612",
+        "name": "Flooring & paint complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "a2f28c1f-edb0-44d4-95e9-eb224365c1ab",
+        "name": "Grading & drainage certified",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "e2f05da4-b5c9-4d4f-ab05-4e39eaf5dcb7",
+        "name": "Driveway & hardscaping complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c878ab83-bcec-45cf-bdd4-282ae58fae43",
+        "name": "Landscaping planted",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "cffcf10b-77fb-45bc-a91c-0a3fb1afb02e",
+        "name": "Occupancy permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "457d433f-40a6-4d99-a52d-0cf83f1c9511",
+        "name": "Pre-delivery inspection (PDI) complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9d34eaab-9dd4-4e0e-b8ca-05bfbc95b3cc",
+        "name": "Final accounts & warranty documents issued",
+        "status": "pending"
+      }
+    ],
+    "assetCount": 57,
+    "remarkCount": 84,
+    "latestRemark": {
+      "remarkId": "508a04ae-8e48-48c0-9d1b-82872bae0144",
+      "text": "RONA / Simpson EWP Studio I-joist layout for 27 Mandrake St (project 202640391), 4 pages: Ground, Second, Third floors and Roof, MAX-CORE IB400 joists. A design/supply drawing only; it does not show any framing as installed.",
+      "authorName": "CPPI Agent (AI)",
+      "createdAt": "2026-11-12T17:42:29Z"
+    }
+  }
+}
