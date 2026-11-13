@@ -91,9 +91,7 @@ export function InstallPrompt() {
 
   return (
     <div className="install-banner" role="dialog" aria-label="Install CPPI as an app">
-      <div className="brand-mark" aria-hidden="true">
-        C
-      </div>
+      <img className="install-logo" src="/android-chrome-192x192.png" alt="" />
 
       <div className="install-copy">
         <div className="install-title">Install CPPI</div>

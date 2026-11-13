@@ -55,8 +55,11 @@ const TABLE_DEFS = [
   // File search index, written by the agent when it processes an upload.
   // file_index: one row per file (metadata + extracted text + optional vector).
   // file_terms: the inverted index, one row per (word, file) pair.
+  // file_chunks: the file's text cut into page-sized windows, so a question can be
+  // answered from the page that matched instead of only the first 8000 characters.
   { name: `${prefix}file_index`, hash: 'siteId', range: 'docId' },
   { name: `${prefix}file_terms`, hash: 'term', range: 'ref' },
+  { name: `${prefix}file_chunks`, hash: 'docRef', range: 'chunkId' },
   // Intelligence layer, written by the agent.
   // document_intelligence: what the agent understood about one file (one row per asset).
   // findings: gaps its proactive review has raised (missing doc, expiring certificate, ...).

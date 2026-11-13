@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 256" role="img" aria-labelledby="title">
+  <title id="title">CPPI Management</title>
+  <rect width="512" height="256" fill="#252525" />
+  <path d="M45 77 91 31v163H45z" fill="#df0000" />
+  <path d="M103 77h46v117h-46z" fill="#0785ed" />
+  <path d="m163 31 45 46v117h-45z" fill="#258d43" />
+  <text
+    x="240"
+    y="130"
+    fill="#fff"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="106"
+    font-weight="700"
+    textLength="226"
+    lengthAdjust="spacingAndGlyphs"
+  >CPPI</text>
+  <text
+    x="244"
+    y="177"
+    fill="#fff"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="29"
+    font-weight="300"
+    letter-spacing="0.25"
+    textLength="220"
+    lengthAdjust="spacingAndGlyphs"
+  >MANAGEMENT</text>
+</svg>

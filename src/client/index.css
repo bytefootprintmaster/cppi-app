@@ -297,23 +297,11 @@ p { margin: 0; }
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 10px 20px;
+  padding: 6px 6px 20px;
 }
-.brand-mark {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: linear-gradient(140deg, var(--green-300), var(--green-500));
-  display: grid;
-  place-items: center;
-  color: var(--green-950);
-  font-weight: 800;
-  font-size: 15px;
-  letter-spacing: -0.03em;
-}
-.brand-name { font-weight: 700; color: #fff; letter-spacing: -0.02em; }
-.brand-sub { font-size: 11px; color: #7fb59c; text-transform: uppercase; letter-spacing: 0.09em; }
+.brand-logo { display: block; height: auto; border-radius: 8px; }
+.brand-logo-sidebar { width: 100%; max-width: 220px; }
+.brand-logo-hero { width: 250px; max-width: 100%; }
 
 .nav { display: flex; flex-direction: column; gap: 3px; }
 .nav-label {
@@ -1261,6 +1249,8 @@ tr.drop-target > td {
 }
 .login-panel { display: grid; place-items: center; padding: 40px; background: var(--surface); }
 .login-card { width: 100%; max-width: 380px; }
+.auth-panel-brand { display: none; width: 100%; max-width: 380px; margin-bottom: 20px; }
+.auth-panel-brand img { display: block; width: 196px; max-width: 100%; height: auto; border-radius: 8px; }
 
 .google-btn-host { display: flex; justify-content: center; min-height: 44px; }
 
@@ -1291,6 +1281,7 @@ tr.drop-target > td {
 }
 
 .install-copy { flex: 1; min-width: 0; }
+.install-logo { width: 46px; height: 46px; flex-shrink: 0; border-radius: 10px; }
 .install-title { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; }
 .install-sub { font-size: 12.5px; color: var(--muted); line-height: 1.35; }
 .install-sub strong { color: var(--ink-soft); font-weight: 700; }
@@ -1333,6 +1324,7 @@ tr.drop-target > td {
     gap: 2px;
   }
   .brand { padding: 2px 2px 10px; }
+  .brand-logo-sidebar { max-width: 170px; }
 
   .nav {
     flex-direction: row;
@@ -1360,6 +1352,7 @@ tr.drop-target > td {
   .login-shell { grid-template-columns: 1fr; }
   .login-hero { display: none; }
   .login-panel { padding: 32px 20px; }
+  .auth-panel-brand { display: block; }
 
   .grid-2, .grid-3, .grid-4 { grid-template-columns: minmax(0, 1fr); }
 
@@ -1900,6 +1893,39 @@ tr.drop-target > td {
 .chat-compose-row { display: flex; align-items: flex-end; gap: 10px; }
 .chat-input { flex: 1; min-width: 0; min-height: 52px; max-height: 180px; }
 .chat-send { flex-shrink: 0; }
+
+/* Voice dictation — Moonshine transcribes locally while the mic is live. */
+.chat-mic { flex-shrink: 0; }
+.chat-mic-recording {
+  animation: chat-mic-pulse 1.5s ease-in-out infinite;
+}
+@keyframes chat-mic-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.35); }
+  50% { box-shadow: 0 0 0 7px rgba(185, 28, 28, 0); }
+}
+.chat-voice-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  color: var(--green-700);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.chat-voice-status::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green-500);
+  animation: chat-voice-blink 1.2s ease-in-out infinite;
+}
+@keyframes chat-voice-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+.chat-voice-error { margin-top: 8px; color: var(--red); }
+
 .chat-hint { margin-top: 6px; }
 
 /* ------------------------------- empty state ---------------------------- */

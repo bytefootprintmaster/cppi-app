@@ -260,6 +260,15 @@ export const IconChat = makeIcon(
   </>
 )
 
+/** Microphone — dictate a message into the composer. */
+export const IconMic = makeIcon(
+  <>
+    <rect x="9" y="2.5" width="6" height="11" rx="3" />
+    <path d="M5.5 11a6.5 6.5 0 0 0 13 0" />
+    <path d="M12 17.5V21M8.5 21h7" />
+  </>
+)
+
 /** Paper plane — send the composed message. */
 export const IconSend = makeIcon(
   <>

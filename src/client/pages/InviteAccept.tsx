@@ -84,13 +84,7 @@ export function InviteAcceptPage() {
   return (
     <div className="login-shell">
       <section className="login-hero">
-        <div className="row" style={{ gap: 12 }}>
-          <div className="brand-mark">C</div>
-          <div>
-            <div className="brand-name">CPPI</div>
-            <div className="brand-sub">Construction Portfolio</div>
-          </div>
-        </div>
+        <img className="brand-logo brand-logo-hero" src="/cppi-logo.svg" alt="CPPI Management" />
         <div style={{ position: 'relative' }}>
           <h1>You have been invited.</h1>
           <p>
@@ -103,6 +97,9 @@ export function InviteAcceptPage() {
       </section>
 
       <section className="login-panel">
+        <div className="auth-panel-brand">
+          <img src="/cppi-logo.svg" alt="CPPI Management" />
+        </div>
         <div className="login-card">
           <Card>
             <div className="card-body">

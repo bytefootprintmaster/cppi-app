@@ -3,10 +3,8 @@
  *
  *   node scripts/generate-icons.mjs
  *
- * The artwork mirrors the in-app brand mark: a rounded tile with a light green
- * diagonal gradient and a dark green "C". Everything is rasterised here with
- * plain math (no fonts, no image deps) so the output is deterministic and the
- * icons stay pixel-consistent with the brand across sizes.
+ * The artwork uses the red, blue and green CPPI building mark on charcoal.
+ * Everything is rasterised here with plain math so the icons are deterministic.
  */
 import fs from 'node:fs'
 import path from 'node:path'
@@ -69,11 +67,24 @@ function encodePng(size, rgba) {
 
 /* --------------------------------- artwork -------------------------------- */
 
-const GRADIENT_FROM = [0x4b, 0xd3, 0x9a] // green-300
-const GRADIENT_TO = [0x10, 0x93, 0x5f] // green-500
-const GLYPH = [0x07, 0x1f, 0x16] // green-950
-
+const BACKGROUND = [0x25, 0x25, 0x25]
+const MARK_SHAPES = [
+  { color: [0xdf, 0x00, 0x00], points: [[22, 69], [68, 23], [68, 185], [22, 185]] },
+  { color: [0x07, 0x85, 0xed], points: [[80, 69], [126, 69], [126, 185], [80, 185]] },
+  { color: [0x25, 0x8d, 0x43], points: [[140, 23], [185, 69], [185, 185], [140, 185]] }
+]
 const SUPERSAMPLE = 4 // 4x4 samples per pixel for smooth edges
+
+function insidePolygon(x, y, points) {
+  let inside = false
+  for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+    const [xi, yi] = points[i]
+    const [xj, yj] = points[j]
+    const crosses = (yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi
+    if (crosses) inside = !inside
+  }
+  return inside
+}
 
 function insideRoundedSquare(x, y, size, radius) {
   if (x < 0 || y < 0 || x > size || y > size) return false
@@ -83,19 +94,15 @@ function insideRoundedSquare(x, y, size, radius) {
   return (x - cx) ** 2 + (y - cy) ** 2 <= radius * radius
 }
 
-function render(size, { rounded, glyphScale }) {
+function render(size, { rounded }) {
   const rgba = Buffer.alloc(size * size * 4)
   const radius = rounded ? size * 0.235 : 0
-  const outer = size * 0.3 * glyphScale
-  const inner = outer - size * 0.098 * glyphScale
-  const gapHalfAngle = (26 * Math.PI) / 180 // the "C" opening, facing right
-  const centre = size / 2
   const total = SUPERSAMPLE * SUPERSAMPLE
 
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       let covered = 0
-      let glyph = 0
+      const shapeCoverage = [0, 0, 0]
 
       for (let sy = 0; sy < SUPERSAMPLE; sy++) {
         for (let sx = 0; sx < SUPERSAMPLE; sx++) {
@@ -104,12 +111,10 @@ function render(size, { rounded, glyphScale }) {
           if (!insideRoundedSquare(px, py, size, radius)) continue
           covered++
 
-          const dx = px - centre
-          const dy = py - centre
-          const d = Math.sqrt(dx * dx + dy * dy)
-          if (d <= outer && d >= inner && Math.abs(Math.atan2(dy, dx)) > gapHalfAngle) {
-            glyph++
-          }
+          const markX = (px / size) * 208
+          const markY = (py / size) * 208
+          const shape = MARK_SHAPES.findIndex((item) => insidePolygon(markX, markY, item.points))
+          if (shape !== -1) shapeCoverage[shape]++
         }
       }
 
@@ -117,15 +122,12 @@ function render(size, { rounded, glyphScale }) {
       if (covered === 0) continue
 
       const alpha = covered / total
-      // Diagonal (140deg-ish) gradient, light at the top-left.
-      const t = (x + y) / (2 * size)
-      const opacity = glyph / covered
-
       for (let channel = 0; channel < 3; channel++) {
-        const background = GRADIENT_FROM[channel] + (GRADIENT_TO[channel] - GRADIENT_FROM[channel]) * t
-        rgba[offset + channel] = Math.round(
-          background + (GLYPH[channel] - background) * opacity
-        )
+        let value = BACKGROUND[channel] * (covered - shapeCoverage.reduce((sum, count) => sum + count, 0))
+        for (let shape = 0; shape < MARK_SHAPES.length; shape++) {
+          value += MARK_SHAPES[shape].color[channel] * shapeCoverage[shape]
+        }
+        rgba[offset + channel] = Math.round(value / covered)
       }
       rgba[offset + 3] = Math.round(alpha * 255)
     }
@@ -137,13 +139,13 @@ function render(size, { rounded, glyphScale }) {
 /* ---------------------------------- output -------------------------------- */
 
 const TARGETS = [
-  { file: 'icon-192.png', size: 192, rounded: true, glyphScale: 1 },
-  { file: 'icon-512.png', size: 512, rounded: true, glyphScale: 1 },
+  { file: 'icon-192.png', size: 192, rounded: true },
+  { file: 'icon-512.png', size: 512, rounded: true },
   // Maskable icons get cropped to a circle by the OS, so keep it full-bleed
-  // with the glyph inside the 80% safe zone.
-  { file: 'icon-maskable-512.png', size: 512, rounded: false, glyphScale: 0.76 },
+  // with the building mark inside the 80% safe zone.
+  { file: 'icon-maskable-512.png', size: 512, rounded: false },
   // iOS applies its own mask and does not render transparency well.
-  { file: 'apple-touch-icon.png', size: 180, rounded: false, glyphScale: 1 }
+  { file: 'apple-touch-icon.png', size: 180, rounded: false }
 ]
 
 fs.mkdirSync(OUT_DIR, { recursive: true })

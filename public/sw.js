@@ -5,9 +5,21 @@
  * flaky connection still opens the shell. It never touches /api, so sessions,
  * presigned S3 URLs and file uploads always go straight to the network.
  */
-const CACHE = 'cppi-shell-v1'
+const CACHE = 'cppi-shell-v3'
 
-const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png']
+const SHELL = [
+  '/',
+  '/index.html',
+  '/manifest.webmanifest',
+  '/cppi-logo.svg',
+  '/favicon.ico',
+  '/favicon-16x16.png',
+  '/favicon-32x32.png',
+  '/apple-touch-icon.png',
+  '/android-chrome-192x192.png',
+  '/android-chrome-512x512.png',
+  '/icons/icon-maskable-512.png'
+]
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

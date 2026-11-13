@@ -21,11 +21,7 @@ export function Layout() {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand">
-          <div className="brand-mark">C</div>
-          <div>
-            <div className="brand-name">CPPI</div>
-            <div className="brand-sub">Project Portal</div>
-          </div>
+          <img className="brand-logo brand-logo-sidebar" src="/cppi-logo.svg" alt="CPPI Management" />
         </div>
 
         <nav className="nav">

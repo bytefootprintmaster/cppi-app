@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { api } from '../lib/api'
 import { useApi } from '../lib/useApi'
+import { useVoiceInput } from '../lib/useVoiceInput'
 import { PageBody, PageHeader } from '../components/Layout'
 import { Badge, Button, Empty, ErrorNote, Loading, Modal } from '../components/ui'
 import {
@@ -10,6 +11,7 @@ import {
   IconDownload,
   IconFile,
   IconImage,
+  IconMic,
   IconPlus,
   IconSearch,
   IconSend,
@@ -241,6 +243,15 @@ export function ChatPage() {
           : status.data && !status.data.reachable
             ? 'The agent service is not reachable. Confirm HTTP_API_ENABLED=true and restart the agent service.'
             : null
+
+  // Dictated phrases land in the draft, separated from what is already typed.
+  const appendTranscript = useCallback((phrase: string) => {
+    setDraft((current) => {
+      if (!current) return phrase
+      return /\s$/.test(current) ? `${current}${phrase}` : `${current} ${phrase}`
+    })
+  }, [])
+  const voice = useVoiceInput(appendTranscript)
 
   useEffect(() => {
     document.title = 'Assistant · CPPI'
@@ -740,6 +751,25 @@ export function ChatPage() {
                 }}
               />
               <Button
+                type="button"
+                variant={voice.listening ? 'danger' : 'ghost'}
+                className={`chat-mic${voice.listening ? ' chat-mic-recording' : ''}`}
+                loading={voice.loading}
+                disabled={!assistantReady || sending || !voice.supported}
+                aria-pressed={voice.listening}
+                onClick={voice.toggle}
+                title={
+                  voice.supported
+                    ? voice.listening
+                      ? 'Stop dictating'
+                      : 'Dictate your message'
+                    : 'Voice input is not supported in this browser'
+                }
+              >
+                <IconMic size={16} />
+                {voice.loading ? 'Loading…' : voice.listening ? 'Stop' : 'Speak'}
+              </Button>
+              <Button
                 type="submit"
                 loading={sending || status.loading}
                 disabled={(!draft.trim() && !chatAttachments.length) || !assistantReady || uploadingFiles}
@@ -749,6 +779,12 @@ export function ChatPage() {
                 Send
               </Button>
             </div>
+            {voice.listening ? (
+              <div className="chat-voice-status" role="status">
+                Listening on this device — speak, then pause to add the words to your message.
+              </div>
+            ) : null}
+            {voice.error ? <div className="small chat-voice-error">{voice.error}</div> : null}
             <div className="small muted chat-hint">
               Enter to send · Shift + Enter for a new line
               {thread?.messageCount ? ` · ${thread.messageCount} messages in this conversation` : ''}
