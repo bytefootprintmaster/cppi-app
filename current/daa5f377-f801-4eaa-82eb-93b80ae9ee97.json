@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-11-13T15:47:49Z",
+  "updatedAt": "2026-11-13T15:48:11Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -225,13 +225,13 @@
         "status": "completed"
       }
     ],
-    "assetCount": 61,
-    "remarkCount": 94,
+    "assetCount": 62,
+    "remarkCount": 96,
     "latestRemark": {
-      "remarkId": "509c6146-6fb5-492b-85f8-7cfcfd3188e5",
-      "text": "image002.png is a tiny 395-byte graphic showing a small green phone-handset icon, most likely an email-signature image. It shows no construction work, drawing or document content, so it was filed with no progress change.",
+      "remarkId": "e216eaa5-5151-45af-b251-5ea64a14d6e5",
+      "text": "image003.png is a tiny 444-byte graphic showing a small green \"@\" style icon, most likely an email-signature image. It shows no construction work, drawing or document content, so it was filed with no progress change.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-13T15:47:45Z"
+      "createdAt": "2026-11-13T15:48:06Z"
     }
   }
 }
