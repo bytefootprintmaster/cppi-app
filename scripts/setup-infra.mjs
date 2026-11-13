@@ -41,6 +41,9 @@ const TABLE_DEFS = [
   { name: `${prefix}users`, hash: 'userId', gsis: [{ name: 'email-index', hash: 'email' }] },
   { name: `${prefix}credentials`, hash: 'email' },
   { name: `${prefix}invites`, hash: 'token', gsis: [{ name: 'email-index', hash: 'email' }] },
+  // Role definitions. The three built-in roles are seeded on first server start;
+  // admins can add custom roles with their own permission bundles.
+  { name: `${prefix}roles`, hash: 'roleId' },
   { name: `${prefix}sites`, hash: 'siteId' },
   { name: `${prefix}stages`, hash: 'siteId', range: 'stageId' },
   { name: `${prefix}milestones`, hash: 'siteId', range: 'milestoneId' },

@@ -6,7 +6,8 @@ import type { NextFunction, Request, RequestHandler, Response } from 'express'
 import { env } from './env'
 import { T, getItem, putItem, queryAll, updateFields } from './db'
 import { HttpError } from './lib/http'
-import type { InviteRecord, Role, SessionUser, UserRecord } from './types'
+import { ADMIN_ROLE, can, loadRole, resolveLimits, resolvePermissions } from './roles'
+import type { InviteRecord, PermissionKey, Role, SessionUser, UserRecord } from './types'
 
 const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID)
 
@@ -71,14 +72,22 @@ export async function verifyGoogleCredential(credential: string): Promise<Google
   }
 }
 
-export function toSession(user: UserRecord): SessionUser {
+/**
+ * Build the session a route sees. The role's permission bundle is resolved
+ * against any per-user overrides, so a route can simply ask "may this user
+ * upload?" without knowing which role they hold.
+ */
+export async function toSession(user: UserRecord): Promise<SessionUser> {
+  const role = await loadRole(user.role)
   return {
     userId: user.userId,
     email: user.email,
     name: user.name,
     picture: user.picture,
     role: user.role,
-    siteIds: user.siteIds ?? []
+    siteIds: user.siteIds ?? [],
+    permissions: resolvePermissions(role, user.permissions),
+    limits: resolveLimits(user.limits)
   }
 }
 
@@ -129,7 +138,7 @@ export async function ensureBootstrapAdmin(): Promise<void> {
       userId: randomUUID(),
       email,
       name: env.BOOTSTRAP_ADMIN_NAME || email,
-      role: 'admin',
+      role: ADMIN_ROLE,
       status: 'active',
       siteIds: [],
       createdAt: now
@@ -137,7 +146,7 @@ export async function ensureBootstrapAdmin(): Promise<void> {
     await putItem(T.users, user)
   } else {
     const patch: Partial<UserRecord> = {}
-    if (user.role !== 'admin') patch.role = 'admin'
+    if (user.role !== ADMIN_ROLE) patch.role = ADMIN_ROLE
     if (user.status !== 'active') patch.status = 'active'
     if (!user.name && env.BOOTSTRAP_ADMIN_NAME) patch.name = env.BOOTSTRAP_ADMIN_NAME
     if (Object.keys(patch).length > 0) {
@@ -170,9 +179,11 @@ export async function applyPendingInvites(user: UserRecord): Promise<UserRecord>
 
   const siteIds = new Set(user.siteIds ?? [])
   let role: Role = user.role
+  // An invite upgrades the account it was issued to: admin wins outright,
+  // otherwise a viewer joining via an invite takes that invite's role.
   for (const invite of invites) {
-    if (invite.role === 'admin') role = 'admin'
-    else if (invite.role === 'contractor' && role !== 'admin') role = 'contractor'
+    if (invite.role === ADMIN_ROLE) role = ADMIN_ROLE
+    else if (role !== ADMIN_ROLE && role === 'viewer' && invite.role !== 'viewer') role = invite.role
     for (const id of invite.siteIds ?? []) siteIds.add(id)
   }
 
@@ -198,7 +209,7 @@ export const authenticate: RequestHandler = async (req, _res, next) => {
     if (token) {
       const payload = jwt.verify(token, env.JWT_SECRET) as { sub: string }
       const user = await loadUser(payload.sub)
-      if (user && user.status !== 'disabled') req.user = toSession(user)
+      if (user && user.status !== 'disabled') req.user = await toSession(user)
     }
   } catch {
     /* invalid or expired token -> stay anonymous */
@@ -213,6 +224,15 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction): v
 
 export function requireAdmin(req: Request, _res: Response, next: NextFunction): void {
   if (!req.user) throw new HttpError(401, 'Authentication required')
-  if (req.user.role !== 'admin') throw new HttpError(403, 'Admin access required')
+  if (req.user.role !== ADMIN_ROLE) throw new HttpError(403, 'Admin access required')
   next()
+}
+
+/** Guard a route behind one grantable permission (admins always pass). */
+export function requirePermission(key: PermissionKey): RequestHandler {
+  return (req, _res, next) => {
+    if (!req.user) throw new HttpError(401, 'Authentication required')
+    if (!can(req.user, key)) throw new HttpError(403, 'You do not have permission to do that')
+    next()
+  }
 }

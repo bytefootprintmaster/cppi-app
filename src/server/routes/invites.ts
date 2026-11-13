@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { T, getItem, updateFields } from '../db'
 import { HttpError, asyncHandler } from '../lib/http'
 import { requireAuth } from '../auth'
+import { ADMIN_ROLE } from '../roles'
 import type { InviteRecord, Role, UserRecord } from '../types'
 
 export const inviteRouter = Router()
@@ -39,8 +40,8 @@ inviteRouter.post('/:token/accept', requireAuth, asyncHandler(async (req, res) =
   for (const id of invite.siteIds ?? []) siteIds.add(id)
 
   let role: Role = user.role
-  if (invite.role === 'admin') role = 'admin'
-  else if (invite.role === 'contractor' && user.role !== 'admin') role = 'contractor'
+  if (invite.role === ADMIN_ROLE) role = ADMIN_ROLE
+  else if (role !== ADMIN_ROLE && role === 'viewer' && invite.role !== 'viewer') role = invite.role
 
   await updateFields(T.users, { userId: user.userId }, { role, siteIds: [...siteIds] })
   await updateFields(T.invites, { token: invite.token }, {

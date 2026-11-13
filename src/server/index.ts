@@ -3,6 +3,7 @@ import express, { type NextFunction, type Request, type Response } from 'express
 import { env } from './env'
 import { authenticate } from './auth'
 import { backfillMissingFrameworks } from './framework'
+import { ensureBuiltinRoles } from './roles'
 import { HttpError } from './lib/http'
 import { authRouter } from './routes/auth'
 import { adminRouter } from './routes/admin'
@@ -67,4 +68,6 @@ app.listen(env.PORT, () => {
   console.log(`[cppi] region=${env.AWS_REGION} bucket=${env.S3_BUCKET}`)
   // Existing projects created before the framework existed get seeded here.
   void backfillMissingFrameworks()
+  // Seed the built-in role rows (admin/manager/viewer) if the table is fresh.
+  void ensureBuiltinRoles().catch((err) => console.warn('[cppi] could not seed roles:', err))
 })

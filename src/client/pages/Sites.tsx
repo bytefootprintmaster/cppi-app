@@ -142,7 +142,7 @@ export function SitesPage() {
         )}
 
         <p className="small muted" style={{ marginTop: 22 }}>
-          Tip: {isAdmin ? 'admins define stages and milestones inside each project.' : 'contractors can upload photos, documents and remarks.'}
+          Tip: {isAdmin ? 'admins define stages and milestones inside each project.' : 'you can upload photos, documents and remarks where you have permission.'}
         </p>
       </PageBody>
 

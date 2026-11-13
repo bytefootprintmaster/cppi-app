@@ -21,6 +21,8 @@ export const T = {
   users: `${env.TABLE_PREFIX}users`,
   credentials: `${env.TABLE_PREFIX}credentials`,
   invites: `${env.TABLE_PREFIX}invites`,
+  /** Role definitions: the three built-ins plus any custom roles an admin adds. */
+  roles: `${env.TABLE_PREFIX}roles`,
   sites: `${env.TABLE_PREFIX}sites`,
   stages: `${env.TABLE_PREFIX}stages`,
   milestones: `${env.TABLE_PREFIX}milestones`,

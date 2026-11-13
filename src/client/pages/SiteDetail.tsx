@@ -81,9 +81,10 @@ interface SiteDetailResponse {
   site: SiteRecord
   stages: StageRecord[]
   milestones: MilestoneRecord[]
-  budgetLines: BudgetLineRecord[]
-  budgetCategories: BudgetCategoryRecord[]
-  budget: BudgetSummary
+  /** Budget data only travels to users who may see costs. */
+  budgetLines?: BudgetLineRecord[]
+  budgetCategories?: BudgetCategoryRecord[]
+  budget?: BudgetSummary
   progress: {
     stages: number
     stagesCompleted: number
@@ -91,6 +92,17 @@ interface SiteDetailResponse {
     milestonesCompleted: number
     percent: number
   }
+}
+
+const EMPTY_BUDGET: BudgetSummary = {
+  groups: [],
+  lines: 0,
+  budgeted: 0,
+  spent: 0,
+  hst: 0,
+  paid: 0,
+  remaining: 0,
+  percentUsed: 0
 }
 
 const STAGE_STATUS_OPTIONS: StageStatus[] = ['not_started', 'in_progress', 'completed', 'blocked']
@@ -159,7 +171,9 @@ export function SiteDetailPage() {
   const { data, error, loading, reload } = useApi<SiteDetailResponse>(`/sites/${siteId}`)
 
   const isAdmin = user?.role === 'admin'
-  const canWrite = isAdmin || user?.role === 'contractor'
+  const canWrite = isAdmin || user?.permissions?.uploadFiles === true
+  const canEditDetails = isAdmin || user?.permissions?.editDetails === true
+  const canViewBudget = isAdmin || user?.permissions?.viewBudget === true
 
   useEffect(() => {
     if (data?.site.name) document.title = `${data.site.name} · CPPI`
@@ -189,7 +203,10 @@ export function SiteDetailPage() {
   }
   if (!data) return null
 
-  const { site, stages, milestones, budgetLines, budgetCategories, budget, progress } = data
+  const { site, stages, milestones, progress } = data
+  const budgetLines = data.budgetLines ?? []
+  const budgetCategories = data.budgetCategories ?? []
+  const budget = data.budget ?? EMPTY_BUDGET
 
   return (
     <>
@@ -206,16 +223,16 @@ export function SiteDetailPage() {
               <IconChat size={16} />
               Ask assistant
             </Link>
+            {canEditDetails ? (
+              <Button variant="ghost" onClick={() => setEditing(true)}>
+                Edit details
+              </Button>
+            ) : null}
             {isAdmin ? (
-              <>
-                <Button variant="ghost" onClick={() => setEditing(true)}>
-                  Edit details
-                </Button>
-                <Button variant="danger" onClick={removeSite}>
-                  <IconTrash size={16} />
-                  Delete
-                </Button>
-              </>
+              <Button variant="danger" onClick={removeSite}>
+                <IconTrash size={16} />
+                Delete
+              </Button>
             ) : null}
           </>
         }
@@ -230,7 +247,7 @@ export function SiteDetailPage() {
           <Badge tone="gray">
             {progress.stagesCompleted}/{progress.stages} stages
           </Badge>
-          {budget.lines > 0 ? (
+          {canViewBudget && budget.lines > 0 ? (
             <Badge tone="blue">Budget {formatMoney(budget.budgeted, { compact: true })}</Badge>
           ) : null}
         </div>
@@ -245,18 +262,33 @@ export function SiteDetailPage() {
               ['findings', 'Findings'],
               ['remarks', 'Remarks']
             ] as Array<[Tab, string]>
-          ).map(([key, label]) => (
-            <button key={key} className={`tab${tab === key ? ' active' : ''}`} onClick={() => setTab(key)}>
-              {label}
-            </button>
-          ))}
+          )
+            .filter(([key]) => key !== 'budget' || canViewBudget)
+            .map(([key, label]) => (
+              <button key={key} className={`tab${tab === key ? ' active' : ''}`} onClick={() => setTab(key)}>
+                {label}
+              </button>
+            ))}
         </div>
 
         {tab === 'overview' ? (
-          <OverviewTab site={site} progress={progress} budget={budget} isAdmin={isAdmin} onChanged={reload} />
+          <OverviewTab
+            site={site}
+            progress={progress}
+            budget={budget}
+            isAdmin={isAdmin}
+            canViewBudget={canViewBudget}
+            onChanged={reload}
+          />
         ) : null}
         {tab === 'framework' ? (
-          <FrameworkTab siteId={site.siteId} stages={stages} milestones={milestones} isAdmin={isAdmin} onChanged={reload} />
+          <FrameworkTab
+            siteId={site.siteId}
+            stages={stages}
+            milestones={milestones}
+            isAdmin={canEditDetails}
+            onChanged={reload}
+          />
         ) : null}
         {tab === 'budget' ? (
           <BudgetTab
@@ -264,7 +296,7 @@ export function SiteDetailPage() {
             lines={budgetLines}
             categories={budgetCategories}
             summary={budget}
-            isAdmin={isAdmin}
+            isAdmin={canEditDetails}
             onChanged={reload}
           />
         ) : null}
@@ -294,12 +326,14 @@ function OverviewTab({
   progress,
   budget,
   isAdmin,
+  canViewBudget,
   onChanged
 }: {
   site: SiteRecord
   progress: SiteDetailResponse['progress']
   budget: BudgetSummary
   isAdmin: boolean
+  canViewBudget: boolean
   onChanged: () => void
 }) {
   const [locating, setLocating] = useState(false)
@@ -307,11 +341,16 @@ function OverviewTab({
   const hasPin = typeof site.lat === 'number' && typeof site.lng === 'number'
 
   const facts: Array<[string, string]> = [
-    ['Location', site.location || '—'],
+    ['Address', site.location || '—'],
+    ['Coordinates', hasPin ? `${site.lat!.toFixed(5)}, ${site.lng!.toFixed(5)}` : 'Not placed'],
     ['Start date', formatDate(site.startDate)],
     ['Target completion', formatDate(site.targetDate)],
-    ['Total budget', budget.lines > 0 ? formatMoney(budget.budgeted) : '—'],
-    ['Spent to date', budget.lines > 0 ? formatMoney(budget.spent) : '—'],
+    ...(canViewBudget
+      ? ([
+          ['Total budget', budget.lines > 0 ? formatMoney(budget.budgeted) : '—'],
+          ['Spent to date', budget.lines > 0 ? formatMoney(budget.spent) : '—']
+        ] as Array<[string, string]>)
+      : []),
     ['Created', formatDate(site.createdAt)],
     ['Last updated', formatDateTime(site.updatedAt)]
   ]
@@ -324,7 +363,7 @@ function OverviewTab({
     status: site.status,
     lat: site.lat as number,
     lng: site.lng as number,
-    budgeted: budget.budgeted
+    budgeted: canViewBudget ? budget.budgeted : undefined
   }
 
   async function locate() {
@@ -402,7 +441,7 @@ function OverviewTab({
           title="Location"
           sub={site.location || 'No address set'}
           action={
-            isAdmin && site.location ? (
+            isAdmin && (site.address || site.city || site.location) ? (
               <Button variant="ghost" size="sm" loading={locating} onClick={locate}>
                 <IconMapPin size={16} />
                 {hasPin ? 'Locate again' : 'Locate on map'}
@@ -421,7 +460,7 @@ function OverviewTab({
             </>
           ) : (
             <div className="empty-inline">
-              {site.location
+              {site.address || site.city || site.location
                 ? isAdmin
                   ? 'This project has no map pin yet — use "Locate on map" to place it.'
                   : 'This project has no map pin yet.'
@@ -2497,6 +2536,15 @@ function FolderFormModal({
 
 type FileSort = 'newest' | 'oldest' | 'name' | 'size'
 
+/** Photos and documents are shown apart so drawings and PDFs never hide behind pictures. */
+type FileKind = 'all' | 'image' | 'document'
+
+const FILE_KIND_LABEL: Record<FileKind, string> = {
+  all: 'All files',
+  image: 'Photos',
+  document: 'Documents'
+}
+
 /**
  * Free-form tag editor for a single file. Tags already on the file show as
  * removable chips; typing suggests tags already used elsewhere on the project
@@ -2662,6 +2710,7 @@ function FilesTab({
   const [editingFolder, setEditingFolder] = useState<AssetFolderRecord | null>(null)
   const [needle, setNeedle] = useState('')
   const [sort, setSort] = useState<FileSort>('newest')
+  const [kind, setKind] = useState<FileKind>('all')
   const [tagFilter, setTagFilter] = useState<string | null>(null)
   const [tagging, setTagging] = useState<AssetRecord | null>(null)
 
@@ -2752,15 +2801,22 @@ function FilesTab({
   const folderName = (folderId?: string) =>
     folderId ? folders.find((f) => f.folderId === folderId)?.name : undefined
 
-  const canTag = (asset: AssetRecord) => user?.role === 'admin' || asset.uploadedBy === user?.userId
+  const canTag = (asset: AssetRecord) => isAdmin || asset.uploadedBy === user?.userId
   // Every tag in use on the project, so the filter bar and the editor agree.
   const allTags = [...new Set(assets.flatMap((a) => a.tags ?? []))].sort((a, b) =>
     a.localeCompare(b, undefined, { sensitivity: 'base' })
   )
 
+  const kindCounts: Record<FileKind, number> = {
+    all: inFolder.length,
+    image: inFolder.filter((a) => a.type === 'image').length,
+    document: inFolder.filter((a) => a.type === 'document').length
+  }
+
   const needleLc = needle.trim().toLowerCase()
-  const filtering = needleLc !== '' || tagFilter !== null
+  const filtering = needleLc !== '' || tagFilter !== null || kind !== 'all'
   const matches = inFolder.filter((asset) => {
+    if (kind !== 'all' && asset.type !== kind) return false
     if (tagFilter && !(asset.tags ?? []).some((t) => t.toLowerCase() === tagFilter.toLowerCase())) {
       return false
     }
@@ -2782,6 +2838,112 @@ function FilesTab({
         return b.uploadedAt.localeCompare(a.uploadedAt)
     }
   })
+
+  const photos = visible.filter((a) => a.type === 'image')
+  const documents = visible.filter((a) => a.type === 'document')
+
+  function renderFileCard(asset: AssetRecord) {
+    return (
+      <div
+        className="file-card is-clickable"
+        key={asset.assetId}
+        role="button"
+        tabIndex={0}
+        aria-label={`Open ${asset.name}`}
+        aria-busy={busyId === asset.assetId}
+        onClick={() => void openAsset(asset)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            void openAsset(asset)
+          }
+        }}
+      >
+        <CardMenu
+          items={[
+            { label: 'Open', icon: <IconDownload size={14} />, onClick: () => void openAsset(asset) },
+            ...(canTag(asset)
+              ? [
+                  { label: 'Tag', icon: <IconTag size={14} />, onClick: () => setTagging(asset) },
+                  {
+                    label: 'Delete',
+                    icon: <IconTrash size={14} />,
+                    danger: true,
+                    onClick: () => void removeAsset(asset)
+                  }
+                ]
+              : [])
+          ]}
+        />
+        <div className="file-thumb">
+          {asset.type === 'image' && urls[asset.assetId] ? (
+            <img src={urls[asset.assetId]} alt={asset.name} />
+          ) : asset.type === 'image' ? (
+            <IconImage size={26} />
+          ) : (
+            <IconFile size={26} />
+          )}
+        </div>
+        <div className="file-meta">
+          <div className="file-name" title={asset.name}>
+            {asset.name}
+          </div>
+          <div className="small muted" style={{ marginTop: 3 }}>
+            {humanBytes(asset.size)} · {relativeTime(asset.uploadedAt)}
+          </div>
+          <div className="small muted" style={{ marginTop: 2 }}>
+            {asset.uploadedByName}
+          </div>
+          {!activeFolder && folderName(asset.folderId) ? (
+            <div className="file-folder">
+              <IconFolder size={12} />
+              {folderName(asset.folderId)}
+            </div>
+          ) : null}
+          {asset.tags?.length ? (
+            <div className="file-tags">
+              {asset.tags.map((tag) => (
+                <button
+                  key={tag}
+                  className={`chip${tagFilter === tag ? ' on' : ''}`}
+                  title={`Show files tagged "${tag}"`}
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    setTagFilter(tagFilter === tag ? null : tag)
+                  }}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          ) : null}
+          {(() => {
+            const intel = intelByAsset.get(asset.assetId)
+            if (!intel) return null
+            return (
+              <div className="file-evidence">
+                {intel.verificationStatus ? (
+                  <Badge tone={VERIFICATION_TONE[intel.verificationStatus]}>
+                    {VERIFICATION_LABEL[intel.verificationStatus]}
+                  </Badge>
+                ) : null}
+                {(intel.evidenceClasses ?? []).map((cls) => (
+                  <span className="chip on" key={cls}>
+                    {EVIDENCE_LABEL[cls]}
+                  </span>
+                ))}
+                {intel.docType ? (
+                  <div className="small muted" style={{ marginTop: 2 }}>
+                    {intel.docType}
+                  </div>
+                ) : null}
+              </div>
+            )
+          })()}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="stack">
@@ -2902,6 +3064,22 @@ function FilesTab({
                 </select>
               </div>
 
+              {/* Documents and photos are kept apart so a drawing never hides behind a photo. */}
+              <div className="file-kind-bar">
+                {(['all', 'image', 'document'] as FileKind[]).map((k) => (
+                  <button
+                    key={k}
+                    className={`chip${kind === k ? ' on' : ''}`}
+                    onClick={() => setKind(k)}
+                  >
+                    {FILE_KIND_LABEL[k]}
+                    <span className="muted" style={{ marginLeft: 6 }}>
+                      {kindCounts[k]}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
               {allTags.length > 0 ? (
                 <div className="tag-bar">
                   <button
@@ -2926,109 +3104,33 @@ function FilesTab({
                 <Empty title="No files match these filters">
                   Try a different word, or clear the tag filter.
                 </Empty>
+              ) : kind === 'all' ? (
+                <>
+                  {photos.length > 0 ? (
+                    <section className="file-section">
+                      <h3 className="file-section-title">
+                        <IconImage size={15} /> Photos
+                        <span className="muted" style={{ marginLeft: 6 }}>
+                          {photos.length}
+                        </span>
+                      </h3>
+                      <div className="file-grid">{photos.map(renderFileCard)}</div>
+                    </section>
+                  ) : null}
+                  {documents.length > 0 ? (
+                    <section className="file-section">
+                      <h3 className="file-section-title">
+                        <IconFile size={15} /> Documents
+                        <span className="muted" style={{ marginLeft: 6 }}>
+                          {documents.length}
+                        </span>
+                      </h3>
+                      <div className="file-grid">{documents.map(renderFileCard)}</div>
+                    </section>
+                  ) : null}
+                </>
               ) : (
-                <div className="file-grid">
-                  {visible.map((asset) => (
-                    <div
-                      className="file-card is-clickable"
-                      key={asset.assetId}
-                      role="button"
-                      tabIndex={0}
-                      aria-label={`Open ${asset.name}`}
-                      aria-busy={busyId === asset.assetId}
-                      onClick={() => void openAsset(asset)}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                          event.preventDefault()
-                          void openAsset(asset)
-                        }
-                      }}
-                    >
-                      <CardMenu
-                        items={[
-                          { label: 'Open', icon: <IconDownload size={14} />, onClick: () => void openAsset(asset) },
-                          ...(canTag(asset)
-                            ? [
-                                { label: 'Tag', icon: <IconTag size={14} />, onClick: () => setTagging(asset) },
-                                {
-                                  label: 'Delete',
-                                  icon: <IconTrash size={14} />,
-                                  danger: true,
-                                  onClick: () => void removeAsset(asset)
-                                }
-                              ]
-                            : [])
-                        ]}
-                      />
-                      <div className="file-thumb">
-                        {asset.type === 'image' && urls[asset.assetId] ? (
-                          <img src={urls[asset.assetId]} alt={asset.name} />
-                        ) : asset.type === 'image' ? (
-                          <IconImage size={26} />
-                        ) : (
-                          <IconFile size={26} />
-                        )}
-                      </div>
-                      <div className="file-meta">
-                        <div className="file-name" title={asset.name}>
-                          {asset.name}
-                        </div>
-                        <div className="small muted" style={{ marginTop: 3 }}>
-                          {humanBytes(asset.size)} · {relativeTime(asset.uploadedAt)}
-                        </div>
-                        <div className="small muted" style={{ marginTop: 2 }}>
-                          {asset.uploadedByName}
-                        </div>
-                        {!activeFolder && folderName(asset.folderId) ? (
-                          <div className="file-folder">
-                            <IconFolder size={12} />
-                            {folderName(asset.folderId)}
-                          </div>
-                        ) : null}
-                        {asset.tags?.length ? (
-                          <div className="file-tags">
-                            {asset.tags.map((tag) => (
-                              <button
-                                key={tag}
-                                className={`chip${tagFilter === tag ? ' on' : ''}`}
-                                title={`Show files tagged "${tag}"`}
-                                onClick={(event) => {
-                                  event.stopPropagation()
-                                  setTagFilter(tagFilter === tag ? null : tag)
-                                }}
-                              >
-                                {tag}
-                              </button>
-                            ))}
-                          </div>
-                        ) : null}
-                        {(() => {
-                          const intel = intelByAsset.get(asset.assetId)
-                          if (!intel) return null
-                          return (
-                            <div className="file-evidence">
-                              {intel.verificationStatus ? (
-                                <Badge tone={VERIFICATION_TONE[intel.verificationStatus]}>
-                                  {VERIFICATION_LABEL[intel.verificationStatus]}
-                                </Badge>
-                              ) : null}
-                              {(intel.evidenceClasses ?? []).map((cls) => (
-                                <span className="chip on" key={cls}>
-                                  {EVIDENCE_LABEL[cls]}
-                                </span>
-                              ))}
-                              {intel.docType ? (
-                                <div className="small muted" style={{ marginTop: 2 }}>
-                                  {intel.docType}
-                                </div>
-                              ) : null}
-                            </div>
-                          )
-                        })()}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <div className="file-grid">{visible.map(renderFileCard)}</div>
               )}
             </>
           )}

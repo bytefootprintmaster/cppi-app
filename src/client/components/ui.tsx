@@ -176,9 +176,10 @@ export function MilestoneStatusBadge({ status }: { status: string }) {
   return <Badge tone={s.tone}>{s.label}</Badge>
 }
 
-export function RoleBadge({ role }: { role: string }) {
-  const tone: BadgeTone = role === 'admin' ? 'green' : role === 'contractor' ? 'blue' : 'gray'
-  return <Badge tone={tone}>{role}</Badge>
+export function RoleBadge({ role, label }: { role: string; label?: string }) {
+  const tone: BadgeTone =
+    role === 'admin' ? 'green' : role === 'manager' ? 'blue' : role === 'viewer' ? 'gray' : 'amber'
+  return <Badge tone={tone}>{label ?? role}</Badge>
 }
 
 /* -------------------------------- avatar --------------------------------- */

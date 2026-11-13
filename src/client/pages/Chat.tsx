@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { api } from '../lib/api'
 import { useApi } from '../lib/useApi'
-import { relativeTime } from '../lib/format'
 import { PageBody, PageHeader } from '../components/Layout'
 import { Badge, Button, Empty, ErrorNote, Loading, Modal } from '../components/ui'
 import {
@@ -12,6 +11,7 @@ import {
   IconFile,
   IconImage,
   IconPlus,
+  IconSearch,
   IconSend,
   IconTag,
   IconTrash,
@@ -47,6 +47,37 @@ function clockTime(value?: string): string {
   const d = new Date(value)
   if (Number.isNaN(d.getTime())) return ''
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+}
+
+/** Everything a turn can be searched on: its words, file names, cards, reports. */
+function turnText(message: ChatMessageRecord): string {
+  const parts: string[] = [message.text]
+  for (const attachment of message.attachments ?? []) parts.push(attachment.name)
+  for (const action of message.pending ?? []) parts.push(action.preview, TOOL_LABEL[action.tool] ?? action.tool)
+  for (const artifact of message.artifacts ?? []) parts.push(artifact.title ?? artifact.name, artifact.name)
+  return parts.join(' ')
+}
+
+/** Wrap every occurrence of the query in a <mark> so hits are easy to spot. */
+function highlight(text: string, query: string): ReactNode {
+  const needle = query.trim()
+  if (!needle) return text
+  const pattern = new RegExp(`(${needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
+  const nodes: ReactNode[] = []
+  let cursor = 0
+  let match: RegExpExecArray | null
+  while ((match = pattern.exec(text)) !== null) {
+    if (match.index > cursor) nodes.push(text.slice(cursor, match.index))
+    nodes.push(
+      <mark className="chat-mark" key={`${match.index}-${nodes.length}`}>
+        {match[0]}
+      </mark>
+    )
+    cursor = match.index + match[0].length
+    if (match[0].length === 0) pattern.lastIndex += 1
+  }
+  if (cursor < text.length) nodes.push(text.slice(cursor))
+  return nodes
 }
 
 /** Optimistic turns shown while the agent is working, before the server reply lands. */
@@ -164,45 +195,6 @@ function ChatAttachmentList({
   )
 }
 
-/* ------------------------------ thread sidebar --------------------------- */
-
-function ThreadList({
-  threads,
-  activeId,
-  onSelect,
-  onDelete
-}: {
-  threads: ChatThreadRecord[]
-  activeId: string | null
-  onSelect: (id: string) => void
-  onDelete: (id: string) => void
-}) {
-  if (threads.length === 0) {
-    return <div className="small muted" style={{ padding: '6px 4px' }}>No saved conversations yet.</div>
-  }
-  return (
-    <div className="chat-thread-list">
-      {threads.map((thread) => (
-        <div key={thread.threadId} className={`chat-thread${thread.threadId === activeId ? ' on' : ''}`}>
-          <button type="button" className="chat-thread-open" onClick={() => onSelect(thread.threadId)}>
-            <span className="chat-thread-title">{thread.title}</span>
-            <span className="chat-thread-sub">{relativeTime(thread.updatedAt)}</span>
-          </button>
-          <button
-            type="button"
-            className="chat-thread-del"
-            aria-label="Delete conversation"
-            title="Delete conversation"
-            onClick={() => onDelete(thread.threadId)}
-          >
-            <IconTrash size={15} />
-          </button>
-        </div>
-      ))}
-    </div>
-  )
-}
-
 /* ---------------------------------- page --------------------------------- */
 
 export function ChatPage() {
@@ -210,7 +202,14 @@ export function ChatPage() {
   const paramSiteId = params.get('siteId') ?? ''
 
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [activeId, setActiveId] = useState<string | null>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  // One continuous conversation per user, in the WhatsApp sense — no threads.
+  const [thread, setThread] = useState<ChatThreadRecord | null>(null)
+  const [messages, setMessages] = useState<ChatMessageRecord[]>([])
+  const [loadingThread, setLoadingThread] = useState(true)
+
+  // The project is chosen per turn, because one conversation can span projects.
   const [siteId, setSiteId] = useState(paramSiteId)
   const [draft, setDraft] = useState('')
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
@@ -220,25 +219,16 @@ export function ChatPage() {
   const [sending, setSending] = useState(false)
   const [overlay, setOverlay] = useState<OverlayTurn[]>([])
   const [error, setError] = useState<string | null>(null)
-  const [messages, setMessages] = useState<ChatMessageRecord[]>([])
-  const [thread, setThread] = useState<ChatThreadRecord | null>(null)
-  const [loadingThread, setLoadingThread] = useState(false)
   const [busyAction, setBusyAction] = useState<string | null>(null)
-  const [listOpen, setListOpen] = useState(false)
-
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const [query, setQuery] = useState('')
+  const [confirmClear, setConfirmClear] = useState(false)
+  const [clearing, setClearing] = useState(false)
 
   const sites = useApi<{ sites: SiteRecord[] }>('/sites')
   const status = useApi<ChatServiceStatus>('/chat/status')
-  const threads = useApi<{ threads: ChatThreadRecord[] }>('/chat/threads')
   const assistantReady = Boolean(
     status.data?.configured && status.data.reachable && status.data.storageReady
   )
-  const uploadSiteId = activeId
-    ? thread?.threadId === activeId
-      ? thread.siteId ?? ''
-      : ''
-    : siteId
 
   const serviceMessage = status.error
     ? `Could not check assistant availability: ${status.error}`
@@ -261,16 +251,11 @@ export function ChatPage() {
     if (paramSiteId) setSiteId(paramSiteId)
   }, [paramSiteId])
 
-  const siteNameFor = useCallback(
-    (id?: string) => (id ? sites.data?.sites.find((s) => s.siteId === id)?.name ?? id : undefined),
-    [sites.data]
-  )
-
-  const loadThread = useCallback(async (id: string) => {
+  const loadThread = useCallback(async () => {
     setLoadingThread(true)
     try {
-      const data = await api<{ thread: ChatThreadRecord; messages: ChatMessageRecord[] }>(
-        `/chat/threads/${id}`
+      const data = await api<{ thread: ChatThreadRecord | null; messages: ChatMessageRecord[] }>(
+        '/chat/thread'
       )
       setThread(data.thread)
       setMessages(data.messages)
@@ -282,31 +267,16 @@ export function ChatPage() {
     }
   }, [])
 
-  // Load the selected conversation. `activeId === null` is the "new chat" draft.
   useEffect(() => {
-    if (!activeId) {
-      setThread(null)
-      setMessages([])
-      return
-    }
-    void loadThread(activeId)
-  }, [activeId, loadThread])
+    void loadThread()
+  }, [loadThread])
 
-  // Keep the newest message in view.
+  // Keep the newest turn in view — unless a search is pinning results.
   useEffect(() => {
+    if (query.trim()) return
     const el = scrollRef.current
     if (el) el.scrollTop = el.scrollHeight
-  }, [messages.length, overlay.length, sending, activeId])
-
-  /** Reuse the open thread, or create one (with the chosen project context). */
-  async function ensureThread(): Promise<string> {
-    if (activeId) return activeId
-    const { thread: created } = await api<{ thread: ChatThreadRecord }>('/chat/threads', {
-      method: 'POST',
-      body: { siteId: siteId || undefined }
-    })
-    return created.threadId
-  }
+  }, [messages.length, overlay.length, sending, query])
 
   function chooseFiles(files: FileList | null) {
     if (!files?.length) return
@@ -329,7 +299,7 @@ export function ChatPage() {
   }
 
   async function uploadFiles() {
-    if (!uploadSiteId || !selectedFiles.length || uploadingFiles) return
+    if (!siteId || !selectedFiles.length || uploadingFiles) return
     const tags = [...new Set(tagDraft.split(/[,\n]/).map((tag) => tag.trim().replace(/\s+/g, ' ')).filter(Boolean))]
     if (tags.length > 20 || tags.some((tag) => tag.length > 40)) {
       setError('Use at most 20 tags, with no more than 40 characters per tag.')
@@ -344,7 +314,7 @@ export function ChatPage() {
           : 'document'
         const contentType = file.type || 'application/octet-stream'
         const { key, uploadUrl } = await api<{ key: string; uploadUrl: string }>(
-          `/sites/${uploadSiteId}/assets/presign`,
+          `/sites/${siteId}/assets/presign`,
           { method: 'POST', body: { fileName: file.name, contentType, type } }
         )
         const uploaded = await fetch(uploadUrl, {
@@ -354,7 +324,7 @@ export function ChatPage() {
         })
         if (!uploaded.ok) throw new Error(`S3 upload failed (${uploaded.status})`)
 
-        const { asset } = await api<{ asset: AssetRecord }>(`/sites/${uploadSiteId}/assets`, {
+        const { asset } = await api<{ asset: AssetRecord }>(`/sites/${siteId}/assets`, {
           method: 'POST',
           body: {
             key,
@@ -395,8 +365,8 @@ export function ChatPage() {
       setError(serviceMessage ?? 'The assistant is not ready yet.')
       return
     }
-    if (chatAttachments.some((attachment) => attachment.siteId !== uploadSiteId)) {
-      setError('Start a new project conversation before sending these attachments.')
+    if (chatAttachments.some((attachment) => attachment.siteId !== siteId)) {
+      setError('Choose the project these attachments belong to before sending.')
       return
     }
     const messageText = text || 'Please review the attached project files.'
@@ -404,21 +374,23 @@ export function ChatPage() {
     setSending(true)
     setError(null)
     setDraft('')
+    setQuery('')
     setOverlay([
       { role: 'user', text: messageText, attachments: turnAttachments },
       { role: 'assistant', text: '', thinking: true }
     ])
     try {
-      const tid = await ensureThread()
-      await api(`/chat/threads/${tid}/messages`, {
+      await api('/chat/messages', {
         method: 'POST',
-        body: { message: messageText, attachments: turnAttachments.map((attachment) => attachment.assetId) }
+        body: {
+          message: messageText,
+          siteId: siteId || undefined,
+          attachments: turnAttachments.map((attachment) => attachment.assetId)
+        }
       })
       setChatAttachments([])
-      setActiveId(tid)
-      await loadThread(tid)
+      await loadThread()
       setOverlay([])
-      void threads.reload()
     } catch (err) {
       const detail = err instanceof Error ? err.message : 'Something went wrong'
       setError(detail)
@@ -433,12 +405,11 @@ export function ChatPage() {
   }
 
   async function decide(actionId: string, decision: 'approve' | 'reject') {
-    if (!activeId) return
     setBusyAction(actionId)
     setError(null)
     try {
-      await api(`/chat/threads/${activeId}/actions/${actionId}/${decision}`, { method: 'POST' })
-      await loadThread(activeId)
+      await api(`/chat/actions/${actionId}/${decision}`, { method: 'POST' })
+      await loadThread()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not update the approval')
     } finally {
@@ -469,50 +440,85 @@ export function ChatPage() {
     }
   }
 
-  async function removeThread(id: string) {
+  async function clearThread() {
+    setClearing(true)
     setError(null)
     try {
-      await api(`/chat/threads/${id}`, { method: 'DELETE' })
-      if (activeId === id) setActiveId(null)
-      void threads.reload()
+      await api('/chat/thread', { method: 'DELETE' })
+      setConfirmClear(false)
+      setOverlay([])
+      setQuery('')
+      await loadThread()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not delete the conversation')
+      setError(err instanceof Error ? err.message : 'Could not clear the conversation')
+    } finally {
+      setClearing(false)
     }
   }
 
-  function startNew() {
-    setActiveId(null)
-    setMessages([])
-    setThread(null)
-    setOverlay([])
-    setError(null)
-    setDraft('')
-    setSelectedFiles([])
-    setChatAttachments([])
-    setTagDraft('')
-    setListOpen(false)
-  }
-
-  const threadList = threads.data?.threads ?? []
+  const needle = query.trim()
+  const searching = needle.length > 0
+  const visibleMessages = searching
+    ? messages.filter((message) => turnText(message).toLowerCase().includes(needle.toLowerCase()))
+    : messages
   const conversationStarted = messages.length > 0 || overlay.length > 0
+
+  function renderTurn(message: ChatMessageRecord) {
+    return (
+      <div key={message.messageId} className={`chat-turn chat-turn-${message.role}`}>
+        <div
+          className={`chat-bubble${
+            message.role === 'user'
+              ? ' chat-bubble-user'
+              : message.status === 'error'
+                ? ' chat-bubble-error'
+                : ' chat-bubble-bot'
+          }`}
+        >
+          {highlight(message.text, query)}
+        </div>
+        {message.attachments?.length ? (
+          <ChatAttachmentList attachments={message.attachments} onOpen={downloadAttachment} />
+        ) : null}
+        {message.pending?.length ? (
+          <div className="chat-extras">
+            {message.pending.map((action) => (
+              <PendingCard
+                key={action.actionId}
+                action={action}
+                busy={busyAction === action.actionId}
+                onDecide={decide}
+              />
+            ))}
+          </div>
+        ) : null}
+        {message.artifacts?.length ? (
+          <div className="chat-extras">
+            {message.artifacts.map((artifact) => (
+              <ArtifactCard key={artifact.s3Key ?? artifact.name} artifact={artifact} onDownload={download} />
+            ))}
+          </div>
+        ) : null}
+        <div className="chat-meta">
+          {message.role === 'assistant' && message.agent ? `${message.agent} · ` : ''}
+          {clockTime(message.createdAt)}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <>
       <PageHeader
         title="Assistant"
-        subtitle="Ask about any project, record what you see, or generate a report."
+        subtitle="One continuous conversation. Scroll back through everything, or search it."
         actions={
-          <>
-            <Button variant="ghost" className="chat-convos-btn" onClick={() => setListOpen(true)}>
-              <IconChat size={16} />
-              Conversations
-              {threadList.length ? <span className="chat-count">{threadList.length}</span> : null}
+          conversationStarted ? (
+            <Button variant="ghost" onClick={() => setConfirmClear(true)}>
+              <IconTrash size={16} />
+              Clear chat
             </Button>
-            <Button onClick={startNew}>
-              <IconPlus size={16} />
-              New chat
-            </Button>
-          </>
+          ) : null
         }
       />
       <PageBody>
@@ -524,309 +530,254 @@ export function ChatPage() {
           </div>
         ) : null}
 
-        <div className="chat-shell">
-          <aside className="chat-side">
-            <div className="chat-side-head">
-              <span className="label">Conversations</span>
-              <Button variant="ghost" size="sm" className="btn-icon" title="New chat" onClick={startNew}>
-                <IconPlus size={15} />
-              </Button>
+        <section className="chat-main">
+          {conversationStarted ? (
+            <div className="chat-toolbar">
+              <label className="chat-search">
+                <IconSearch size={16} />
+                <input
+                  className="input"
+                  type="search"
+                  value={query}
+                  placeholder="Search this conversation…"
+                  onChange={(event) => setQuery(event.target.value)}
+                />
+                {searching ? (
+                  <button type="button" aria-label="Clear search" onClick={() => setQuery('')}>
+                    <IconX size={14} />
+                  </button>
+                ) : null}
+              </label>
+              {searching ? (
+                <span className="small muted chat-search-count">
+                  {visibleMessages.length} {visibleMessages.length === 1 ? 'message' : 'messages'}
+                </span>
+              ) : null}
             </div>
-            {threads.loading ? (
-              <div className="small muted" style={{ padding: '6px 4px' }}>Loading…</div>
+          ) : null}
+
+          <div className="chat-scroll" ref={scrollRef}>
+            {loadingThread && !conversationStarted ? (
+              <Loading label="Loading the conversation…" />
+            ) : !conversationStarted ? (
+              <div className="chat-empty">
+                <div className="chat-empty-icon">
+                  <IconChat size={26} />
+                </div>
+                <h2>How can I help?</h2>
+                <p className="muted">
+                  Tell me what you are looking at and I will answer from the project files, or write it up.
+                </p>
+                <div className="chat-suggest">
+                  {EXAMPLES.map((example) => (
+                    <button
+                      key={example}
+                      type="button"
+                      className="chip"
+                      onClick={() => {
+                        setDraft(example)
+                        if (paramSiteId) setSiteId(paramSiteId)
+                      }}
+                    >
+                      {example}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : searching && visibleMessages.length === 0 ? (
+              <Empty title="No matching messages">
+                Nothing in this conversation matches “{needle}”.
+              </Empty>
             ) : (
-              <ThreadList
-                threads={threadList}
-                activeId={activeId}
-                onSelect={(id) => {
-                  setActiveId(id)
+              <>
+                {visibleMessages.map(renderTurn)}
+
+                {overlay.map((turn, index) => (
+                  <div key={`overlay-${index}`} className={`chat-turn chat-turn-${turn.role}`}>
+                    <div
+                      className={`chat-bubble${
+                        turn.role === 'user'
+                          ? ' chat-bubble-user'
+                          : turn.thinking
+                            ? ' chat-bubble-bot chat-bubble-thinking'
+                            : ' chat-bubble-error'
+                      }`}
+                    >
+                      {turn.thinking ? <Thinking /> : turn.text}
+                    </div>
+                    {turn.attachments?.length ? (
+                      <ChatAttachmentList attachments={turn.attachments} onOpen={downloadAttachment} />
+                    ) : null}
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+
+          <form
+            className="chat-compose"
+            onSubmit={(event) => {
+              event.preventDefault()
+              void send()
+            }}
+          >
+            <label className="chat-context">
+              <span className="small muted">Project context</span>
+              <select
+                className="select"
+                value={siteId}
+                onChange={(event) => {
+                  setSiteId(event.target.value)
                   setSelectedFiles([])
                   setChatAttachments([])
-                  setOverlay([])
-                  setError(null)
                 }}
-                onDelete={removeThread}
+              >
+                <option value="">General (no specific project)</option>
+                {(sites.data?.sites ?? []).map((site) => (
+                  <option key={site.siteId} value={site.siteId}>
+                    {site.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div className="chat-upload-tools">
+              <input
+                ref={fileInputRef}
+                className="chat-file-input"
+                type="file"
+                multiple
+                accept="image/*,.pdf,.docx,.xlsx,.csv,.txt,.md,.json"
+                onChange={(event) => chooseFiles(event.target.files)}
+                disabled={uploadingFiles || sending}
               />
-            )}
-          </aside>
-
-          <section className="chat-main">
-            <div className="chat-scroll" ref={scrollRef}>
-              {loadingThread && !conversationStarted ? (
-                <Loading label="Loading the conversation…" />
-              ) : !conversationStarted ? (
-                <div className="chat-empty">
-                  <div className="chat-empty-icon">
-                    <IconChat size={26} />
-                  </div>
-                  <h2>How can I help?</h2>
-                  <p className="muted">
-                    Tell me what you are looking at and I will answer from the project files, or write it up.
-                  </p>
-                  <div className="chat-suggest">
-                    {EXAMPLES.map((example) => (
-                      <button
-                        key={example}
-                        type="button"
-                        className="chip"
-                        onClick={() => {
-                          setDraft(example)
-                          if (paramSiteId) setSiteId(paramSiteId)
-                        }}
-                      >
-                        {example}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <>
-                  {messages.map((m) => (
-                    <div key={m.messageId} className={`chat-turn chat-turn-${m.role}`}>
-                      <div
-                        className={`chat-bubble${
-                          m.role === 'user'
-                            ? ' chat-bubble-user'
-                            : m.status === 'error'
-                              ? ' chat-bubble-error'
-                              : ' chat-bubble-bot'
-                        }`}
-                      >
-                        {m.text}
-                      </div>
-                      {m.attachments?.length ? (
-                        <ChatAttachmentList attachments={m.attachments} onOpen={downloadAttachment} />
-                      ) : null}
-                      {m.pending?.length ? (
-                        <div className="chat-extras">
-                          {m.pending.map((action) => (
-                            <PendingCard
-                              key={action.actionId}
-                              action={action}
-                              busy={busyAction === action.actionId}
-                              onDecide={decide}
-                            />
-                          ))}
-                        </div>
-                      ) : null}
-                      {m.artifacts?.length ? (
-                        <div className="chat-extras">
-                          {m.artifacts.map((artifact) => (
-                            <ArtifactCard key={artifact.s3Key ?? artifact.name} artifact={artifact} onDownload={download} />
-                          ))}
-                        </div>
-                      ) : null}
-                      <div className="chat-meta">
-                        {m.role === 'assistant' && m.agent ? `${m.agent} · ` : ''}
-                        {clockTime(m.createdAt)}
-                      </div>
-                    </div>
-                  ))}
-
-                  {overlay.map((turn, index) => (
-                    <div key={`overlay-${index}`} className={`chat-turn chat-turn-${turn.role}`}>
-                      <div
-                        className={`chat-bubble${
-                          turn.role === 'user'
-                            ? ' chat-bubble-user'
-                            : turn.thinking
-                              ? ' chat-bubble-bot chat-bubble-thinking'
-                              : ' chat-bubble-error'
-                        }`}
-                      >
-                        {turn.thinking ? <Thinking /> : turn.text}
-                      </div>
-                      {turn.attachments?.length ? (
-                        <ChatAttachmentList attachments={turn.attachments} onOpen={downloadAttachment} />
-                      ) : null}
-                    </div>
-                  ))}
-                </>
-              )}
-            </div>
-
-            <form
-              className="chat-compose"
-              onSubmit={(event) => {
-                event.preventDefault()
-                void send()
-              }}
-            >
-              {!activeId ? (
-                <label className="chat-context">
-                  <span className="small muted">Project context</span>
-                  <select
-                    className="select"
-                    value={siteId}
-                    onChange={(event) => {
-                      setSiteId(event.target.value)
-                      setSelectedFiles([])
-                      setChatAttachments([])
-                    }}
-                  >
-                    <option value="">General (no specific project)</option>
-                    {(sites.data?.sites ?? []).map((site) => (
-                      <option key={site.siteId} value={site.siteId}>
-                        {site.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              ) : thread?.siteId ? (
-                <div className="chat-context-static small">
-                  <IconChat size={14} />
-                  {siteNameFor(thread.siteId)}
-                </div>
-              ) : null}
-
-              <div className="chat-upload-tools">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={!siteId || uploadingFiles || sending || chatAttachments.length + selectedFiles.length >= 5}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <IconPlus size={15} />
+                Add files
+              </Button>
+              <label className="chat-tag-field">
+                <IconTag size={15} />
                 <input
-                  ref={fileInputRef}
-                  className="chat-file-input"
-                  type="file"
-                  multiple
-                  accept="image/*,.pdf,.docx,.xlsx,.csv,.txt,.md,.json"
-                  onChange={(event) => chooseFiles(event.target.files)}
+                  className="input"
+                  value={tagDraft}
+                  onChange={(event) => setTagDraft(event.target.value)}
+                  placeholder="Tags for selected files (comma separated)"
                   disabled={uploadingFiles || sending}
                 />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  disabled={!uploadSiteId || uploadingFiles || sending || chatAttachments.length + selectedFiles.length >= 5}
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <IconPlus size={15} />
-                  Add files
-                </Button>
-                <label className="chat-tag-field">
-                  <IconTag size={15} />
-                  <input
-                    className="input"
-                    value={tagDraft}
-                    onChange={(event) => setTagDraft(event.target.value)}
-                    placeholder="Tags for selected files (comma separated)"
-                    disabled={uploadingFiles || sending}
-                  />
-                </label>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  disabled={!uploadSiteId || !selectedFiles.length || uploadingFiles || sending}
-                  loading={uploadingFiles}
-                  onClick={() => void uploadFiles()}
-                >
-                  <IconUpload size={15} />
-                  Upload
-                </Button>
-              </div>
-              {!uploadSiteId ? (
-                <div className="small muted chat-hint">Choose a project to upload project files.</div>
-              ) : null}
-              {selectedFiles.length ? (
-                <div className="chat-selected-files">
-                  {selectedFiles.map((file) => (
-                    <span className="chat-file-chip" key={`${file.name}:${file.size}:${file.lastModified}`}>
-                      <IconFile size={14} />
-                      <span title={file.name}>{file.name}</span>
-                      {!uploadingFiles ? (
-                        <button
-                          type="button"
-                          aria-label={`Remove ${file.name}`}
-                          onClick={() => setSelectedFiles((current) => current.filter((item) => item !== file))}
-                        >
-                          <IconX size={13} />
-                        </button>
-                      ) : null}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-              {chatAttachments.length ? (
-                <div className="chat-selected-files">
-                  {chatAttachments.map((attachment) => (
-                    <span className="chat-file-chip uploaded" key={attachment.assetId}>
-                      {attachment.type === 'image' ? <IconImage size={14} /> : <IconFile size={14} />}
-                      <span title={attachment.name}>{attachment.name}</span>
-                      {attachment.tags?.length ? <small>{attachment.tags.join(', ')}</small> : null}
+              </label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={!siteId || !selectedFiles.length || uploadingFiles || sending}
+                loading={uploadingFiles}
+                onClick={() => void uploadFiles()}
+              >
+                <IconUpload size={15} />
+                Upload
+              </Button>
+            </div>
+            {!siteId ? (
+              <div className="small muted chat-hint">Choose a project to upload project files.</div>
+            ) : null}
+            {selectedFiles.length ? (
+              <div className="chat-selected-files">
+                {selectedFiles.map((file) => (
+                  <span className="chat-file-chip" key={`${file.name}:${file.size}:${file.lastModified}`}>
+                    <IconFile size={14} />
+                    <span title={file.name}>{file.name}</span>
+                    {!uploadingFiles ? (
                       <button
                         type="button"
-                        aria-label={`Remove ${attachment.name} from this message`}
-                        onClick={() => setChatAttachments((current) => current.filter((item) => item.assetId !== attachment.assetId))}
+                        aria-label={`Remove ${file.name}`}
+                        onClick={() => setSelectedFiles((current) => current.filter((item) => item !== file))}
                       >
                         <IconX size={13} />
                       </button>
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-
-              <div className="chat-compose-row">
-                <textarea
-                  className="textarea chat-input"
-                  rows={2}
-                  placeholder="Ask a question, describe what you see, or ask for a report…"
-                  value={draft}
-                  disabled={sending || !assistantReady}
-                  onChange={(event) => setDraft(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' && !event.shiftKey) {
-                      event.preventDefault()
-                      void send()
-                    }
-                  }}
-                />
-                <Button
-                  type="submit"
-                  loading={sending || status.loading}
-                  disabled={(!draft.trim() && !chatAttachments.length) || !assistantReady || uploadingFiles}
-                  className="chat-send"
-                >
-                  <IconSend size={16} />
-                  Send
-                </Button>
+                    ) : null}
+                  </span>
+                ))}
               </div>
-              <div className="small muted chat-hint">Enter to send · Shift + Enter for a new line</div>
-            </form>
-          </section>
-        </div>
+            ) : null}
+            {chatAttachments.length ? (
+              <div className="chat-selected-files">
+                {chatAttachments.map((attachment) => (
+                  <span className="chat-file-chip uploaded" key={attachment.assetId}>
+                    {attachment.type === 'image' ? <IconImage size={14} /> : <IconFile size={14} />}
+                    <span title={attachment.name}>{attachment.name}</span>
+                    {attachment.tags?.length ? <small>{attachment.tags.join(', ')}</small> : null}
+                    <button
+                      type="button"
+                      aria-label={`Remove ${attachment.name} from this message`}
+                      onClick={() => setChatAttachments((current) => current.filter((item) => item.assetId !== attachment.assetId))}
+                    >
+                      <IconX size={13} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            ) : null}
+
+            <div className="chat-compose-row">
+              <textarea
+                className="textarea chat-input"
+                rows={2}
+                placeholder="Ask a question, describe what you see, or ask for a report…"
+                value={draft}
+                disabled={sending || !assistantReady}
+                onChange={(event) => setDraft(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault()
+                    void send()
+                  }
+                }}
+              />
+              <Button
+                type="submit"
+                loading={sending || status.loading}
+                disabled={(!draft.trim() && !chatAttachments.length) || !assistantReady || uploadingFiles}
+                className="chat-send"
+              >
+                <IconSend size={16} />
+                Send
+              </Button>
+            </div>
+            <div className="small muted chat-hint">
+              Enter to send · Shift + Enter for a new line
+              {thread?.messageCount ? ` · ${thread.messageCount} messages in this conversation` : ''}
+            </div>
+          </form>
+        </section>
       </PageBody>
 
-      {listOpen ? (
+      {confirmClear ? (
         <Modal
-          title="Conversations"
-          onClose={() => setListOpen(false)}
+          title="Clear this conversation?"
+          onClose={() => (clearing ? undefined : setConfirmClear(false))}
           footer={
             <>
-              <Button variant="ghost" onClick={() => setListOpen(false)}>
+              <Button variant="ghost" disabled={clearing} onClick={() => setConfirmClear(false)}>
                 <IconX size={15} />
-                Close
+                Cancel
               </Button>
-              <Button onClick={startNew}>
-                <IconPlus size={15} />
-                New chat
+              <Button variant="danger" loading={clearing} onClick={() => void clearThread()}>
+                <IconTrash size={15} />
+                Clear chat
               </Button>
             </>
           }
         >
-          {threadList.length === 0 ? (
-            <Empty title="No saved conversations">Start a new chat to see it listed here.</Empty>
-          ) : (
-            <div className="chat-modal-list">
-              <ThreadList
-                threads={threadList}
-                activeId={activeId}
-                onSelect={(id) => {
-                  setActiveId(id)
-                  setOverlay([])
-                  setError(null)
-                  setListOpen(false)
-                }}
-                onDelete={removeThread}
-              />
-            </div>
-          )}
+          <p className="muted" style={{ margin: 0 }}>
+            This deletes every message in your conversation with the assistant. Project files and reports it
+            created are not affected.
+          </p>
         </Modal>
       ) : null}
     </>

@@ -29,16 +29,41 @@ export const chatRouter = Router()
 
 const MAX_MESSAGE_CHARS = 8000
 const MAX_CHAT_ATTACHMENTS = 5
-const DEFAULT_TITLE = 'New conversation'
+/** The single conversation every user has with the assistant. */
+const ASSISTANT_TITLE = 'Assistant'
 /** A turn can run many tool steps, so this is generous; the agent caps itself too. */
 const AGENT_TIMEOUT_MS = 240_000
 
 const now = () => new Date().toISOString()
 
-/** Only the user who owns a thread may read or write it. */
-async function loadThread(userId: string, threadId: string): Promise<ChatThreadRecord> {
-  const thread = await getItem<ChatThreadRecord>(T.chatThreads, { threadId }, true)
-  if (!thread || thread.userId !== userId) throw new HttpError(404, 'Conversation not found')
+/** The user's one conversation, or undefined before their first message. */
+async function findThread(userId: string): Promise<ChatThreadRecord | undefined> {
+  const rows = await queryAll<ChatThreadRecord>(T.chatThreads, {
+    IndexName: 'user-index',
+    KeyConditionExpression: 'userId = :u',
+    ExpressionAttributeValues: { ':u': userId }
+  })
+  return rows.sort((a, b) => a.createdAt.localeCompare(b.createdAt))[0]
+}
+
+/**
+ * The portal keeps one continuous conversation per user, in the WhatsApp or
+ * Telegram sense: a single thread that simply grows. It is created lazily on the
+ * first turn so an account that never chats has no empty thread hanging around.
+ */
+async function ensureThread(userId: string): Promise<ChatThreadRecord> {
+  const existing = await findThread(userId)
+  if (existing) return existing
+  const ts = now()
+  const thread: ChatThreadRecord = {
+    threadId: randomUUID(),
+    userId,
+    title: ASSISTANT_TITLE,
+    messageCount: 0,
+    createdAt: ts,
+    updatedAt: ts
+  }
+  await putItem(T.chatThreads, thread)
   return thread
 }
 
@@ -216,54 +241,27 @@ chatRouter.get('/status', asyncHandler(async (_req, res) => {
 // and action routes require a valid portal session.
 chatRouter.use(requireAuth)
 
-chatRouter.get('/threads', asyncHandler(async (req, res) => {
-  const rows = await queryAll<ChatThreadRecord>(T.chatThreads, {
-    IndexName: 'user-index',
-    KeyConditionExpression: 'userId = :u',
-    ExpressionAttributeValues: { ':u': req.user!.userId }
-  })
-  res.json({ threads: rows.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)) })
-}))
-
-chatRouter.post('/threads', asyncHandler(async (req, res) => {
-  if (!canWrite(req.user!)) throw new HttpError(403, 'You do not have permission to use the assistant')
-  const siteId = optStr(req.body?.siteId, 60)
-  if (siteId) await requireSiteAccess(req.user!, siteId)
-  const title = optStr(req.body?.title, 120) ?? DEFAULT_TITLE
-  const ts = now()
-  const thread: ChatThreadRecord = {
-    threadId: randomUUID(),
-    userId: req.user!.userId,
-    title,
-    siteId,
-    messageCount: 0,
-    createdAt: ts,
-    updatedAt: ts
+/** The user's full conversation, oldest turn first. */
+chatRouter.get('/thread', asyncHandler(async (req, res) => {
+  const thread = await findThread(req.user!.userId)
+  if (!thread) {
+    res.json({ thread: null, messages: [] })
+    return
   }
-  await putItem(T.chatThreads, thread)
-  res.status(201).json({ thread })
+  res.json({ thread, messages: await listMessages(thread.threadId) })
 }))
 
-chatRouter.get('/threads/:threadId', asyncHandler(async (req, res) => {
-  const thread = await loadThread(req.user!.userId, req.params.threadId)
-  const messages = await listMessages(thread.threadId)
-  res.json({ thread, messages })
-}))
-
-chatRouter.delete('/threads/:threadId', asyncHandler(async (req, res) => {
-  const thread = await loadThread(req.user!.userId, req.params.threadId)
-  const messages = await listMessages(thread.threadId)
-  await Promise.all(
-    messages.map((m) => deleteItem(T.chatMessages, { threadId: m.threadId, messageId: m.messageId }))
-  )
-  await deleteItem(T.chatThreads, { threadId: thread.threadId })
-  res.json({ ok: true })
-}))
-
-chatRouter.post('/threads/:threadId/messages', asyncHandler(async (req, res) => {
+/** Append one turn to the conversation and return the agent's reply. */
+chatRouter.post('/messages', asyncHandler(async (req, res) => {
   if (!canWrite(req.user!)) throw new HttpError(403, 'You do not have permission to use the assistant')
-  const thread = await loadThread(req.user!.userId, req.params.threadId)
+  const thread = await ensureThread(req.user!.userId)
   const body = (req.body ?? {}) as Record<string, unknown>
+
+  // A single thread can span projects, so the project is chosen per turn rather
+  // than frozen on the conversation.
+  const siteId = optStr(body.siteId, 60)
+  if (siteId) await requireSiteAccess(req.user!, siteId)
+
   const attachmentIds = body.attachments === undefined
     ? []
     : (() => {
@@ -279,13 +277,12 @@ chatRouter.post('/threads/:threadId/messages', asyncHandler(async (req, res) => 
 
   let attachedAssets: AssetRecord[] = []
   if (attachmentIds.length) {
-    if (!thread.siteId) throw new HttpError(400, 'Choose a project before attaching files')
-    await requireSiteAccess(req.user!, thread.siteId)
+    if (!siteId) throw new HttpError(400, 'Choose a project before attaching files')
     attachedAssets = await Promise.all(
       attachmentIds.map(async (assetId) => {
-        const asset = await getItem<AssetRecord>(T.assets, { siteId: thread.siteId!, assetId })
+        const asset = await getItem<AssetRecord>(T.assets, { siteId, assetId })
         if (!asset) throw new HttpError(404, 'An attached project file could not be found')
-        if (!asset.s3Key.startsWith(`sites/${thread.siteId}/`)) {
+        if (!asset.s3Key.startsWith(`sites/${siteId}/`)) {
           throw new HttpError(400, 'An attached file does not belong to this project')
         }
         return asset
@@ -302,8 +299,8 @@ chatRouter.post('/threads/:threadId/messages', asyncHandler(async (req, res) => 
     role: 'user',
     text: message,
     userId: req.user!.userId,
-    attachments: attachedAssets.map(({ siteId, assetId, name, type, contentType, size, tags }) => ({
-      siteId,
+    attachments: attachedAssets.map(({ siteId: sid, assetId, name, type, contentType, size, tags }) => ({
+      siteId: sid,
       assetId,
       name,
       type,
@@ -315,18 +312,10 @@ chatRouter.post('/threads/:threadId/messages', asyncHandler(async (req, res) => 
   }
   await putItem(T.chatMessages, userMessage)
 
-  // Name the thread after what it first asked about.
-  const autoTitle =
-    thread.messageCount === 0 && (thread.title === DEFAULT_TITLE || !thread.title)
-      ? message.length > 80
-        ? `${message.slice(0, 77)}…`
-        : message
-      : undefined
-
   let siteName: string | undefined
-  if (thread.siteId) {
+  if (siteId) {
     try {
-      siteName = (await getItem<{ name?: string }>(T.sites, { siteId: thread.siteId }))?.name
+      siteName = (await getItem<{ name?: string }>(T.sites, { siteId }))?.name
     } catch {
       siteName = undefined
     }
@@ -335,7 +324,7 @@ chatRouter.post('/threads/:threadId/messages', asyncHandler(async (req, res) => 
   const reply = await callAgent({
     message,
     sessionId: thread.threadId,
-    siteId: thread.siteId,
+    siteId,
     siteName,
     attachments: attachedAssets.map(({ name, s3Key, contentType, size, tags }) => ({
       name,
@@ -361,23 +350,32 @@ chatRouter.post('/threads/:threadId/messages', asyncHandler(async (req, res) => 
   }
   await putItem(T.chatMessages, assistantMessage)
 
-  const updatedFields: Record<string, unknown> = {
-    updatedAt: assistantMessage.createdAt,
-    messageCount: thread.messageCount + 2
+  const updated: ChatThreadRecord = {
+    ...thread,
+    messageCount: thread.messageCount + 2,
+    updatedAt: assistantMessage.createdAt
   }
-  if (autoTitle) updatedFields.title = autoTitle
-  await updateFields(T.chatThreads, { threadId: thread.threadId }, updatedFields)
-
-  res.json({
-    user: userMessage,
-    assistant: assistantMessage,
-    thread: {
-      ...thread,
-      title: autoTitle ?? thread.title,
-      messageCount: thread.messageCount + 2,
-      updatedAt: assistantMessage.createdAt
-    }
+  await updateFields(T.chatThreads, { threadId: thread.threadId }, {
+    updatedAt: updated.updatedAt,
+    messageCount: updated.messageCount
   })
+
+  res.json({ user: userMessage, assistant: assistantMessage, thread: updated })
+}))
+
+/** Clear the conversation. The thread stays so history simply restarts empty. */
+chatRouter.delete('/thread', asyncHandler(async (req, res) => {
+  const thread = await findThread(req.user!.userId)
+  if (!thread) {
+    res.json({ ok: true })
+    return
+  }
+  const messages = await listMessages(thread.threadId)
+  await Promise.all(
+    messages.map((m) => deleteItem(T.chatMessages, { threadId: m.threadId, messageId: m.messageId }))
+  )
+  await updateFields(T.chatThreads, { threadId: thread.threadId }, { messageCount: 0, updatedAt: now() })
+  res.json({ ok: true })
 }))
 
 async function resolveAction(
@@ -386,7 +384,8 @@ async function resolveAction(
   decision: 'approve' | 'reject'
 ): Promise<void> {
   if (!canWrite(req.user!)) throw new HttpError(403, 'You do not have permission to approve changes')
-  const thread = await loadThread(req.user!.userId, req.params.threadId)
+  const thread = await findThread(req.user!.userId)
+  if (!thread) throw new HttpError(404, 'Conversation not found')
   const actionId = str(req.params.actionId, 'actionId', 60)
   if (!env.AGENT_API_TOKEN) throw new HttpError(503, 'The assistant is not configured on this server')
 
@@ -423,12 +422,12 @@ async function resolveAction(
 }
 
 chatRouter.post(
-  '/threads/:threadId/actions/:actionId/approve',
+  '/actions/:actionId/approve',
   asyncHandler((req, res) => resolveAction(req, res, 'approve'))
 )
 
 chatRouter.post(
-  '/threads/:threadId/actions/:actionId/reject',
+  '/actions/:actionId/reject',
   asyncHandler((req, res) => resolveAction(req, res, 'reject'))
 )
 

@@ -1,6 +1,10 @@
 /* Shared domain types for the CPPI portal. */
 
-export type Role = 'admin' | 'contractor' | 'viewer'
+/**
+ * A role id. Built-in ids are `admin`, `manager` and `viewer`; administrators may
+ * also create custom roles. Role definitions live in {@link RoleRecord}.
+ */
+export type Role = string
 export type UserStatus = 'active' | 'disabled'
 export type SiteStatus = 'planning' | 'in_progress' | 'on_hold' | 'completed'
 export type StageStatus = 'not_started' | 'in_progress' | 'completed' | 'blocked'
@@ -11,6 +15,59 @@ export type InviteStatus = 'pending' | 'accepted' | 'revoked'
 /** Kind of cost a budget line belongs to. Land is bought, the other two are built. */
 export type BudgetGroup = 'land' | 'soft' | 'hard'
 
+/** The permissions an administrator can grant, on top of the role's defaults. */
+export interface Permissions {
+  /** Add and manage project files. */
+  uploadFiles: boolean
+  /** See budget totals and cost lines. */
+  viewBudget: boolean
+  /** Edit project details, stages, milestones and folders. */
+  editDetails: boolean
+}
+
+export type PermissionKey = keyof Permissions
+/** Per-user overrides; a key that is absent keeps the role's default. */
+export type PermissionOverrides = Partial<Permissions>
+
+export const PERMISSION_KEYS: PermissionKey[] = ['uploadFiles', 'viewBudget', 'editDetails']
+export const PERMISSION_LABEL: Record<PermissionKey, string> = {
+  uploadFiles: 'Upload files',
+  viewBudget: 'See budget',
+  editDetails: 'Edit details'
+}
+export const PERMISSION_HINT: Record<PermissionKey, string> = {
+  uploadFiles: 'Add, tag and delete project files.',
+  viewBudget: 'Open the budget tab and see cost figures.',
+  editDetails: 'Edit project details, stages, milestones and folders.'
+}
+
+/** Per-user ceilings that apply whatever the role is. */
+export interface UploadLimits {
+  /** Files a user may upload per calendar day. */
+  dailyUploads: number
+  /** Largest single file a user may upload, in megabytes. */
+  maxFileMb: number
+}
+
+/** The guardrails every account starts with before any per-user override. */
+export const DEFAULT_UPLOAD_LIMITS: UploadLimits = { dailyUploads: 50, maxFileMb: 500 }
+
+/**
+ * A named bundle of permissions. Admins pick one for each user, and may add
+ * their own on top of the three built-ins (`admin`, `manager`, `viewer`).
+ */
+export interface RoleRecord {
+  roleId: string
+  name: string
+  /** Built-in roles cannot be renamed or deleted. */
+  builtin: boolean
+  /** The administrator role bypasses every permission check. */
+  admin?: boolean
+  permissions: Permissions
+  createdAt: string
+  updatedAt: string
+}
+
 export interface SessionUser {
   userId: string
   email: string
@@ -18,10 +75,24 @@ export interface SessionUser {
   picture?: string
   role: Role
   siteIds: string[]
+  /** Effective permissions after the role and any per-user overrides. */
+  permissions: Permissions
+  /** Effective upload ceilings for this user. */
+  limits: UploadLimits
 }
 
-export interface UserRecord extends SessionUser {
+export interface UserRecord {
+  userId: string
+  email: string
+  name: string
+  picture?: string
+  role: Role
+  siteIds: string[]
   status: UserStatus
+  /** Per-user permission overrides, applied on top of the role's defaults. */
+  permissions?: PermissionOverrides
+  /** Per-user upload ceilings; unset fields fall back to the defaults. */
+  limits?: Partial<UploadLimits>
   createdAt: string
   lastLoginAt?: string
 }
@@ -31,10 +102,24 @@ export interface SiteRecord {
   name: string
   code?: string
   description?: string
+  /**
+   * One-line label shown in lists and on the map. Derived from the structured
+   * address below so a project always reads the same way everywhere.
+   */
   location?: string
-  /** Coordinates resolved from `location` by the geocoder; absent until located. */
+  /** Full street address, e.g. "27 Mandrake St". The GIS map prefers this. */
+  address?: string
+  /** City / town. Used as the fallback when no street address is entered. */
+  city?: string
+  /** Province, state or region. */
+  region?: string
+  postalCode?: string
+  country?: string
+  /** Coordinates. Entered by hand, or resolved by the geocoder; absent until set. */
   lat?: number
   lng?: number
+  /** How the pin was placed: typed by a person or matched by the geocoder. */
+  geoSource?: 'manual' | 'geocode'
   /** What the geocoder actually matched, so a wrong pin can be spotted. */
   geocodeLabel?: string
   geocodedAt?: string

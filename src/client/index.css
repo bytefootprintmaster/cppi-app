@@ -914,7 +914,30 @@ tr.drop-target > td {
 }
 .file-thumb img { width: 100%; height: 100%; object-fit: cover; }
 .file-meta { padding: 10px 12px; }
-.file-name { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Show the whole document name, wrapping onto extra lines rather than clipping it. */
+.file-name {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Photos and documents are grouped apart so a drawing never hides behind a photo. */
+.file-kind-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.file-section + .file-section { margin-top: 22px; }
+.file-section-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.file-section-title > svg { color: var(--green-600); }
 
 /* ------------------------- project file folders ------------------------- */
 
@@ -1571,7 +1594,6 @@ tr.drop-target > td {
   background: rgba(255, 255, 255, 0.92);
   border-color: var(--line);
 }
-.file-name { overflow-wrap: anywhere; }
 
 /* Users & roles / Invitations: table on desktop, tappable cards on phones. */
 .users-cards,
@@ -1613,100 +1635,50 @@ tr.drop-target > td {
 .user-card-value { margin-top: 4px; font-weight: 600; }
 .user-card-value .select { width: 100%; }
 
-/* =========================================================================
-   Assistant chat
-   A saved-thread sidebar plus a conversation column: user bubbles on the
-   right, the assistant on the left, approvals and report downloads inline.
-   On phones the sidebar folds into the "Conversations" modal.
-   ========================================================================= */
+/* --------------------------- roles & permissions ------------------------- */
 
-/* Header button that opens the thread list — phones only. */
-.chat-convos-btn { display: none; }
-.chat-count {
-  display: inline-grid;
-  place-items: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 999px;
-  background: var(--green-100);
-  color: var(--green-700);
+.mt-16 { margin-top: 16px; }
+
+.section-title {
+  margin-top: 18px;
+  margin-bottom: 8px;
   font-size: 11px;
   font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
-.chat-shell {
-  display: grid;
-  grid-template-columns: 296px minmax(0, 1fr);
-  gap: 18px;
-  align-items: start;
-}
-
-/* ------------------------------- sidebar -------------------------------- */
-
-.chat-side {
+.role-row {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 12px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
-  box-shadow: var(--shadow-sm);
-  max-height: min(72vh, 720px);
-  overflow-y: auto;
 }
-.chat-side-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 2px; }
-.chat-thread-list { display: flex; flex-direction: column; gap: 3px; }
-.chat-thread {
+
+.perm-row {
   display: flex;
-  align-items: stretch;
-  gap: 2px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
 }
-.chat-thread:hover { background: var(--green-50); }
-.chat-thread.on { background: var(--green-50); border-color: var(--green-200); }
-.chat-thread-open {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 9px 10px;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  font: inherit;
-  text-align: left;
-  color: inherit;
-  cursor: pointer;
-}
-.chat-thread-title {
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--ink);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.chat-thread-sub { font-size: 11.5px; color: var(--muted); }
-.chat-thread-del {
-  flex-shrink: 0;
-  width: 32px;
-  display: grid;
-  place-items: center;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--muted);
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-}
-.chat-thread:hover .chat-thread-del,
-.chat-thread:focus-within .chat-thread-del { opacity: 1; }
-.chat-thread-del:hover { color: var(--red); background: var(--red-bg); }
+.perm-select { flex-shrink: 0; min-width: 184px; }
+
+/* =========================================================================
+   Assistant chat
+   One continuous conversation per user, in the WhatsApp or Telegram sense: a
+   single scrolling transcript with in-line search, approvals and report
+   downloads shown inline. The composer carries the per-turn project context
+   and file attachments.
+   ========================================================================= */
 
 /* ------------------------------ conversation ---------------------------- */
 
@@ -1719,16 +1691,57 @@ tr.drop-target > td {
   box-shadow: var(--shadow-sm);
   overflow: hidden;
 }
+
+/* Search bar above the transcript. */
+.chat-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.chat-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  color: var(--muted);
+}
+.chat-search > svg { flex-shrink: 0; }
+.chat-search .input { min-width: 0; height: 36px; }
+.chat-search button {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.chat-search button:hover { color: var(--ink); background: var(--canvas); }
+.chat-search-count { flex-shrink: 0; }
+
 .chat-scroll {
   flex: 1;
   min-height: 320px;
-  max-height: min(66vh, 660px);
+  max-height: min(70vh, 760px);
   overflow-y: auto;
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 14px;
   background: var(--canvas);
+}
+.chat-mark {
+  padding: 0 2px;
+  border-radius: 3px;
+  background: #ffe680;
+  color: var(--ink);
 }
 
 .chat-turn { display: flex; flex-direction: column; gap: 6px; max-width: 86%; }
@@ -1931,13 +1944,8 @@ tr.drop-target > td {
   40% { transform: translateY(-4px); opacity: 1; }
 }
 
-.chat-modal-list { max-height: 60vh; overflow-y: auto; margin: -4px; padding: 4px; }
-
-/* Phones: the thread sidebar moves into the header's modal. */
+/* Phones: the transcript fills the page and the toolbar stays compact. */
 @media (max-width: 860px) {
-  .chat-convos-btn { display: inline-flex; }
-  .chat-shell { grid-template-columns: minmax(0, 1fr); }
-  .chat-side { display: none; }
   .chat-scroll { max-height: none; min-height: 260px; }
   .chat-turn { max-width: 94%; }
   .chat-compose { padding: 12px 14px 14px; }
@@ -1949,6 +1957,7 @@ tr.drop-target > td {
   .chat-context { flex-direction: column; align-items: stretch; gap: 6px; }
   .chat-upload-tools { align-items: stretch; }
   .chat-tag-field { order: 3; flex-basis: 100%; }
+  .chat-toolbar { padding: 10px 12px; }
 }
 
 /* ============================================================

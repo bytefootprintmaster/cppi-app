@@ -6,13 +6,33 @@ import { formatDate, relativeTime } from '../lib/format'
 import { PageBody, PageHeader } from '../components/Layout'
 import { Avatar, Badge, Button, Card, CardHeader, CardMenu, Empty, ErrorNote, Field, Loading, Modal, PasswordInput, RoleBadge, type MenuItem } from '../components/ui'
 import { IconCheck, IconEdit, IconPlus, IconSearch, IconTrash, IconUsers, IconX } from '../components/icons'
-import type { Role, SiteRecord, UserRecord } from '../../server/types'
+import type {
+  PermissionKey,
+  PermissionOverrides,
+  Permissions,
+  Role,
+  RoleRecord,
+  SiteRecord,
+  UploadLimits,
+  UserRecord
+} from '../../server/types'
+import { DEFAULT_UPLOAD_LIMITS, PERMISSION_HINT, PERMISSION_KEYS, PERMISSION_LABEL } from '../../server/types'
 
-const ROLES: Role[] = ['admin', 'contractor', 'viewer']
+/** A permission can be inherited from the role, or forced on/off for one user. */
+type OverrideChoice = 'inherit' | 'allow' | 'deny'
+
+function toChoice(value: boolean | undefined): OverrideChoice {
+  return value === undefined ? 'inherit' : value ? 'allow' : 'deny'
+}
+
+function fromChoice(value: OverrideChoice): boolean | undefined {
+  return value === 'inherit' ? undefined : value === 'allow'
+}
 
 export function AdminUsersPage() {
   const { user: me } = useAuth()
   const { data, error, loading, reload } = useApi<{ users: UserRecord[] }>('/admin/users')
+  const { data: roleData, reload: reloadRoles } = useApi<{ roles: RoleRecord[] }>('/admin/roles')
   const { data: siteData } = useApi<{ sites: SiteRecord[] }>('/sites')
   const [busyId, setBusyId] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
@@ -20,6 +40,8 @@ export function AdminUsersPage() {
   const [editingAccess, setEditingAccess] = useState<UserRecord | null>(null)
   const [editingUser, setEditingUser] = useState<UserRecord | null>(null)
   const [creatingUser, setCreatingUser] = useState(false)
+  const [editingRole, setEditingRole] = useState<RoleRecord | null>(null)
+  const [creatingRole, setCreatingRole] = useState(false)
 
   useEffect(() => {
     document.title = 'Users · CPPI'
@@ -53,9 +75,23 @@ export function AdminUsersPage() {
     }
   }
 
+  async function deleteRole(target: RoleRecord) {
+    if (!window.confirm(`Delete the "${target.name}" role? Users must be reassigned first.`)) return
+    setActionError(null)
+    try {
+      await api(`/admin/roles/${target.roleId}`, { method: 'DELETE' })
+      await reloadRoles()
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Could not delete the role')
+    }
+  }
+
   const users = data?.users ?? []
+  const roles = roleData?.roles ?? []
   const sites = siteData?.sites ?? []
   const siteName = (id: string) => sites.find((s) => s.siteId === id)?.name ?? id
+  const roleOf = (id: string) => roles.find((r) => r.roleId === id)
+  const roleLabel = (id: string) => roleOf(id)?.name ?? id
   const filtered = users.filter((u) => {
     const q = query.trim().toLowerCase()
     if (!q) return true
@@ -76,11 +112,18 @@ export function AdminUsersPage() {
     return items
   }
 
+  function roleMenuItems(target: RoleRecord): MenuItem[] {
+    return [
+      { label: 'Edit role', icon: <IconEdit size={14} />, onClick: () => setEditingRole(target) },
+      { label: 'Delete', icon: <IconTrash size={14} />, danger: true, onClick: () => void deleteRole(target) }
+    ]
+  }
+
   return (
     <>
       <PageHeader
         title="Users & roles"
-        subtitle="Everyone who can sign in to CPPI, with their role and project access."
+        subtitle="Everyone who can sign in to CPPI, with their role, permissions and project access."
         actions={
           <div className="row wrap" style={{ gap: 8 }}>
             <Button variant="primary" size="sm" onClick={() => setCreatingUser(true)}>
@@ -138,31 +181,13 @@ export function AdminUsersPage() {
                           </div>
                         </td>
                         <td>
-                          {u.role === 'admin' ? (
-                            <div title="Admin roles are locked">
-                              <select className="select" style={{ width: 140 }} value={u.role} disabled>
-                                {ROLES.map((r) => (
-                                  <option key={r} value={r}>
-                                    {r}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                          ) : (
-                            <select
-                              className="select"
-                              style={{ width: 140 }}
-                              value={u.role}
-                              disabled={busyId === u.userId}
-                              onChange={(e) => void patch(u, { role: e.target.value })}
-                            >
-                              {ROLES.map((r) => (
-                                <option key={r} value={r}>
-                                  {r}
-                                </option>
-                              ))}
-                            </select>
-                          )}
+                          <RoleSelect
+                            value={u.role}
+                            roles={roles}
+                            disabled={busyId === u.userId || u.role === 'admin'}
+                            locked={u.role === 'admin'}
+                            onChange={(next) => void patch(u, { role: next })}
+                          />
                           {u.role === 'admin' ? (
                             <div className="small muted" style={{ marginTop: 4 }}>
                               Locked
@@ -216,22 +241,16 @@ export function AdminUsersPage() {
                         <div className="user-card-value">
                           {u.role === 'admin' ? (
                             <span className="row" style={{ gap: 6 }}>
-                              <RoleBadge role={u.role} />
+                              <RoleBadge role={u.role} label={roleLabel(u.role)} />
                               <span className="small muted">Locked</span>
                             </span>
                           ) : (
-                            <select
-                              className="select"
+                            <RoleSelect
                               value={u.role}
+                              roles={roles}
                               disabled={busyId === u.userId}
-                              onChange={(e) => void patch(u, { role: e.target.value })}
-                            >
-                              {ROLES.map((r) => (
-                                <option key={r} value={r}>
-                                  {r}
-                                </option>
-                              ))}
-                            </select>
+                              onChange={(next) => void patch(u, { role: next })}
+                            />
                           )}
                         </div>
                       </div>
@@ -265,10 +284,48 @@ export function AdminUsersPage() {
           )}
         </Card>
 
+        <Card className="mt-16">
+          <CardHeader
+            title="Roles"
+            sub="Named bundles of permissions. Built-in roles are fixed; add your own for anything else."
+            action={
+              <Button variant="ghost" size="sm" onClick={() => setCreatingRole(true)}>
+                <IconPlus size={14} />
+                New role
+              </Button>
+            }
+          />
+          <div className="stack" style={{ gap: 10 }}>
+            {roles.map((role) => (
+              <div className="role-row" key={role.roleId}>
+                <div style={{ minWidth: 0 }}>
+                  <div className="row" style={{ gap: 8 }}>
+                    <RoleBadge role={role.roleId} label={role.name} />
+                    {role.builtin ? <span className="small muted">Built-in</span> : null}
+                  </div>
+                  <div className="row wrap small muted" style={{ gap: 10, marginTop: 6 }}>
+                    {PERMISSION_KEYS.map((key) => (
+                      <span key={key}>
+                        {role.permissions[key] ? '✓' : '✕'} {PERMISSION_LABEL[key]}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                {role.builtin ? (
+                  <span className="small muted">Fixed</span>
+                ) : (
+                  <CardMenu items={roleMenuItems(role)} />
+                )}
+              </div>
+            ))}
+          </div>
+        </Card>
+
         <p className="small muted" style={{ marginTop: 16 }}>
           Created <strong>{users.length}</strong> account{users.length === 1 ? '' : 's'} ·{' '}
           {users.filter((u) => u.role === 'admin').length} admin(s) ·{' '}
-          {users.filter((u) => u.role === 'contractor').length} contractor(s)
+          {users.filter((u) => u.role === 'manager').length} manager(s) ·{' '}
+          {users.filter((u) => u.role !== 'admin' && u.role !== 'manager').length} other
         </p>
 
         <p className="small muted">
@@ -291,6 +348,7 @@ export function AdminUsersPage() {
       {creatingUser ? (
         <UserModal
           sites={sites}
+          roles={roles}
           onClose={() => setCreatingUser(false)}
           onSaved={() => {
             setCreatingUser(false)
@@ -303,9 +361,32 @@ export function AdminUsersPage() {
         <UserModal
           user={editingUser}
           sites={sites}
+          roles={roles}
           onClose={() => setEditingUser(null)}
           onSaved={() => {
             setEditingUser(null)
+            void reload()
+          }}
+        />
+      ) : null}
+
+      {creatingRole ? (
+        <RoleModal
+          onClose={() => setCreatingRole(false)}
+          onSaved={() => {
+            setCreatingRole(false)
+            void reloadRoles()
+          }}
+        />
+      ) : null}
+
+      {editingRole ? (
+        <RoleModal
+          role={editingRole}
+          onClose={() => setEditingRole(null)}
+          onSaved={() => {
+            setEditingRole(null)
+            void reloadRoles()
             void reload()
           }}
         />
@@ -314,14 +395,77 @@ export function AdminUsersPage() {
   )
 }
 
+/** The shared role picker, used in the table and in the mobile cards. */
+function RoleSelect({
+  value,
+  roles,
+  disabled,
+  locked,
+  onChange
+}: {
+  value: Role
+  roles: RoleRecord[]
+  disabled?: boolean
+  locked?: boolean
+  onChange: (role: string) => void
+}) {
+  return (
+    <select
+      className="select"
+      style={{ width: 160 }}
+      value={value}
+      disabled={disabled || locked}
+      title={locked ? 'Admin roles are locked' : undefined}
+      onChange={(e) => onChange(e.target.value)}
+    >
+      {roles.map((r) => (
+        <option key={r.roleId} value={r.roleId}>
+          {r.name}
+        </option>
+      ))}
+    </select>
+  )
+}
+
+/** One row of a role's permission matrix: inherit, allow or deny. */
+function PermissionRow({
+  label,
+  hint,
+  value,
+  roleDefault,
+  onChange
+}: {
+  label: string
+  hint: string
+  value: OverrideChoice
+  roleDefault: boolean
+  onChange: (value: OverrideChoice) => void
+}) {
+  return (
+    <div className="perm-row">
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontWeight: 600, fontSize: 13.5 }}>{label}</div>
+        <div className="small muted">{hint}</div>
+      </div>
+      <select className="select perm-select" value={value} onChange={(e) => onChange(e.target.value as OverrideChoice)}>
+        <option value="inherit">Role default ({roleDefault ? 'allow' : 'deny'})</option>
+        <option value="allow">Allow</option>
+        <option value="deny">Deny</option>
+      </select>
+    </div>
+  )
+}
+
 function UserModal({
   user,
   sites,
+  roles,
   onClose,
   onSaved
 }: {
   user?: UserRecord
   sites: SiteRecord[]
+  roles: RoleRecord[]
   onClose: () => void
   onSaved: () => void
 }) {
@@ -331,8 +475,21 @@ function UserModal({
   const [role, setRole] = useState<Role>(user?.role ?? 'viewer')
   const [password, setPassword] = useState('')
   const [siteIds, setSiteIds] = useState<string[]>(user?.siteIds ?? [])
+  const [choices, setChoices] = useState<Record<PermissionKey, OverrideChoice>>({
+    uploadFiles: toChoice(user?.permissions?.uploadFiles),
+    viewBudget: toChoice(user?.permissions?.viewBudget),
+    editDetails: toChoice(user?.permissions?.editDetails)
+  })
+  const [dailyUploads, setDailyUploads] = useState(user?.limits?.dailyUploads ? String(user.limits.dailyUploads) : '')
+  const [maxFileMb, setMaxFileMb] = useState(user?.limits?.maxFileMb ? String(user.limits.maxFileMb) : '')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const rolePermissions: Permissions = roles.find((r) => r.roleId === role)?.permissions ?? {
+    uploadFiles: false,
+    viewBudget: false,
+    editDetails: false
+  }
 
   function toggle(id: string) {
     setSiteIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
@@ -346,11 +503,22 @@ function UserModal({
         throw new Error('Password is required for a new user')
       }
 
+      const permissions: PermissionOverrides = {}
+      for (const key of PERMISSION_KEYS) {
+        const value = fromChoice(choices[key])
+        if (value !== undefined) permissions[key] = value
+      }
+      const limits: Partial<UploadLimits> = {}
+      if (dailyUploads.trim()) limits.dailyUploads = Number(dailyUploads)
+      if (maxFileMb.trim()) limits.maxFileMb = Number(maxFileMb)
+
       const body: Record<string, unknown> = {
         name,
         email,
         role,
-        siteIds: role === 'admin' ? [] : siteIds
+        siteIds: role === 'admin' ? [] : siteIds,
+        permissions,
+        limits
       }
       if (password.trim()) body.password = password
 
@@ -366,6 +534,7 @@ function UserModal({
 
   return (
     <Modal
+      wide
       title={isEditing ? `Edit user · ${user!.name}` : 'Add user'}
       onClose={onClose}
       footer={
@@ -381,38 +550,39 @@ function UserModal({
     >
       {error ? <div className="alert alert-error" style={{ marginBottom: 14 }}>{error}</div> : null}
 
-      <Field label="Full name">
-        <input
-          className="input"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="e.g. Site Manager"
-        />
-      </Field>
-
-      <Field label="Email">
-        <input
-          className="input"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="user@company.com"
-        />
-      </Field>
+      <div className="grid grid-2">
+        <Field label="Full name">
+          <input
+            className="input"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. Site Manager"
+          />
+        </Field>
+        <Field label="Email">
+          <input
+            className="input"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="user@company.com"
+          />
+        </Field>
+      </div>
 
       <Field
         label="Role"
-        hint={user?.role === 'admin' ? 'Admin roles are locked and cannot be changed.' : undefined}
+        hint={user?.role === 'admin' ? 'Admin roles are locked and cannot be changed.' : 'Pick a starting bundle, then fine-tune below.'}
       >
         <select
           className="select"
           value={role}
           disabled={user?.role === 'admin'}
-          onChange={(e) => setRole(e.target.value as Role)}
+          onChange={(e) => setRole(e.target.value)}
         >
-          {ROLES.map((item) => (
-            <option key={item} value={item}>
-              {item}
+          {roles.map((item) => (
+            <option key={item.roleId} value={item.roleId}>
+              {item.name}
             </option>
           ))}
         </select>
@@ -428,6 +598,51 @@ function UserModal({
           placeholder={isEditing ? 'New password (optional)' : 'Create a password'}
         />
       </Field>
+
+      <div className="section-title">Permissions</div>
+      <p className="small muted" style={{ marginTop: -4, marginBottom: 10 }}>
+        Override what the {roleLabelSafe(role, roles)} role grants for this person only.
+      </p>
+      <div className="stack" style={{ gap: 8 }}>
+        {PERMISSION_KEYS.map((key) => (
+          <PermissionRow
+            key={key}
+            label={PERMISSION_LABEL[key]}
+            hint={PERMISSION_HINT[key]}
+            value={choices[key]}
+            roleDefault={rolePermissions[key] || role === 'admin'}
+            onChange={(value) => setChoices((prev) => ({ ...prev, [key]: value }))}
+          />
+        ))}
+      </div>
+
+      <div className="section-title">Upload limits</div>
+      <p className="small muted" style={{ marginTop: -4, marginBottom: 10 }}>
+        Leave blank to use the default guardrails ({DEFAULT_UPLOAD_LIMITS.dailyUploads} files/day,{' '}
+        {DEFAULT_UPLOAD_LIMITS.maxFileMb} MB per file).
+      </p>
+      <div className="grid grid-2">
+        <Field label="Files per day">
+          <input
+            className="input"
+            type="number"
+            min="1"
+            value={dailyUploads}
+            placeholder={String(DEFAULT_UPLOAD_LIMITS.dailyUploads)}
+            onChange={(e) => setDailyUploads(e.target.value)}
+          />
+        </Field>
+        <Field label="Max file size (MB)">
+          <input
+            className="input"
+            type="number"
+            min="1"
+            value={maxFileMb}
+            placeholder={String(DEFAULT_UPLOAD_LIMITS.maxFileMb)}
+            onChange={(e) => setMaxFileMb(e.target.value)}
+          />
+        </Field>
+      </div>
 
       <Field
         label="Project access"
@@ -449,6 +664,83 @@ function UserModal({
           </div>
         )}
       </Field>
+    </Modal>
+  )
+}
+
+function roleLabelSafe(roleId: string, roles: RoleRecord[]): string {
+  return roles.find((r) => r.roleId === roleId)?.name ?? roleId
+}
+
+function RoleModal({
+  role,
+  onClose,
+  onSaved
+}: {
+  role?: RoleRecord
+  onClose: () => void
+  onSaved: () => void
+}) {
+  const isEditing = Boolean(role)
+  const [name, setName] = useState(role?.name ?? '')
+  const [permissions, setPermissions] = useState<Permissions>(
+    role?.permissions ?? { uploadFiles: false, viewBudget: false, editDetails: false }
+  )
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function save() {
+    setBusy(true)
+    setError(null)
+    try {
+      const body = { name, permissions }
+      if (isEditing) await api(`/admin/roles/${role!.roleId}`, { method: 'PATCH', body })
+      else await api('/admin/roles', { method: 'POST', body })
+      onSaved()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : `Could not ${isEditing ? 'update' : 'create'} the role`)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Modal
+      title={isEditing ? `Edit role · ${role!.name}` : 'New role'}
+      onClose={onClose}
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose} disabled={busy}>
+            Cancel
+          </Button>
+          <Button loading={busy} onClick={save}>
+            {isEditing ? 'Save changes' : 'Create role'}
+          </Button>
+        </>
+      }
+    >
+      {error ? <div className="alert alert-error" style={{ marginBottom: 14 }}>{error}</div> : null}
+
+      <Field label="Role name">
+        <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Site Foreman" />
+      </Field>
+
+      <div className="section-title">Permissions</div>
+      <div className="stack" style={{ gap: 8 }}>
+        {PERMISSION_KEYS.map((key) => (
+          <label key={key} className="perm-row" style={{ cursor: 'pointer' }}>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontWeight: 600, fontSize: 13.5 }}>{PERMISSION_LABEL[key]}</div>
+              <div className="small muted">{PERMISSION_HINT[key]}</div>
+            </div>
+            <input
+              type="checkbox"
+              checked={permissions[key]}
+              onChange={(e) => setPermissions((prev) => ({ ...prev, [key]: e.target.checked }))}
+            />
+          </label>
+        ))}
+      </div>
     </Modal>
   )
 }
@@ -508,7 +800,7 @@ function AccessModal({
 
       {user.role === 'admin' ? (
         <div className="alert alert-info" style={{ marginBottom: 14 }}>
-          Admins can open every project. This list only matters for contractor and viewer roles.
+          Admins can open every project. This list only matters for manager, viewer and custom roles.
         </div>
       ) : null}
 

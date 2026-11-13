@@ -1,21 +1,29 @@
 import { T, getItem, queryAll, scanAll } from './db'
 import { HttpError } from './lib/http'
+import { ADMIN_ROLE, can } from './roles'
 import type {
   BudgetCategoryRecord,
   BudgetGroup,
   BudgetLineRecord,
   MilestoneRecord,
+  PermissionKey,
   SessionUser,
   SiteRecord,
   StageRecord
 } from './types'
 
 export function isAdmin(user: SessionUser): boolean {
-  return user.role === 'admin'
+  return user.role === ADMIN_ROLE
 }
 
+/** True when the user holds a permission (admins hold everything). */
+export function canDo(user: SessionUser, key: PermissionKey): boolean {
+  return can(user, key)
+}
+
+/** Uploads, remarks and the assistant all sit behind the "upload files" grant. */
 export function canWrite(user: SessionUser): boolean {
-  return user.role === 'admin' || user.role === 'contractor'
+  return can(user, 'uploadFiles')
 }
 
 export async function loadSite(siteId: string): Promise<SiteRecord> {

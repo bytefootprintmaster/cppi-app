@@ -5,11 +5,9 @@ import { formatDate, relativeTime } from '../lib/format'
 import { PageBody, PageHeader } from '../components/Layout'
 import { Badge, Button, Card, CardHeader, CardMenu, Empty, ErrorNote, Field, Loading, Modal, RoleBadge, type MenuItem } from '../components/ui'
 import { IconCopy, IconMail, IconPlus, IconTrash } from '../components/icons'
-import type { InviteRecord, Role, SiteRecord } from '../../server/types'
+import type { InviteRecord, Role, RoleRecord, SiteRecord } from '../../server/types'
 
 type InviteWithUrl = InviteRecord & { url: string }
-
-const ROLES: Role[] = ['admin', 'contractor', 'viewer']
 
 const INVITE_TONE: Record<string, 'green' | 'amber' | 'gray' | 'red'> = {
   pending: 'amber',
@@ -20,6 +18,7 @@ const INVITE_TONE: Record<string, 'green' | 'amber' | 'gray' | 'red'> = {
 export function AdminInvitesPage() {
   const { data, error, loading, reload } = useApi<{ invites: InviteWithUrl[] }>('/admin/invites')
   const { data: siteData } = useApi<{ sites: SiteRecord[] }>('/sites')
+  const { data: roleData } = useApi<{ roles: RoleRecord[] }>('/admin/roles')
   const [creating, setCreating] = useState(false)
   const [busyToken, setBusyToken] = useState<string | null>(null)
   const [copied, setCopied] = useState<string | null>(null)
@@ -55,6 +54,8 @@ export function AdminInvitesPage() {
 
   const invites = data?.invites ?? []
   const sites = siteData?.sites ?? []
+  const roles = roleData?.roles ?? []
+  const roleLabel = (id: string) => roles.find((r) => r.roleId === id)?.name ?? id
 
   function inviteMenuItems(invite: InviteWithUrl): MenuItem[] {
     const items: MenuItem[] = [
@@ -113,7 +114,7 @@ export function AdminInvitesPage() {
                     {invites.map((invite) => (
                       <tr key={invite.token}>
                         <td>
-                          <RoleBadge role={invite.role} />
+                          <RoleBadge role={invite.role} label={roleLabel(invite.role)} />
                         </td>
                         <td>
                           <div>{invite.email || <span className="muted small">Open link</span>}</div>
@@ -157,7 +158,7 @@ export function AdminInvitesPage() {
                       <div>
                         <div className="user-card-label">Role</div>
                         <div className="user-card-value">
-                          <RoleBadge role={invite.role} />
+                          <RoleBadge role={invite.role} label={roleLabel(invite.role)} />
                         </div>
                       </div>
                       <div>
@@ -196,6 +197,7 @@ export function AdminInvitesPage() {
       {creating ? (
         <CreateInviteModal
           sites={sites}
+          roles={roles}
           onClose={() => setCreating(false)}
           onSaved={() => {
             setCreating(false)
@@ -209,14 +211,16 @@ export function AdminInvitesPage() {
 
 function CreateInviteModal({
   sites,
+  roles,
   onClose,
   onSaved
 }: {
   sites: SiteRecord[]
+  roles: RoleRecord[]
   onClose: () => void
   onSaved: () => void
 }) {
-  const [role, setRole] = useState<Role>('contractor')
+  const [role, setRole] = useState<Role>('viewer')
   const [email, setEmail] = useState('')
   const [note, setNote] = useState('')
   const [expiresInDays, setExpiresInDays] = useState('14')
@@ -272,10 +276,10 @@ function CreateInviteModal({
 
         <div className="grid grid-2">
           <Field label="Role">
-            <select className="select" value={role} onChange={(e) => setRole(e.target.value as Role)}>
-              {ROLES.map((r) => (
-                <option key={r} value={r}>
-                  {r}
+            <select className="select" value={role} onChange={(e) => setRole(e.target.value)}>
+              {roles.map((r) => (
+                <option key={r.roleId} value={r.roleId}>
+                  {r.name}
                 </option>
               ))}
             </select>
@@ -330,8 +334,8 @@ function CreateInviteModal({
         </Field>
 
         <div className="alert alert-info">
-          Role behaviour: <strong>admin</strong> manages projects, framework and users; <strong>contractor</strong> can
-          upload photos, documents and remarks; <strong>viewer</strong> has read-only access.
+          The invitation carries the role you pick here; permissions and upload limits can be fine-tuned afterwards on
+          the Users &amp; roles page.
         </div>
       </form>
     </Modal>

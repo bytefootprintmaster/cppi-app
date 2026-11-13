@@ -63,7 +63,7 @@ authRouter.post('/auth/google', asyncHandler(async (req, res) => {
   user = await applyPendingInvites(user)
   await updateFields(T.users, { userId: user.userId }, { lastLoginAt: now })
 
-  res.json({ token: signSession(user), user: toSession(user) })
+  res.json({ token: signSession(user), user: await toSession(user) })
 }))
 
 authRouter.post('/auth/password', asyncHandler(async (req, res) => {
@@ -88,7 +88,7 @@ authRouter.post('/auth/password', asyncHandler(async (req, res) => {
   const now = new Date().toISOString()
   await updateFields(T.users, { userId: user.userId }, { lastLoginAt: now })
 
-  res.json({ token: signSession(user), user: toSession(user) })
+  res.json({ token: signSession(user), user: await toSession(user) })
 }))
 
 authRouter.get('/auth/me', requireAuth, asyncHandler(async (req, res) => {
