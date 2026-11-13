@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-11-13T15:50:30Z",
+  "updatedAt": "2026-11-13T15:50:46Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -225,13 +225,13 @@
         "status": "completed"
       }
     ],
-    "assetCount": 68,
-    "remarkCount": 108,
+    "assetCount": 69,
+    "remarkCount": 110,
     "latestRemark": {
-      "remarkId": "e19373fe-7f14-44e8-9275-90914c669531",
-      "text": "image009.png is a tiny 2 KB graphic showing a white \"f\" in a dark circle, a Facebook-style social icon, most likely an email-signature image. It shows no construction work or document content, so it was filed with no progress change.",
+      "remarkId": "f1bb5672-4333-42df-af0d-06589a3d6bc3",
+      "text": "image010.png is a tiny 2 KB graphic showing a white camera-outline (Instagram-style) icon on a dark rounded square, most likely an email-signature image. It shows no construction work or document content, so it was filed with no progress change.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-13T15:50:23Z"
+      "createdAt": "2026-11-13T15:50:43Z"
     }
   }
 }
