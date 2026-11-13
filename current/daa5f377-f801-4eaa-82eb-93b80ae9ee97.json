@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-11-13T15:50:47Z",
+  "updatedAt": "2026-11-13T15:51:26Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -225,13 +225,13 @@
         "status": "completed"
       }
     ],
-    "assetCount": 69,
-    "remarkCount": 110,
+    "assetCount": 70,
+    "remarkCount": 112,
     "latestRemark": {
-      "remarkId": "f1bb5672-4333-42df-af0d-06589a3d6bc3",
-      "text": "image010.png is a tiny 2 KB graphic showing a white camera-outline (Instagram-style) icon on a dark rounded square, most likely an email-signature image. It shows no construction work or document content, so it was filed with no progress change.",
+      "remarkId": "c24b58ab-8a8d-4776-ae7d-e60560fb42bc",
+      "text": "CSIO certificate of liability insurance dated 2026/11/13 for insured TT9 INC., certificate holder and additional insured Town of Ajax, risk location 25 Mandrake Street. CGL $2M plus Builders' Risk, policy SPG1026124 (SPG Canada), 2026/10/01 to 2027/06/01.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-13T15:50:43Z"
+      "createdAt": "2026-11-13T15:51:23Z"
     }
   }
 }
