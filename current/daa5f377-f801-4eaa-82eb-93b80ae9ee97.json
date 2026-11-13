@@ -1,21 +1,21 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-11-12T17:42:34Z",
+  "updatedAt": "2026-11-13T15:35:36Z",
   "dashboard": {
     "progress": {
       "stages": 10,
-      "stagesCompleted": 0,
-      "milestones": 31,
-      "milestonesCompleted": 1,
-      "percent": 3
+      "stagesCompleted": 1,
+      "milestones": 32,
+      "milestonesCompleted": 11,
+      "percent": 34
     },
     "siteStatus": "in_progress",
     "stages": [
       {
         "stageId": "43d4e0d2-cc81-4912-a186-3ae3a89cd9a2",
         "name": "Feasibility & Due Diligence",
-        "status": "not_started"
+        "status": "completed"
       },
       {
         "stageId": "8e037d3e-3511-4c7e-86d1-111e11c26597",
@@ -67,47 +67,47 @@
       {
         "milestoneId": "83fa64f5-b1ce-4bbb-a81f-15dce5e871e2",
         "name": "Site survey & boundary confirmed",
-        "status": "pending"
+        "status": "completed"
       },
       {
         "milestoneId": "9874d4ae-c81a-40f5-b916-cab949a9a0ea",
         "name": "Zoning & by-law review completed",
-        "status": "pending"
+        "status": "completed"
       },
       {
         "milestoneId": "d77c7fbe-62ab-45bf-84fc-a1477109157f",
         "name": "Feasibility budget approved",
-        "status": "pending"
+        "status": "completed"
       },
       {
         "milestoneId": "a62b8d24-c2f9-47a9-bb2d-98d5309a2d39",
         "name": "Architectural drawings issued",
-        "status": "pending"
+        "status": "completed"
       },
       {
         "milestoneId": "7b7014dc-d118-4140-b460-d533d9c8fbf2",
         "name": "Structural & MEP drawings complete",
-        "status": "pending"
+        "status": "completed"
       },
       {
         "milestoneId": "c4d8aac7-142e-48f7-bf53-24e6b3cee321",
         "name": "Building permit issued",
-        "status": "pending"
+        "status": "completed"
       },
       {
         "milestoneId": "db7dcb04-9bcc-4754-b868-f40815e04c8d",
         "name": "Utilities & services located",
-        "status": "pending"
+        "status": "completed"
       },
       {
         "milestoneId": "6601fc85-dce7-4b1b-91e6-6414c23b7a57",
         "name": "Clearing & demolition complete",
-        "status": "pending"
+        "status": "completed"
       },
       {
         "milestoneId": "374ebe09-f209-41a1-b0b1-e74b7dcdec69",
         "name": "Excavation & shoring inspected",
-        "status": "pending"
+        "status": "completed"
       },
       {
         "milestoneId": "d4e01db8-7c90-491d-8421-20839f85bc20",
@@ -218,15 +218,20 @@
         "milestoneId": "9d34eaab-9dd4-4e0e-b8ca-05bfbc95b3cc",
         "name": "Final accounts & warranty documents issued",
         "status": "pending"
+      },
+      {
+        "milestoneId": "5559b462-f2fe-4b38-b2af-8549a324104a",
+        "name": "Feasibility",
+        "status": "completed"
       }
     ],
-    "assetCount": 57,
-    "remarkCount": 84,
+    "assetCount": 58,
+    "remarkCount": 86,
     "latestRemark": {
-      "remarkId": "508a04ae-8e48-48c0-9d1b-82872bae0144",
-      "text": "RONA / Simpson EWP Studio I-joist layout for 27 Mandrake St (project 202640391), 4 pages: Ground, Second, Third floors and Roof, MAX-CORE IB400 joists. A design/supply drawing only; it does not show any framing as installed.",
+      "remarkId": "c7a492a0-573b-4cd5-9c0c-408a6c7828c4",
+      "text": "Imperial Concrete Forming invoice 27092029 (24/10/2026) to TT9 Inc. for a 35% footing payment at 25 & 27 Mandrake St: $26,075.00 plus $3,389.75 HST, total $29,464.75. It is a billing record only; the same amounts already sit on the Concrete: Foundation budget line.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-12T17:42:29Z"
+      "createdAt": "2026-11-13T15:35:34Z"
     }
   }
 }
