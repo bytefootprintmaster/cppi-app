@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { api } from '../lib/api'
 import { useApi } from '../lib/useApi'
@@ -8,6 +8,7 @@ import { Badge, Button, Empty, ErrorNote, Loading, Modal } from '../components/u
 import {
   IconChat,
   IconCheck,
+  IconCopy,
   IconDownload,
   IconFile,
   IconImage,
@@ -80,6 +81,186 @@ function highlight(text: string, query: string): ReactNode {
   }
   if (cursor < text.length) nodes.push(text.slice(cursor))
   return nodes
+}
+
+/** Render common Markdown safely as React nodes, including GFM-style tables. */
+function renderMarkdown(source: string): ReactNode {
+  const lines = source.replace(/\r\n?/g, '\n').split('\n')
+  const blocks: ReactNode[] = []
+  let index = 0
+
+  function inline(text: string): ReactNode[] {
+    const tokenPattern =
+      /(\[[^\]]+\]\(https?:\/\/[^\s)]+\)|`[^`]+`|\*\*[^*]+\*\*|__[^_]+__|~~[^~]+~~|\*[^*]+\*|_[^_]+_)/g
+    const tokens = text.split(tokenPattern).filter(Boolean)
+    return tokens.map((token, tokenIndex) => {
+      const link = token.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/)
+      if (link) {
+        return (
+          <a key={tokenIndex} href={link[2]} target="_blank" rel="noopener noreferrer">
+            {link[1]}
+          </a>
+        )
+      }
+      if (token.startsWith('**') || token.startsWith('__')) {
+        return <strong key={tokenIndex}>{token.slice(2, -2)}</strong>
+      }
+      if (token.startsWith('~~')) return <del key={tokenIndex}>{token.slice(2, -2)}</del>
+      if (token.startsWith('`')) return <code key={tokenIndex}>{token.slice(1, -1)}</code>
+      if (token.startsWith('*') || token.startsWith('_')) {
+        return <em key={tokenIndex}>{token.slice(1, -1)}</em>
+      }
+      return <Fragment key={tokenIndex}>{token}</Fragment>
+    })
+  }
+
+  function cells(line: string): string[] {
+    const trimmed = line.trim().replace(/^\|/, '').replace(/\|$/, '')
+    return trimmed.split('|').map((cell) => cell.trim())
+  }
+
+  function isTableDivider(line: string): boolean {
+    const columns = cells(line)
+    return columns.length > 0 && columns.every((cell) => /^:?-{3,}:?$/.test(cell))
+  }
+
+  function isBlockStart(line: string, nextLine: string): boolean {
+    return (
+      /^```/.test(line) ||
+      /^#{1,6}\s/.test(line) ||
+      /^>\s?/.test(line) ||
+      /^\s*([-*_]\s*){3,}$/.test(line) ||
+      /^\s*[-*+]\s+/.test(line) ||
+      /^\s*\d+[.)]\s+/.test(line) ||
+      (line.includes('|') && isTableDivider(nextLine))
+    )
+  }
+
+  while (index < lines.length) {
+    const line = lines[index]
+    if (!line.trim()) {
+      index += 1
+      continue
+    }
+
+    if (/^```/.test(line)) {
+      const language = line.slice(3).trim()
+      index += 1
+      const code: string[] = []
+      while (index < lines.length && !/^```/.test(lines[index])) code.push(lines[index++])
+      if (index < lines.length) index += 1
+      blocks.push(
+        <pre key={`code-${blocks.length}`} data-language={language || undefined}>
+          <code>{code.join('\n')}</code>
+        </pre>
+      )
+      continue
+    }
+
+    const heading = line.match(/^(#{1,6})\s+(.+)$/)
+    if (heading) {
+      const level = Math.min(heading[1].length, 4)
+      const content = inline(heading[2])
+      const key = `heading-${blocks.length}`
+      blocks.push(
+        level === 1 ? <h1 key={key}>{content}</h1> :
+          level === 2 ? <h2 key={key}>{content}</h2> :
+            level === 3 ? <h3 key={key}>{content}</h3> :
+              <h4 key={key}>{content}</h4>
+      )
+      index += 1
+      continue
+    }
+
+    if (line.includes('|') && isTableDivider(lines[index + 1] ?? '')) {
+      const headers = cells(line)
+      index += 2
+      const rows: string[][] = []
+      while (index < lines.length && lines[index].includes('|') && lines[index].trim()) {
+        rows.push(cells(lines[index++]))
+      }
+      blocks.push(
+        <div className="chat-table-wrap" key={`table-${blocks.length}`}>
+          <table className="chat-markdown-table">
+            <thead>
+              <tr>{headers.map((header, cellIndex) => <th key={cellIndex}>{inline(header)}</th>)}</tr>
+            </thead>
+            <tbody>
+              {rows.map((row, rowIndex) => (
+                <tr key={rowIndex}>
+                  {headers.map((_, cellIndex) => (
+                    <td key={cellIndex}>{inline(row[cellIndex] ?? '')}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )
+      continue
+    }
+
+    if (/^\s*([-*_]\s*){3,}$/.test(line)) {
+      blocks.push(<hr key={`hr-${blocks.length}`} />)
+      index += 1
+      continue
+    }
+
+    if (/^>\s?/.test(line)) {
+      const quote: string[] = []
+      while (index < lines.length && /^>\s?/.test(lines[index])) {
+        quote.push(lines[index++].replace(/^>\s?/, ''))
+      }
+      blocks.push(
+        <blockquote key={`quote-${blocks.length}`}>
+          {quote.map((part, partIndex) => (
+            <Fragment key={partIndex}>
+              {partIndex ? <br /> : null}
+              {inline(part)}
+            </Fragment>
+          ))}
+        </blockquote>
+      )
+      continue
+    }
+
+    const listMarker = line.match(/^\s*([-*+])\s+|^\s*(\d+)[.)]\s+/)
+    if (listMarker) {
+      const ordered = Boolean(listMarker[2])
+      const items: string[] = []
+      while (index < lines.length) {
+        const item = lines[index].match(/^\s*([-*+])\s+(.+)$|^\s*\d+[.)]\s+(.+)$/)
+        if (!item || Boolean(item[3]) !== ordered) break
+        items.push(item[2] ?? item[3])
+        index += 1
+      }
+      const content = items.map((item, itemIndex) => <li key={itemIndex}>{inline(item)}</li>)
+      blocks.push(
+        ordered
+          ? <ol key={`list-${blocks.length}`}>{content}</ol>
+          : <ul key={`list-${blocks.length}`}>{content}</ul>
+      )
+      continue
+    }
+
+    const paragraph: string[] = []
+    while (index < lines.length && lines[index].trim()) {
+      if (paragraph.length && isBlockStart(lines[index], lines[index + 1] ?? '')) break
+      paragraph.push(lines[index++])
+    }
+    blocks.push(
+      <p key={`paragraph-${blocks.length}`}>
+        {paragraph.map((part, partIndex) => (
+          <Fragment key={partIndex}>
+            {partIndex ? <br /> : null}
+            {inline(part)}
+          </Fragment>
+        ))}
+      </p>
+    )
+  }
+
+  return <div className="chat-markdown">{blocks}</div>
 }
 
 /** Optimistic turns shown while the agent is working, before the server reply lands. */
@@ -225,6 +406,8 @@ export function ChatPage() {
   const [query, setQuery] = useState('')
   const [confirmClear, setConfirmClear] = useState(false)
   const [clearing, setClearing] = useState(false)
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null)
+  const copyResetRef = useRef<number | null>(null)
 
   const sites = useApi<{ sites: SiteRecord[] }>('/sites')
   const status = useApi<ChatServiceStatus>('/chat/status')
@@ -256,6 +439,13 @@ export function ChatPage() {
   useEffect(() => {
     document.title = 'Assistant · CPPI'
   }, [])
+
+  useEffect(
+    () => () => {
+      if (copyResetRef.current !== null) window.clearTimeout(copyResetRef.current)
+    },
+    []
+  )
 
   // A project page can deep-link here with `?siteId=`, pre-selecting its context.
   useEffect(() => {
@@ -451,6 +641,32 @@ export function ChatPage() {
     }
   }
 
+  async function copyMessage(messageId: string, text: string) {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text)
+      } else {
+        const input = document.createElement('textarea')
+        input.value = text
+        input.setAttribute('readonly', '')
+        input.style.position = 'fixed'
+        input.style.opacity = '0'
+        document.body.appendChild(input)
+        input.select()
+        const copied = document.execCommand('copy')
+        input.remove()
+        if (!copied) throw new Error('Clipboard access is unavailable')
+      }
+      setCopiedMessageId(messageId)
+      if (copyResetRef.current !== null) window.clearTimeout(copyResetRef.current)
+      copyResetRef.current = window.setTimeout(() => {
+        setCopiedMessageId((current) => current === messageId ? null : current)
+      }, 1800)
+    } catch {
+      setError('Could not copy this response. Check your browser clipboard permissions and try again.')
+    }
+  }
+
   async function clearThread() {
     setClearing(true)
     setError(null)
@@ -486,7 +702,9 @@ export function ChatPage() {
                 : ' chat-bubble-bot'
           }`}
         >
-          {highlight(message.text, query)}
+          {message.role === 'assistant' && !query.trim()
+            ? renderMarkdown(message.text)
+            : highlight(message.text, query)}
         </div>
         {message.attachments?.length ? (
           <ChatAttachmentList attachments={message.attachments} onOpen={downloadAttachment} />
@@ -511,8 +729,22 @@ export function ChatPage() {
           </div>
         ) : null}
         <div className="chat-meta">
-          {message.role === 'assistant' && message.agent ? `${message.agent} · ` : ''}
-          {clockTime(message.createdAt)}
+          <span>
+            {message.role === 'assistant' && message.agent ? `${message.agent} · ` : ''}
+            {clockTime(message.createdAt)}
+          </span>
+          {message.role === 'assistant' && message.text.trim() ? (
+            <button
+              type="button"
+              className="chat-copy"
+              aria-label={copiedMessageId === message.messageId ? 'Response copied' : 'Copy response'}
+              title={copiedMessageId === message.messageId ? 'Copied' : 'Copy response'}
+              onClick={() => void copyMessage(message.messageId, message.text)}
+            >
+              {copiedMessageId === message.messageId ? <IconCheck size={14} /> : <IconCopy size={14} />}
+              <span>{copiedMessageId === message.messageId ? 'Copied' : 'Copy'}</span>
+            </button>
+          ) : null}
         </div>
       </div>
     )
@@ -614,8 +846,29 @@ export function ChatPage() {
                             : ' chat-bubble-error'
                       }`}
                     >
-                      {turn.thinking ? <Thinking /> : turn.text}
+                      {turn.thinking
+                        ? <Thinking />
+                        : turn.role === 'assistant'
+                          ? renderMarkdown(turn.text)
+                          : turn.text}
                     </div>
+                    {turn.role === 'assistant' && !turn.thinking && turn.text.trim() ? (
+                      <div className="chat-meta">
+                        <span />
+                        <button
+                          type="button"
+                          className="chat-copy"
+                          aria-label={copiedMessageId === `overlay-${index}` ? 'Response copied' : 'Copy response'}
+                          title={copiedMessageId === `overlay-${index}` ? 'Copied' : 'Copy response'}
+                          onClick={() => void copyMessage(`overlay-${index}`, turn.text)}
+                        >
+                          {copiedMessageId === `overlay-${index}`
+                            ? <IconCheck size={14} />
+                            : <IconCopy size={14} />}
+                          <span>{copiedMessageId === `overlay-${index}` ? 'Copied' : 'Copy'}</span>
+                        </button>
+                      </div>
+                    ) : null}
                     {turn.attachments?.length ? (
                       <ChatAttachmentList attachments={turn.attachments} onOpen={downloadAttachment} />
                     ) : null}
@@ -741,7 +994,7 @@ export function ChatPage() {
                 rows={2}
                 placeholder="Ask a question, describe what you see, or ask for a report…"
                 value={draft}
-                disabled={sending || !assistantReady}
+                disabled={sending}
                 onChange={(event) => setDraft(event.target.value)}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' && !event.shiftKey) {
@@ -755,19 +1008,26 @@ export function ChatPage() {
                 variant={voice.listening ? 'danger' : 'ghost'}
                 className={`chat-mic${voice.listening ? ' chat-mic-recording' : ''}`}
                 loading={voice.loading}
-                disabled={!assistantReady || sending || !voice.supported}
+                disabled={sending || !voice.supported}
                 aria-pressed={voice.listening}
+                aria-label={
+                  voice.listening
+                    ? 'Stop voice dictation'
+                    : voice.supported
+                      ? 'Dictate message with your microphone'
+                      : 'Voice dictation is unavailable'
+                }
                 onClick={voice.toggle}
                 title={
                   voice.supported
                     ? voice.listening
                       ? 'Stop dictating'
-                      : 'Dictate your message'
-                    : 'Voice input is not supported in this browser'
+                      : 'Dictate a message (processed on this device)'
+                    : 'Voice input requires HTTPS and browser microphone support'
                 }
               >
                 <IconMic size={16} />
-                {voice.loading ? 'Loading…' : voice.listening ? 'Stop' : 'Speak'}
+                {voice.loading ? 'Loading…' : voice.listening ? 'Stop' : 'Dictate'}
               </Button>
               <Button
                 type="submit"
@@ -789,6 +1049,11 @@ export function ChatPage() {
               Enter to send · Shift + Enter for a new line
               {thread?.messageCount ? ` · ${thread.messageCount} messages in this conversation` : ''}
             </div>
+            {!voice.supported ? (
+              <div className="small muted chat-hint">
+                Voice dictation requires HTTPS and browser microphone support.
+              </div>
+            ) : null}
           </form>
         </section>
       </PageBody>

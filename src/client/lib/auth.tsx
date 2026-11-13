@@ -13,7 +13,7 @@ interface AuthValue {
   user: SessionUser | null
   config: AppConfig | null
   loading: boolean
-  signInWithGoogle: (credential: string) => Promise<SessionUser>
+  signInWithGoogle: (credential: string, inviteToken?: string) => Promise<SessionUser>
   signInWithPassword: (email: string, password: string) => Promise<SessionUser>
   signOut: () => void
   refresh: () => Promise<void>
@@ -52,10 +52,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })()
   }, [refresh])
 
-  const signInWithGoogle = useCallback(async (credential: string) => {
+  const signInWithGoogle = useCallback(async (credential: string, inviteToken?: string) => {
     const res = await api<{ token: string; user: SessionUser }>('/auth/google', {
       method: 'POST',
-      body: { credential }
+      body: { credential, inviteToken }
     })
     setToken(res.token)
     setUser(res.user)

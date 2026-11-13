@@ -122,7 +122,7 @@ export function LoginPage() {
         <div className="login-card">
           <h2 style={{ fontSize: 24 }}>Sign in</h2>
           <p className="muted" style={{ marginTop: 6, marginBottom: 24 }}>
-            Sign in with email and password, or continue with Google if your team uses invite-based access.
+            Sign in to your provisioned account with email and password or Google. New access is provided by a CPPI administrator.
           </p>
 
           {error ? <div className="alert alert-error" style={{ marginBottom: 16 }}>{error}</div> : null}
@@ -159,13 +159,13 @@ export function LoginPage() {
                 or
               </div>
 
-              <GoogleButton onCredential={handleCredential} />
+              <GoogleButton onCredential={handleCredential} text="signin_with" />
             </>
           )}
 
           <p className="small muted" style={{ marginTop: 22, textAlign: 'center' }}>
             {config?.passwordLoginEnabled
-              ? 'Password login is enabled for provisioned accounts. Google sign-in still works for invited users.'
+              ? 'Need access? Ask a CPPI administrator to create your account or send you an invitation.'
               : 'Access is granted by invitation.'}
           </p>
         </div>

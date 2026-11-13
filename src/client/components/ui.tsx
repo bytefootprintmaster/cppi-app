@@ -3,6 +3,7 @@ import {
   useRef,
   useState,
   type ButtonHTMLAttributes,
+  type HTMLAttributes,
   type InputHTMLAttributes,
   type ReactNode
 } from 'react'
@@ -40,8 +41,12 @@ export function Button({
 
 /* ---------------------------------- card --------------------------------- */
 
-export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <div className={`card ${className}`.trim()}>{children}</div>
+export function Card({ children, className = '', ...rest }: HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={`card ${className}`.trim()} {...rest}>
+      {children}
+    </div>
+  )
 }
 
 export function CardHeader({ title, sub, action }: { title: string; sub?: string; action?: ReactNode }) {

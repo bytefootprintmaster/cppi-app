@@ -19,6 +19,8 @@ export type BudgetGroup = 'land' | 'soft' | 'hard'
 export interface Permissions {
   /** Add and manage project files. */
   uploadFiles: boolean
+  /** Download project files. Defaults to allowed for new users and roles. */
+  downloadFiles: boolean
   /** See budget totals and cost lines. */
   viewBudget: boolean
   /** Edit project details, stages, milestones and folders. */
@@ -29,14 +31,16 @@ export type PermissionKey = keyof Permissions
 /** Per-user overrides; a key that is absent keeps the role's default. */
 export type PermissionOverrides = Partial<Permissions>
 
-export const PERMISSION_KEYS: PermissionKey[] = ['uploadFiles', 'viewBudget', 'editDetails']
+export const PERMISSION_KEYS: PermissionKey[] = ['uploadFiles', 'downloadFiles', 'viewBudget', 'editDetails']
 export const PERMISSION_LABEL: Record<PermissionKey, string> = {
   uploadFiles: 'Upload files',
+  downloadFiles: 'Download files',
   viewBudget: 'See budget',
   editDetails: 'Edit details'
 }
 export const PERMISSION_HINT: Record<PermissionKey, string> = {
   uploadFiles: 'Add, tag and delete project files.',
+  downloadFiles: 'Download project files from the Files and Search pages.',
   viewBudget: 'Open the budget tab and see cost figures.',
   editDetails: 'Edit project details, stages, milestones and folders.'
 }

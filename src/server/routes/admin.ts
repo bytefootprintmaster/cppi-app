@@ -32,10 +32,15 @@ async function requireRoleId(value: unknown): Promise<string> {
   return roleId
 }
 
-/** A full permission bundle, every key defaulting to false when omitted. */
+/** Omitted grants deny access; downloads default to allowed for new roles. */
 function readPermissionBundle(value: unknown): Permissions {
   const src = (value ?? {}) as Record<string, unknown>
-  const out = { uploadFiles: false, viewBudget: false, editDetails: false }
+  const out: Permissions = {
+    uploadFiles: false,
+    downloadFiles: true,
+    viewBudget: false,
+    editDetails: false
+  }
   for (const key of PERMISSION_KEYS) {
     const raw = src[key]
     if (raw !== undefined && typeof raw !== 'boolean') {

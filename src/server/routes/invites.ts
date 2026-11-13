@@ -27,6 +27,11 @@ inviteRouter.get('/:token', asyncHandler(async (req, res) => {
 inviteRouter.post('/:token/accept', requireAuth, asyncHandler(async (req, res) => {
   const invite = await getItem<InviteRecord>(T.invites, { token: req.params.token })
   if (!invite) throw new HttpError(404, 'This invitation link is not valid')
+  // Google sign-in may already have applied a pending invite to this same user.
+  if (invite.status === 'accepted' && invite.acceptedBy === req.user!.userId) {
+    res.json({ ok: true, role: req.user!.role, siteIds: req.user!.siteIds })
+    return
+  }
   if (invite.status !== 'pending') throw new HttpError(400, 'This invitation has already been used or revoked')
   if (invite.expiresAt <= new Date().toISOString()) throw new HttpError(400, 'This invitation has expired')
   if (invite.email && invite.email !== req.user!.email) {

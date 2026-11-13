@@ -230,6 +230,17 @@ p { margin: 0; }
 }
 .search-result:last-child { border-bottom: none; }
 .search-result:hover { background: var(--green-50); }
+.search-result-link {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+  flex: 1;
+  color: inherit;
+  text-decoration: none;
+}
+.search-result-link:focus-visible { outline: none; box-shadow: var(--ring); border-radius: var(--radius-sm); }
+.search-result-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .search-result-icon {
   flex-shrink: 0;
   width: 38px;
@@ -293,6 +304,16 @@ p { margin: 0; }
   position: sticky;
   top: 0;
   height: 100vh;
+  transition: width 0.24s ease, padding 0.24s ease;
+}
+/* Desktop: the header toggle slides the sidebar shut. */
+@media (min-width: 861px) {
+  .sidebar { overflow: hidden; }
+  .app-shell.is-collapsed .sidebar {
+    width: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
 }
 .brand {
   display: flex;
@@ -302,6 +323,11 @@ p { margin: 0; }
 .brand-logo { display: block; height: auto; border-radius: 8px; }
 .brand-logo-sidebar { width: 100%; max-width: 220px; }
 .brand-logo-hero { width: 250px; max-width: 100%; }
+
+/* App bar + off-canvas nav — only shown at the mobile breakpoint below. */
+.mobile-bar { display: none; }
+.sidebar-backdrop { display: none; }
+.sidebar-close { display: none; }
 
 .nav { display: flex; flex-direction: column; gap: 3px; }
 .nav-label {
@@ -327,6 +353,7 @@ p { margin: 0; }
   width: 100%;
   text-align: left;
   font-family: inherit;
+  white-space: nowrap;
 }
 .nav-item:hover { background: rgba(255, 255, 255, 0.07); color: #fff; text-decoration: none; }
 .nav-item.active {
@@ -366,8 +393,33 @@ p { margin: 0; }
   top: 0;
   z-index: 20;
 }
+.topbar-lead { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .topbar-title { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
 .topbar-sub { font-size: 12.5px; color: var(--muted); }
+
+/* Header toggle that opens/closes the desktop sidebar; the mobile bar owns
+   its own hamburger, so this control is hidden on small screens. */
+.topbar-nav-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.topbar-nav-toggle:hover { background: var(--green-50); border-color: var(--green-200); }
+
+/* Header actions that collapse into a 3-dot menu on phones. */
+.page-actions { display: flex; align-items: center; gap: 10px; }
+.page-actions-compact { display: none; }
+.page-actions-compact .card-menu-btn { border-color: var(--line-strong); background: var(--surface); }
 
 .content { padding: 26px 28px 56px; max-width: 1360px; width: 100%; }
 
@@ -935,6 +987,7 @@ tr.drop-target > td {
   align-items: center;
   gap: 8px;
 }
+.folder-chip-wrap { display: inline-flex; align-items: center; gap: 2px; }
 .folder-chip {
   display: inline-flex;
   align-items: center;
@@ -1312,42 +1365,92 @@ tr.drop-target > td {
   .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-/* Small tablets and large phones — sidebar becomes a compact top bar */
+/* Small tablets and large phones — nav collapses behind a hamburger */
 @media (max-width: 860px) {
   .app-shell { flex-direction: column; }
 
-  .sidebar {
-    width: 100%;
-    height: auto;
-    position: static;
-    padding: 12px 14px;
-    gap: 2px;
-  }
-  .brand { padding: 2px 2px 10px; }
-  .brand-logo-sidebar { max-width: 170px; }
-
-  .nav {
-    flex-direction: row;
-    overflow-x: auto;
-    gap: 6px;
-    scrollbar-width: none;
-  }
-  .nav::-webkit-scrollbar { display: none; }
-  .nav-item { width: auto; white-space: nowrap; flex-shrink: 0; }
-  .nav-label { display: none; }
-
-  .sidebar-footer {
+  /* Slim app bar carrying a tiny logo and the drawer trigger. */
+  .mobile-bar {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 10px;
-    padding-top: 10px;
+    padding: 8px 14px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(255, 255, 255, 0.86);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
   }
-  .sidebar-footer .user-chip { padding: 2px 0; min-width: 0; flex: 1; }
-  .sidebar-footer .btn { width: auto !important; margin-top: 0 !important; }
+  .mobile-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border: 1px solid var(--line-strong);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .mobile-menu-btn:hover { background: var(--green-50); border-color: var(--green-200); }
+  .mobile-brand { display: block; width: auto; height: 26px; border-radius: 7px; }
 
-  .topbar { padding: 12px 16px; flex-wrap: wrap; }
+  /* The sidebar slides in from the left instead of sitting in the flow. */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100%;
+    width: min(282px, 84vw);
+    padding: 18px 14px;
+    gap: 2px;
+    overflow-y: auto;
+    z-index: 80;
+    transform: translateX(-100%);
+    transition: transform 0.24s ease;
+  }
+  .sidebar.open { transform: translateX(0); box-shadow: var(--shadow-lg); }
+
+  .brand { padding: 2px 2px 14px; }
+  .brand-logo-sidebar { max-width: 168px; }
+  .sidebar-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: none;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #dff5e9;
+    cursor: pointer;
+  }
+  .sidebar-close:hover { background: rgba(255, 255, 255, 0.16); color: #fff; }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    background: rgba(7, 31, 22, 0.5);
+    backdrop-filter: blur(2px);
+    animation: fade 0.14s ease;
+  }
+
+  /* One sticky header on phones: the app bar. */
+  .topbar { position: static; padding: 12px 16px; flex-wrap: wrap; }
+  .topbar-nav-toggle { display: none; }
   .content { padding: 16px 16px 48px; }
+
+  /* Header actions tuck behind a 3-dot menu instead of sitting in a row. */
+  .page-actions-full { display: none; }
+  .page-actions-compact { display: flex; margin-left: auto; }
 
   .login-shell { grid-template-columns: 1fr; }
   .login-hero { display: none; }
@@ -1371,7 +1474,8 @@ tr.drop-target > td {
   .search-form-field { width: 100%; min-width: 0; }
   .search-form-select { width: 100%; }
   .search-form .btn { width: 100%; }
-  .search-result { padding: 14px 16px; }
+  .search-result { padding: 14px 16px; flex-wrap: wrap; }
+  .search-result-actions { width: 100%; padding-left: 52px; }
 
   .file-sort { width: 100%; }
 
@@ -1588,6 +1692,58 @@ tr.drop-target > td {
   border-color: var(--line);
 }
 
+/* Multi-select: cards grow a tick box and the batch actions sit in a bar. */
+.file-select {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 6;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #fff;
+}
+.file-card.picked {
+  border-color: var(--green-500);
+  box-shadow: var(--ring);
+}
+.file-card.focused {
+  border-color: var(--green-500);
+  box-shadow: 0 0 0 4px rgba(16, 147, 95, 0.2);
+}
+.file-card.picked .file-select {
+  background: var(--green-600);
+  border-color: var(--green-600);
+}
+/* Files the user is not allowed to tag or delete cannot be picked. */
+.file-card.unselectable { opacity: 0.5; cursor: default; }
+.file-card.unselectable:hover { border-color: var(--line); box-shadow: var(--shadow-sm); }
+
+.file-select-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--green-300);
+  border-radius: var(--radius-sm);
+  background: var(--green-50);
+}
+.file-select-count { font-weight: 700; font-size: 13.5px; color: var(--green-700); }
+.file-select-spacer { flex: 1 1 auto; }
+
+/* Dashboard tracker: a whole row opens its project on desktop. */
+.tracker-row { cursor: pointer; }
+.tracker-row:focus-visible {
+  outline: none;
+  box-shadow: inset var(--ring);
+}
+
 /* Users & roles / Invitations: table on desktop, tappable cards on phones. */
 .users-cards,
 .invites-cards { display: none; }
@@ -1747,6 +1903,8 @@ tr.drop-target > td {
   line-height: 1.55;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+  min-width: 0;
+  max-width: 100%;
 }
 .chat-bubble-user {
   background: linear-gradient(180deg, var(--green-500), var(--green-600));
@@ -1765,7 +1923,107 @@ tr.drop-target > td {
   color: var(--red);
   border-bottom-left-radius: 6px;
 }
-.chat-meta { font-size: 11px; color: var(--muted); padding: 0 4px; }
+.chat-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 22px;
+  font-size: 11px;
+  color: var(--muted);
+  padding: 0 4px;
+}
+.chat-meta > span:first-child { min-width: 0; }
+.chat-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 23px;
+  margin-left: auto;
+  padding: 2px 6px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+}
+.chat-copy:hover, .chat-copy:focus-visible {
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--green-700);
+  outline: none;
+}
+.chat-copy > svg { flex-shrink: 0; }
+
+/* Render assistant Markdown without letting tables or code overflow bubbles. */
+.chat-markdown { white-space: normal; }
+.chat-markdown > :first-child { margin-top: 0; }
+.chat-markdown > :last-child { margin-bottom: 0; }
+.chat-markdown p { margin: 0 0 10px; }
+.chat-markdown h1, .chat-markdown h2, .chat-markdown h3, .chat-markdown h4 {
+  margin: 12px 0 6px;
+  color: var(--ink);
+  line-height: 1.3;
+}
+.chat-markdown h1 { font-size: 1.25em; }
+.chat-markdown h2 { font-size: 1.15em; }
+.chat-markdown h3, .chat-markdown h4 { font-size: 1.05em; }
+.chat-markdown ul, .chat-markdown ol { margin: 5px 0 10px; padding-left: 22px; }
+.chat-markdown li + li { margin-top: 3px; }
+.chat-markdown a { color: var(--green-700); text-decoration: underline; text-underline-offset: 2px; }
+.chat-markdown code {
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: var(--canvas);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+}
+.chat-markdown pre {
+  max-width: 100%;
+  margin: 8px 0 10px;
+  padding: 10px 12px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--canvas);
+  white-space: pre;
+}
+.chat-markdown pre code { padding: 0; background: transparent; white-space: inherit; }
+.chat-markdown blockquote {
+  margin: 8px 0;
+  padding: 2px 0 2px 10px;
+  border-left: 3px solid var(--green-300);
+  color: var(--ink-soft);
+}
+.chat-markdown hr { border: 0; border-top: 1px solid var(--line); margin: 10px 0; }
+.chat-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin: 8px 0 10px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.chat-markdown-table {
+  width: 100%;
+  min-width: 500px;
+  border-collapse: collapse;
+  background: var(--surface);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+.chat-markdown-table th, .chat-markdown-table td {
+  padding: 7px 9px;
+  border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+.chat-markdown-table th { background: var(--green-50); font-weight: 700; white-space: nowrap; }
+.chat-markdown-table tr:last-child td { border-bottom: 0; }
+.chat-markdown-table th:last-child, .chat-markdown-table td:last-child { border-right: 0; }
 .chat-extras { display: flex; flex-direction: column; gap: 8px; width: 100%; }
 .chat-attachment-list { display: flex; flex-direction: column; gap: 6px; width: 100%; }
 .chat-attachment {

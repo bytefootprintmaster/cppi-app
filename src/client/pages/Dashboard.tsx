@@ -5,7 +5,7 @@ import { useApi } from '../lib/useApi'
 import { useAuth } from '../lib/auth'
 import { formatDate, formatMoney, relativeTime } from '../lib/format'
 import { PageBody, PageHeader } from '../components/Layout'
-import { Button, Card, CardHeader, Empty, ErrorNote, Loading, Progress, SiteStatusBadge } from '../components/ui'
+import { Button, Card, CardHeader, CardMenu, Empty, ErrorNote, Loading, Progress, SiteStatusBadge } from '../components/ui'
 import { MapView, type MapSite } from '../components/MapView'
 import {
   IconAlert,
@@ -225,14 +225,25 @@ export function DashboardPage() {
         subtitle="A live view of every building project you have access to."
         actions={
           <>
-            <Button variant="ghost" onClick={openPicker}>
-              <IconSettings size={16} />
-              Customise KPIs
-            </Button>
-            <Link className="btn btn-primary" to="/sites">
-              <IconPlus size={16} />
-              Projects
-            </Link>
+            <div className="page-actions page-actions-full">
+              <Button variant="ghost" onClick={openPicker}>
+                <IconSettings size={16} />
+                Customise KPIs
+              </Button>
+              <Link className="btn btn-primary" to="/sites">
+                <IconPlus size={16} />
+                Projects
+              </Link>
+            </div>
+            <div className="page-actions page-actions-compact">
+              <CardMenu
+                label="Dashboard actions"
+                items={[
+                  { label: 'Customise KPIs', icon: <IconSettings size={16} />, onClick: openPicker },
+                  { label: 'Projects', icon: <IconPlus size={16} />, onClick: () => navigate('/sites') }
+                ]}
+              />
+            </div>
           </>
         }
       />
@@ -358,7 +369,18 @@ export function DashboardPage() {
                 </thead>
                 <tbody>
                   {rows.map((row) => (
-                    <tr key={row.site.siteId}>
+                    <tr
+                      key={row.site.siteId}
+                      className="tracker-row"
+                      tabIndex={0}
+                      onClick={() => navigate(`/sites/${row.site.siteId}`)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault()
+                          navigate(`/sites/${row.site.siteId}`)
+                        }
+                      }}
+                    >
                       <td>
                         <div style={{ fontWeight: 600 }}>{row.site.name}</div>
                         <div className="small muted">

@@ -49,7 +49,7 @@ export function InviteAcceptPage() {
   async function handleCredential(credential: string) {
     setAcceptError(null)
     try {
-      await signInWithGoogle(credential)
+      await signInWithGoogle(credential, token)
       await accept()
     } catch (err) {
       setAcceptError(err instanceof Error ? err.message : 'Sign in failed')

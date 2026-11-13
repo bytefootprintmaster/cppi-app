@@ -25,15 +25,30 @@ export const VIEWER_ROLE = 'viewer'
 
 export const BUILTIN_ROLE_IDS: readonly string[] = [ADMIN_ROLE, MANAGER_ROLE, VIEWER_ROLE]
 
-const ALL_PERMISSIONS: Permissions = { uploadFiles: true, viewBudget: true, editDetails: true }
-const NO_PERMISSIONS: Permissions = { uploadFiles: false, viewBudget: false, editDetails: false }
+const ALL_PERMISSIONS: Permissions = {
+  uploadFiles: true,
+  downloadFiles: true,
+  viewBudget: true,
+  editDetails: true
+}
+const VIEWER_PERMISSIONS: Permissions = {
+  uploadFiles: false,
+  downloadFiles: true,
+  viewBudget: false,
+  editDetails: false
+}
 
 /**
  * A manager runs the project day to day: uploads files and edits details. Budget
  * visibility is deliberately withheld from the base role — an admin grants it
  * per user (or via a custom role) when someone needs to see the numbers.
  */
-const MANAGER_PERMISSIONS: Permissions = { uploadFiles: true, viewBudget: false, editDetails: true }
+const MANAGER_PERMISSIONS: Permissions = {
+  uploadFiles: true,
+  downloadFiles: true,
+  viewBudget: false,
+  editDetails: true
+}
 
 export function isBuiltinRole(roleId: string): boolean {
   return BUILTIN_ROLE_IDS.includes(roleId)
@@ -64,7 +79,7 @@ export function builtinRoles(): RoleRecord[] {
       roleId: VIEWER_ROLE,
       name: 'Viewer',
       builtin: true,
-      permissions: NO_PERMISSIONS,
+      permissions: VIEWER_PERMISSIONS,
       createdAt: now,
       updatedAt: now
     }
@@ -114,8 +129,10 @@ export function resolvePermissions(
   role: RoleRecord | undefined,
   overrides?: PermissionOverrides
 ): Permissions {
-  const base = role?.permissions ?? NO_PERMISSIONS
-  const merged: Permissions = { ...base }
+  const base = role?.permissions ?? VIEWER_PERMISSIONS
+  // Older custom role records predate downloadFiles; keep downloads enabled for
+  // those roles unless an administrator explicitly disables the permission.
+  const merged: Permissions = { ...base, downloadFiles: base.downloadFiles ?? true }
   if (overrides) {
     for (const key of Object.keys(overrides) as PermissionKey[]) {
       const value = overrides[key]

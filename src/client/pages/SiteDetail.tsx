@@ -8,7 +8,7 @@ import {
   type FormEvent,
   type KeyboardEvent
 } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { api } from '../lib/api'
 import { useApi } from '../lib/useApi'
 import { useAuth } from '../lib/auth'
@@ -166,14 +166,24 @@ export function SiteDetailPage() {
   const { siteId = '' } = useParams()
   const { user } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const requestedTab = searchParams.get('tab')
+  const focusAssetId = searchParams.get('assetId') ?? undefined
   const [tab, setTab] = useState<Tab>('overview')
   const [editing, setEditing] = useState(false)
   const { data, error, loading, reload } = useApi<SiteDetailResponse>(`/sites/${siteId}`)
 
   const isAdmin = user?.role === 'admin'
   const canWrite = isAdmin || user?.permissions?.uploadFiles === true
+  const canDownload = isAdmin || user?.permissions?.downloadFiles !== false
   const canEditDetails = isAdmin || user?.permissions?.editDetails === true
   const canViewBudget = isAdmin || user?.permissions?.viewBudget === true
+
+  useEffect(() => {
+    if (['overview', 'framework', 'budget', 'files', 'remarks', 'findings'].includes(requestedTab ?? '')) {
+      setTab(requestedTab as Tab)
+    }
+  }, [requestedTab])
 
   useEffect(() => {
     if (data?.site.name) document.title = `${data.site.name} · CPPI`
@@ -300,7 +310,15 @@ export function SiteDetailPage() {
             onChanged={reload}
           />
         ) : null}
-        {tab === 'files' ? <FilesTab siteId={site.siteId} canWrite={canWrite} isAdmin={isAdmin} /> : null}
+        {tab === 'files' ? (
+          <FilesTab
+            siteId={site.siteId}
+            canWrite={canWrite}
+            canDownload={canDownload}
+            isAdmin={isAdmin}
+            focusAssetId={focusAssetId}
+          />
+        ) : null}
         {tab === 'findings' ? <FindingsTab siteId={site.siteId} isAdmin={isAdmin} /> : null}
         {tab === 'remarks' ? <RemarksTab siteId={site.siteId} stages={stages} canWrite={canWrite} /> : null}
       </PageBody>
@@ -2545,6 +2563,27 @@ const FILE_KIND_LABEL: Record<FileKind, string> = {
   document: 'Documents'
 }
 
+/** The API caps a file at 20 tags, each up to 40 characters. */
+const MAX_FILE_TAGS = 20
+const MAX_TAG_LENGTH = 40
+
+/**
+ * Add tags to a file's existing set, mirroring the server's cleaning rules:
+ * collapse whitespace, drop blanks, keep case-insensitive uniqueness and stay
+ * inside the per-file tag count so a bulk save is never rejected.
+ */
+function mergeTags(existing: string[], add: string[]): string[] {
+  const next = [...existing]
+  for (const raw of add) {
+    const tag = raw.trim().replace(/\s+/g, ' ')
+    if (!tag || tag.length > MAX_TAG_LENGTH) continue
+    if (next.some((t) => t.toLowerCase() === tag.toLowerCase())) continue
+    if (next.length >= MAX_FILE_TAGS) break
+    next.push(tag)
+  }
+  return next
+}
+
 /**
  * Free-form tag editor for a single file. Tags already on the file show as
  * removable chips; typing suggests tags already used elsewhere on the project
@@ -2678,14 +2717,145 @@ function TagEditorModal({
   )
 }
 
+/**
+ * Tag many files at once. Collects a list of tags to *add* — every selected
+ * file keeps the tags it already has and gains the new ones.
+ */
+function BulkTagModal({
+  count,
+  suggestions,
+  onClose,
+  onApply
+}: {
+  count: number
+  suggestions: string[]
+  onClose: () => void
+  onApply: (tags: string[]) => Promise<void>
+}) {
+  const [tags, setTags] = useState<string[]>([])
+  const [draft, setDraft] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const typed = draft.trim().toLowerCase()
+  const options = suggestions.filter(
+    (tag) =>
+      !tags.some((t) => t.toLowerCase() === tag.toLowerCase()) &&
+      (typed === '' || tag.toLowerCase().includes(typed))
+  )
+
+  function add(raw: string) {
+    const tag = raw.trim().replace(/\s+/g, ' ')
+    if (!tag) return
+    setTags((prev) => (prev.some((t) => t.toLowerCase() === tag.toLowerCase()) ? prev : [...prev, tag]))
+    setDraft('')
+  }
+
+  function remove(tag: string) {
+    setTags((prev) => prev.filter((t) => t !== tag))
+  }
+
+  function onKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key === 'Enter' || event.key === ',') {
+      event.preventDefault()
+      add(draft)
+    } else if (event.key === 'Backspace' && !draft && tags.length) {
+      remove(tags[tags.length - 1])
+    }
+  }
+
+  async function submit(event: FormEvent) {
+    event.preventDefault()
+    const next = draft.trim() ? [...tags, draft.trim()] : tags
+    if (next.length === 0) {
+      setError('Add at least one tag before saving.')
+      return
+    }
+    setBusy(true)
+    setError(null)
+    try {
+      await onApply(next)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not tag the files')
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Modal
+      title={`Tag ${count} file${count === 1 ? '' : 's'}`}
+      onClose={onClose}
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose} disabled={busy}>
+            Cancel
+          </Button>
+          <Button form="bulk-tag-form" type="submit" loading={busy}>
+            Add tags
+          </Button>
+        </>
+      }
+    >
+      <form id="bulk-tag-form" onSubmit={submit}>
+        {error ? <div className="alert alert-error" style={{ marginBottom: 14 }}>{error}</div> : null}
+        <p className="small muted" style={{ marginTop: 0 }}>
+          These tags are added to all {count} selected file{count === 1 ? '' : 's'}. Each file keeps its
+          existing tags.
+        </p>
+        <Field label="Tags to add" hint="Press Enter or comma to add.">
+          <div className="tag-editor">
+            {tags.map((tag) => (
+              <span className="chip on" key={tag}>
+                {tag}
+                <button
+                  type="button"
+                  className="chip-x"
+                  onClick={() => remove(tag)}
+                  aria-label={`Remove ${tag}`}
+                >
+                  <IconX size={12} />
+                </button>
+              </span>
+            ))}
+            <input
+              className="tag-input"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={onKeyDown}
+              placeholder={tags.length ? 'Add another…' : 'e.g. survey, permit'}
+              autoFocus
+            />
+          </div>
+        </Field>
+        {options.length > 0 ? (
+          <div className="tag-suggest">
+            <div className="small muted" style={{ marginBottom: 6 }}>Used on this project</div>
+            <div className="tag-bar">
+              {options.slice(0, 12).map((tag) => (
+                <button key={tag} type="button" className="chip" onClick={() => add(tag)}>
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </form>
+    </Modal>
+  )
+}
+
 function FilesTab({
   siteId,
   canWrite,
-  isAdmin
+  canDownload,
+  isAdmin,
+  focusAssetId
 }: {
   siteId: string
   canWrite: boolean
+  canDownload: boolean
   isAdmin: boolean
+  focusAssetId?: string
 }) {
   const { data, setData, error, loading, reload } = useApi<{ assets: AssetRecord[] }>(
     `/sites/${siteId}/assets`
@@ -2713,6 +2883,12 @@ function FilesTab({
   const [kind, setKind] = useState<FileKind>('all')
   const [tagFilter, setTagFilter] = useState<string | null>(null)
   const [tagging, setTagging] = useState<AssetRecord | null>(null)
+  // Multi-select: pick several files to tag or delete them together.
+  const [selectMode, setSelectMode] = useState(false)
+  const [picked, setPicked] = useState<Set<string>>(new Set())
+  const [bulkTagging, setBulkTagging] = useState(false)
+  const [bulkBusy, setBulkBusy] = useState(false)
+  const [focusedAssetId, setFocusedAssetId] = useState<string | null>(null)
 
   // Thumbnails need a signed URL each. Requesting them all at once saturates the
   // browser's connection pool and stalls every other call, so they are fetched by
@@ -2744,6 +2920,12 @@ function FilesTab({
     }
   }, [data, siteId])
 
+  // Switching folders should not leave files selected that are no longer shown.
+  useEffect(() => {
+    setPicked(new Set())
+    setSelectMode(false)
+  }, [selected])
+
   async function openAsset(asset: AssetRecord) {
     setBusyId(asset.assetId)
     setActionError(null)
@@ -2752,6 +2934,28 @@ function FilesTab({
       window.open(res.url, '_blank', 'noopener')
     } catch (err) {
       setActionError(err instanceof Error ? err.message : 'Could not open the file')
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  async function downloadAsset(asset: AssetRecord) {
+    const downloadWindow = window.open('about:blank', '_blank')
+    if (!downloadWindow) {
+      setActionError('Your browser blocked the download window. Allow pop-ups for this site and try again.')
+      return
+    }
+    downloadWindow.opener = null
+    setBusyId(asset.assetId)
+    setActionError(null)
+    try {
+      const res = await api<{ url: string }>(
+        `/sites/${siteId}/assets/${asset.assetId}/url?download=true`
+      )
+      downloadWindow.location.href = res.url
+    } catch (err) {
+      downloadWindow.close()
+      setActionError(err instanceof Error ? err.message : 'Could not download the file')
     } finally {
       setBusyId(null)
     }
@@ -2784,6 +2988,7 @@ function FilesTab({
     try {
       await api(`/sites/${siteId}/folders/${folder.folderId}`, { method: 'DELETE' })
       setSelected(ALL_FILES)
+      setKind('all')
       await Promise.all([reload(), reloadFolders()])
     } catch (err) {
       setActionError(err instanceof Error ? err.message : 'Could not delete the folder')
@@ -2792,14 +2997,86 @@ function FilesTab({
     }
   }
 
+  function togglePick(assetId: string) {
+    setPicked((prev) => {
+      const next = new Set(prev)
+      if (next.has(assetId)) next.delete(assetId)
+      else next.add(assetId)
+      return next
+    })
+  }
+
+  function exitSelect() {
+    setSelectMode(false)
+    setPicked(new Set())
+  }
+
+  /** Delete every selected file in one go, reporting any that refused. */
+  async function bulkRemove() {
+    const ids = [...picked]
+    if (ids.length === 0) return
+    if (
+      !window.confirm(
+        `Delete ${ids.length} file${ids.length === 1 ? '' : 's'}? This cannot be undone.`
+      )
+    ) {
+      return
+    }
+    setBulkBusy(true)
+    setActionError(null)
+    const results = await Promise.allSettled(
+      ids.map((assetId) => api(`/sites/${siteId}/assets/${assetId}`, { method: 'DELETE' }))
+    )
+    const failed = results.filter((r) => r.status === 'rejected').length
+    exitSelect()
+    setBulkBusy(false)
+    await reload()
+    if (failed) setActionError(`${failed} of ${ids.length} files could not be deleted.`)
+  }
+
+  /** Add the given tags to every selected file, keeping the tags each already has. */
+  async function applyBulkTags(tagsToAdd: string[]) {
+    const ids = [...picked]
+    const byId = new Map(assets.map((a) => [a.assetId, a]))
+    const results = await Promise.allSettled(
+      ids.map((assetId) => {
+        const next = mergeTags(byId.get(assetId)?.tags ?? [], tagsToAdd)
+        return api(`/sites/${siteId}/assets/${assetId}`, { method: 'PATCH', body: { tags: next } })
+      })
+    )
+    const failed = results.filter((r) => r.status === 'rejected').length
+    setBulkTagging(false)
+    exitSelect()
+    await reload()
+    if (failed) setActionError(`${failed} of ${ids.length} files could not be tagged.`)
+  }
+
   const assets = data?.assets ?? []
   const folders = folderData?.folders ?? []
   const countIn = (folderId: string) => assets.filter((a) => a.folderId === folderId).length
+  const imageShortcutFolder = folders.find(
+    (folder) => folder.name.trim().toLowerCase() === 'images' && countIn(folder.folderId) === 0
+  )
+  const visibleFolders = folders.filter((folder) => folder.folderId !== imageShortcutFolder?.folderId)
+  const imageCount = assets.filter((asset) => asset.type === 'image').length
   // A folder that vanished (deleted elsewhere) silently falls back to the full list.
   const activeFolder = folders.find((f) => f.folderId === selected) ?? null
   const inFolder = activeFolder ? assets.filter((a) => a.folderId === activeFolder.folderId) : assets
+  const imageShortcutCount = inFolder.filter((asset) => asset.type === 'image').length
   const folderName = (folderId?: string) =>
     folderId ? folders.find((f) => f.folderId === folderId)?.name : undefined
+
+  useEffect(() => {
+    if (!focusAssetId || !data) return
+    const asset = data.assets.find((item) => item.assetId === focusAssetId)
+    if (!asset) return
+    setSelected(asset.folderId ?? ALL_FILES)
+    setKind(asset.type)
+    setNeedle('')
+    setTagFilter(null)
+    setPicked(new Set())
+    setSelectMode(false)
+  }, [data, focusAssetId])
 
   const canTag = (asset: AssetRecord) => isAdmin || asset.uploadedBy === user?.userId
   // Every tag in use on the project, so the filter bar and the editor agree.
@@ -2839,42 +3116,100 @@ function FilesTab({
     }
   })
 
+  useEffect(() => {
+    if (!focusAssetId || !visible.some((asset) => asset.assetId === focusAssetId)) return
+    setFocusedAssetId(focusAssetId)
+    const scrollTimer = window.setTimeout(
+      () => document.getElementById(`asset-${focusAssetId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
+      50
+    )
+    const clearTimer = window.setTimeout(() => setFocusedAssetId(null), 3000)
+    return () => {
+      window.clearTimeout(scrollTimer)
+      window.clearTimeout(clearTimer)
+    }
+  }, [focusAssetId, selected, kind, data])
+
   const photos = visible.filter((a) => a.type === 'image')
   const documents = visible.filter((a) => a.type === 'document')
 
+  // Only files the user is allowed to tag or delete can be selected.
+  const selectableVisible = visible.filter((a) => canTag(a))
+  const allPicked = selectableVisible.length > 0 && selectableVisible.every((a) => picked.has(a.assetId))
+
   function renderFileCard(asset: AssetRecord) {
+    const selectable = canTag(asset)
+    const isPicked = picked.has(asset.assetId)
+    const selecting = selectMode && selectable
+    const cardClass = [
+      'file-card',
+      'is-clickable',
+      selecting && isPicked ? 'picked' : '',
+      selectMode && !selectable ? 'unselectable' : ''
+    ]
+      .filter(Boolean)
+      .join(' ')
+
+    function activate() {
+      if (selectMode) {
+        if (selectable) togglePick(asset.assetId)
+        return
+      }
+      void openAsset(asset)
+    }
+
     return (
       <div
-        className="file-card is-clickable"
+        id={`asset-${asset.assetId}`}
+        className={`${cardClass}${focusedAssetId === asset.assetId ? ' focused' : ''}`}
         key={asset.assetId}
-        role="button"
+        role={selecting ? 'checkbox' : 'button'}
+        aria-checked={selecting ? isPicked : undefined}
         tabIndex={0}
-        aria-label={`Open ${asset.name}`}
-        aria-busy={busyId === asset.assetId}
-        onClick={() => void openAsset(asset)}
+        aria-label={
+          selecting ? `${isPicked ? 'Deselect' : 'Select'} ${asset.name}` : `Open ${asset.name}`
+        }
+        aria-busy={!selectMode && busyId === asset.assetId}
+        onClick={activate}
         onKeyDown={(event) => {
           if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault()
-            void openAsset(asset)
+            activate()
           }
         }}
       >
-        <CardMenu
-          items={[
-            { label: 'Open', icon: <IconDownload size={14} />, onClick: () => void openAsset(asset) },
-            ...(canTag(asset)
-              ? [
-                  { label: 'Tag', icon: <IconTag size={14} />, onClick: () => setTagging(asset) },
-                  {
-                    label: 'Delete',
-                    icon: <IconTrash size={14} />,
-                    danger: true,
-                    onClick: () => void removeAsset(asset)
-                  }
-                ]
-              : [])
-          ]}
-        />
+        {selecting ? (
+          <span className="file-select" aria-hidden="true">
+            {isPicked ? <IconCheck size={13} /> : null}
+          </span>
+        ) : null}
+        {!selectMode ? (
+          <CardMenu
+            items={[
+              { label: 'Open', icon: <IconDownload size={14} />, onClick: () => void openAsset(asset) },
+              ...(canDownload
+                ? [
+                    {
+                      label: 'Download',
+                      icon: <IconDownload size={14} />,
+                      onClick: () => void downloadAsset(asset)
+                    }
+                  ]
+                : []),
+              ...(selectable
+                ? [
+                    { label: 'Tag', icon: <IconTag size={14} />, onClick: () => setTagging(asset) },
+                    {
+                      label: 'Delete',
+                      icon: <IconTrash size={14} />,
+                      danger: true,
+                      onClick: () => void removeAsset(asset)
+                    }
+                  ]
+                : [])
+            ]}
+          />
+        ) : null}
         <div className="file-thumb">
           {asset.type === 'image' && urls[asset.assetId] ? (
             <img src={urls[asset.assetId]} alt={asset.name} />
@@ -2951,18 +3286,56 @@ function FilesTab({
 
       <div className="folder-bar">
         <button
-          className={`folder-chip${activeFolder ? '' : ' active'}`}
-          onClick={() => setSelected(ALL_FILES)}
+          className={`folder-chip${!activeFolder && kind === 'all' ? ' active' : ''}`}
+          onClick={() => {
+            setSelected(ALL_FILES)
+            setKind('all')
+          }}
         >
           <IconFolder size={15} />
           All files
           <span className="folder-count">{assets.length}</span>
         </button>
-        {folders.map((folder) => (
+        <div className="folder-chip-wrap">
+          <button
+            className={`folder-chip${!activeFolder && kind === 'image' ? ' active' : ''}`}
+            onClick={() => {
+              setSelected(ALL_FILES)
+              setKind('image')
+            }}
+            aria-label={`Show all images, ${imageShortcutCount} files`}
+          >
+            <IconImage size={15} />
+            Images
+            <span className="folder-count">{imageShortcutCount}</span>
+          </button>
+          {imageShortcutFolder && isAdmin ? (
+            <CardMenu
+              label="Manage Images folder"
+              items={[
+                {
+                  label: 'Edit folder',
+                  icon: <IconEdit size={14} />,
+                  onClick: () => setEditingFolder(imageShortcutFolder)
+                },
+                {
+                  label: 'Delete folder',
+                  icon: <IconTrash size={14} />,
+                  danger: true,
+                  onClick: () => void removeFolder(imageShortcutFolder)
+                }
+              ]}
+            />
+          ) : null}
+        </div>
+        {visibleFolders.map((folder) => (
           <button
             key={folder.folderId}
             className={`folder-chip${activeFolder?.folderId === folder.folderId ? ' active' : ''}`}
-            onClick={() => setSelected(folder.folderId)}
+            onClick={() => {
+              setSelected(folder.folderId)
+              setKind('all')
+            }}
             title={folder.description || folder.name}
           >
             <IconFolder size={15} />
@@ -3062,7 +3435,54 @@ function FilesTab({
                   <option value="name">Name A–Z</option>
                   <option value="size">Largest first</option>
                 </select>
+                {visible.some((a) => canTag(a)) ? (
+                  <Button variant="ghost" size="sm" onClick={() => setSelectMode(true)}>
+                    <IconCheck size={16} />
+                    Select
+                  </Button>
+                ) : null}
               </div>
+
+              {selectMode ? (
+                <div className="file-select-bar">
+                  <span className="file-select-count">{picked.size} selected</span>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    disabled={selectableVisible.length === 0}
+                    onClick={() =>
+                      setPicked(
+                        allPicked ? new Set() : new Set(selectableVisible.map((a) => a.assetId))
+                      )
+                    }
+                  >
+                    {allPicked ? 'Clear all' : 'Select all'}
+                  </button>
+                  <span className="file-select-spacer" />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={picked.size === 0}
+                    onClick={() => setBulkTagging(true)}
+                  >
+                    <IconTag size={16} />
+                    Tag
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    loading={bulkBusy}
+                    disabled={picked.size === 0}
+                    onClick={() => void bulkRemove()}
+                  >
+                    <IconTrash size={16} />
+                    Delete
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={exitSelect}>
+                    Done
+                  </Button>
+                </div>
+              ) : null}
 
               {/* Documents and photos are kept apart so a drawing never hides behind a photo. */}
               <div className="file-kind-bar">
@@ -3144,6 +3564,7 @@ function FilesTab({
           onSaved={(folder) => {
             setCreatingFolder(false)
             setSelected(folder.folderId)
+            setKind('all')
             void reloadFolders()
           }}
         />
@@ -3176,6 +3597,15 @@ function FilesTab({
             )
             setTagging(null)
           }}
+        />
+      ) : null}
+
+      {bulkTagging ? (
+        <BulkTagModal
+          count={picked.size}
+          suggestions={allTags}
+          onClose={() => setBulkTagging(false)}
+          onApply={applyBulkTags}
         />
       ) : null}
     </div>
@@ -3309,8 +3739,9 @@ function FindingsTab({ siteId, isAdmin }: { siteId: string; isAdmin: boolean }) 
             <Loading />
           ) : findings.length === 0 ? (
             <Empty title="Nothing flagged">
-              The weekly review raises a finding here when a document is missing, a certificate is
-              expiring or two records disagree.
+              {intel?.documents.length === 0
+                ? 'Findings are advisory alerts recorded by the weekly review or assistant for issues such as missing records, expiring certificates or conflicting documents. No document analysis is available yet. Evidence gaps do not automatically create a finding; the review must run and record one.'
+                : 'Findings are advisory alerts recorded by the weekly review or assistant for issues such as missing records, expiring certificates or conflicting documents. No findings are recorded yet. Evidence gaps shown above do not automatically create a finding; the review must run and record one.'}
             </Empty>
           ) : (
             <div className="finding-list">

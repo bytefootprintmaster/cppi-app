@@ -1,11 +1,12 @@
 import { Router } from 'express'
 import { randomUUID } from 'node:crypto'
 import { env } from '../env'
-import { T, putItem, scanAll, updateFields } from '../db'
-import { HttpError, asyncHandler, str } from '../lib/http'
+import { T, getItem, putItem, updateFields } from '../db'
+import { HttpError, asyncHandler, optStr, str } from '../lib/http'
 import {
   applyPendingInvites,
   ensureBootstrapAdmin,
+  findPendingInvites,
   findPasswordCredential,
   findUserByEmail,
   requireAuth,
@@ -14,7 +15,7 @@ import {
   verifyPassword,
   verifyGoogleCredential
 } from '../auth'
-import type { UserRecord } from '../types'
+import type { InviteRecord, UserRecord } from '../types'
 
 export const authRouter = Router()
 
@@ -29,26 +30,46 @@ authRouter.get('/config', (_req, res) => {
 })
 
 /**
- * Exchange a Google ID token for a CPPI session token.
- * First ever user (or any email listed in ADMIN_EMAILS) becomes an admin.
+ * Exchange a Google ID token for a CPPI session token. New accounts must be
+ * explicitly configured as admins or backed by a pending administrator invite.
  */
 authRouter.post('/auth/google', asyncHandler(async (req, res) => {
   const credential = str(req.body?.credential, 'credential', 8000)
   const profile = await verifyGoogleCredential(credential)
+  const inviteToken = optStr(req.body?.inviteToken, 200)
   const now = new Date().toISOString()
 
+  await ensureBootstrapAdmin()
   let user = await findUserByEmail(profile.email)
 
   if (!user) {
-    const existing = await scanAll<UserRecord>(T.users)
-    const isFirstUser = existing.length === 0
-    const isAdminEmail = env.ADMIN_EMAILS.includes(profile.email)
+    let tokenInvite: InviteRecord | undefined
+    if (inviteToken) {
+      tokenInvite = await getItem<InviteRecord>(T.invites, { token: inviteToken })
+      if (
+        !tokenInvite ||
+        tokenInvite.status !== 'pending' ||
+        tokenInvite.expiresAt <= now
+      ) {
+        throw new HttpError(403, 'This invitation is not valid for account creation')
+      }
+      if (tokenInvite.email && tokenInvite.email.toLowerCase() !== profile.email) {
+        throw new HttpError(403, 'This invitation was issued for a different email address')
+      }
+    }
+    const isAdminEmail =
+      env.ADMIN_EMAILS.includes(profile.email) ||
+      env.BOOTSTRAP_ADMIN_EMAIL?.toLowerCase() === profile.email
+    const invites = await findPendingInvites(profile.email)
+    if (!isAdminEmail && invites.length === 0 && !tokenInvite) {
+      throw new HttpError(403, 'Your account has not been provisioned. Ask a CPPI administrator for an invitation.')
+    }
     user = {
       userId: randomUUID(),
       email: profile.email,
       name: profile.name,
       picture: profile.picture,
-      role: isFirstUser || isAdminEmail ? 'admin' : 'viewer',
+      role: isAdminEmail ? 'admin' : 'viewer',
       status: 'active',
       siteIds: [],
       createdAt: now

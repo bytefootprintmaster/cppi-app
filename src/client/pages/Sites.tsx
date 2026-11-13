@@ -77,20 +77,21 @@ export function SitesPage() {
         ) : (
           <div className="grid grid-3">
             {data.sites.map((site) => (
-              <Card key={site.siteId} className="is-clickable project-card">
-                <div
-                  className="card-body"
-                  role="link"
-                  tabIndex={0}
-                  aria-label={`Open ${site.name}`}
-                  onClick={() => open(site)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault()
-                      open(site)
-                    }
-                  }}
-                >
+              <Card
+                key={site.siteId}
+                className="is-clickable project-card"
+                role="link"
+                tabIndex={0}
+                aria-label={`Open ${site.name}`}
+                onClick={() => open(site)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    open(site)
+                  }
+                }}
+              >
+                <div className="card-body">
                   <div className="row-between" style={{ alignItems: 'flex-start' }}>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontWeight: 700, fontSize: 16 }}>{site.name}</div>

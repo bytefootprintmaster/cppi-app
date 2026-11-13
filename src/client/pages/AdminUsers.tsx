@@ -306,7 +306,7 @@ export function AdminUsersPage() {
                   <div className="row wrap small muted" style={{ gap: 10, marginTop: 6 }}>
                     {PERMISSION_KEYS.map((key) => (
                       <span key={key}>
-                        {role.permissions[key] ? '✓' : '✕'} {PERMISSION_LABEL[key]}
+                        {(role.permissions[key] ?? key === 'downloadFiles') ? '✓' : '✕'} {PERMISSION_LABEL[key]}
                       </span>
                     ))}
                   </div>
@@ -477,6 +477,7 @@ function UserModal({
   const [siteIds, setSiteIds] = useState<string[]>(user?.siteIds ?? [])
   const [choices, setChoices] = useState<Record<PermissionKey, OverrideChoice>>({
     uploadFiles: toChoice(user?.permissions?.uploadFiles),
+    downloadFiles: toChoice(user?.permissions?.downloadFiles),
     viewBudget: toChoice(user?.permissions?.viewBudget),
     editDetails: toChoice(user?.permissions?.editDetails)
   })
@@ -487,6 +488,7 @@ function UserModal({
 
   const rolePermissions: Permissions = roles.find((r) => r.roleId === role)?.permissions ?? {
     uploadFiles: false,
+    downloadFiles: true,
     viewBudget: false,
     editDetails: false
   }
@@ -610,7 +612,7 @@ function UserModal({
             label={PERMISSION_LABEL[key]}
             hint={PERMISSION_HINT[key]}
             value={choices[key]}
-            roleDefault={rolePermissions[key] || role === 'admin'}
+            roleDefault={rolePermissions[key] ?? (key === 'downloadFiles' || role === 'admin')}
             onChange={(value) => setChoices((prev) => ({ ...prev, [key]: value }))}
           />
         ))}
@@ -684,7 +686,9 @@ function RoleModal({
   const isEditing = Boolean(role)
   const [name, setName] = useState(role?.name ?? '')
   const [permissions, setPermissions] = useState<Permissions>(
-    role?.permissions ?? { uploadFiles: false, viewBudget: false, editDetails: false }
+    role
+      ? { ...role.permissions, downloadFiles: role.permissions.downloadFiles ?? true }
+      : { uploadFiles: false, downloadFiles: true, viewBudget: false, editDetails: false }
   )
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)

@@ -19,8 +19,19 @@ export function presignUpload(key: string, contentType: string, expiresIn = 300)
   )
 }
 
-export function presignDownload(key: string, expiresIn = 900): Promise<string> {
-  return getSignedUrl(s3, new GetObjectCommand({ Bucket: env.S3_BUCKET, Key: key }), { expiresIn })
+export function presignDownload(key: string, expiresIn = 900, downloadName?: string): Promise<string> {
+  const responseDisposition = downloadName
+    ? `attachment; filename="${downloadName.replace(/[^a-zA-Z0-9._ -]/g, '_')}"; filename*=UTF-8''${encodeURIComponent(downloadName).replace(/['()*]/g, (char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`)}`
+    : undefined
+  return getSignedUrl(
+    s3,
+    new GetObjectCommand({
+      Bucket: env.S3_BUCKET,
+      Key: key,
+      ResponseContentDisposition: responseDisposition
+    }),
+    { expiresIn }
+  )
 }
 
 export async function deleteObject(key: string): Promise<void> {

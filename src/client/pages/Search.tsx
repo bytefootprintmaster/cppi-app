@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { api } from '../lib/api'
 import { useApi } from '../lib/useApi'
+import { useAuth } from '../lib/auth'
 import { humanBytes, relativeTime } from '../lib/format'
 import { PageBody, PageHeader } from '../components/Layout'
 import { Badge, Button, Card, Empty, ErrorNote, Loading } from '../components/ui'
-import { IconFile, IconImage, IconSearch } from '../components/icons'
+import { IconDownload, IconExternal, IconFile, IconImage, IconSearch } from '../components/icons'
 import type { SiteRecord } from '../../server/types'
 
 /** Shape returned by `GET /api/search`, mirroring `routes/search.ts`. */
@@ -50,7 +52,11 @@ export function SearchPage() {
   const [siteId, setSiteId] = useState('')
   const [sort, setSort] = useState<ResultSort>('relevance')
   const [tagFilter, setTagFilter] = useState<string | null>(null)
+  const [busyAssetId, setBusyAssetId] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
+  const { user } = useAuth()
   const sites = useApi<{ sites: SiteRecord[] }>('/sites')
+  const canDownload = user?.role === 'admin' || user?.permissions?.downloadFiles !== false
 
   useEffect(() => {
     document.title = 'Search · CPPI'
@@ -99,6 +105,30 @@ export function SearchPage() {
     })
   }, [data, sort, tagFilter])
 
+  async function openResult(result: SearchResult, download = false) {
+    if (!result.assetId) return
+    const target = window.open('about:blank', '_blank')
+    if (!target) {
+      setActionError('Your browser blocked the file window. Allow pop-ups for this site and try again.')
+      return
+    }
+    target.opener = null
+    setBusyAssetId(result.assetId)
+    setActionError(null)
+    try {
+      const suffix = download ? '?download=true' : ''
+      const response = await api<{ url: string }>(
+        `/sites/${result.siteId}/assets/${result.assetId}/url${suffix}`
+      )
+      target.location.href = response.url
+    } catch (err) {
+      target.close()
+      setActionError(err instanceof Error ? err.message : `Could not ${download ? 'download' : 'open'} the file`)
+    } finally {
+      setBusyAssetId(null)
+    }
+  }
+
   return (
     <>
       <PageHeader title="Search" subtitle="Find a file by any word it contains across your projects." />
@@ -143,7 +173,7 @@ export function SearchPage() {
           </div>
         </Card>
 
-        <ErrorNote message={error} />
+        <ErrorNote message={error ?? actionError} />
 
         {loading ? (
           <Loading label="Searching the index…" />
@@ -215,63 +245,92 @@ export function SearchPage() {
             ) : (
               <div className="search-results">
                 {results.map((result) => (
-                  <Link key={result.s3Key} className="search-result" to={`/sites/${result.siteId}`}>
-                    <div className="search-result-icon">
-                      {result.kind === 'image' ? <IconImage size={18} /> : <IconFile size={18} />}
-                    </div>
-                    <div className="search-result-main">
-                      <div className="row-between" style={{ gap: 10, alignItems: 'flex-start' }}>
-                        <div className="search-result-name">{result.name}</div>
-                        {result.siteName ? <Badge tone="green">{result.siteName}</Badge> : null}
+                  <div key={result.s3Key} className="search-result">
+                    <Link
+                      className="search-result-link"
+                      to={`/sites/${result.siteId}?tab=files${result.assetId ? `&assetId=${encodeURIComponent(result.assetId)}` : ''}`}
+                    >
+                      <div className="search-result-icon">
+                        {result.kind === 'image' ? <IconImage size={18} /> : <IconFile size={18} />}
                       </div>
-                      <div className="search-result-meta small muted">
-                        <span>{result.kind === 'image' ? 'Image' : 'Document'}</span>
-                        <span>·</span>
-                        <span>{humanBytes(result.size)}</span>
-                        <span>·</span>
-                        <span>{relativeTime(result.uploadedAt ?? result.indexedAt)}</span>
-                      </div>
-                      {result.tags?.length ? (
-                        <div className="file-tags">
-                          {result.tags.map((tag) => (
-                            <span
-                              key={tag}
-                              role="button"
-                              tabIndex={0}
-                              className={`chip${tagFilter === tag ? ' on' : ''}`}
-                              onClick={(event) => {
-                                event.preventDefault()
-                                event.stopPropagation()
-                                setTagFilter(tagFilter === tag ? null : tag)
-                              }}
-                              onKeyDown={(event) => {
-                                if (event.key === 'Enter' || event.key === ' ') {
+                      <div className="search-result-main">
+                        <div className="row-between" style={{ gap: 10, alignItems: 'flex-start' }}>
+                          <div className="search-result-name">{result.name}</div>
+                          {result.siteName ? <Badge tone="green">{result.siteName}</Badge> : null}
+                        </div>
+                        <div className="search-result-meta small muted">
+                          <span>{result.kind === 'image' ? 'Image' : 'Document'}</span>
+                          <span>·</span>
+                          <span>{humanBytes(result.size)}</span>
+                          <span>·</span>
+                          <span>{relativeTime(result.uploadedAt ?? result.indexedAt)}</span>
+                        </div>
+                        {result.tags?.length ? (
+                          <div className="file-tags">
+                            {result.tags.map((tag) => (
+                              <span
+                                key={tag}
+                                role="button"
+                                tabIndex={0}
+                                className={`chip${tagFilter === tag ? ' on' : ''}`}
+                                onClick={(event) => {
                                   event.preventDefault()
+                                  event.stopPropagation()
                                   setTagFilter(tagFilter === tag ? null : tag)
-                                }
-                              }}
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      ) : null}
-                      {result.snippet ? (
-                        <p className="search-result-snippet">
-                          {highlight(result.snippet, result.matched)}
-                        </p>
-                      ) : null}
-                      {result.matched.length > 0 ? (
-                        <div className="search-result-terms">
-                          {result.matched.map((term) => (
-                            <Badge key={term} tone="gray">
-                              {term}
-                            </Badge>
-                          ))}
-                        </div>
-                      ) : null}
-                    </div>
-                  </Link>
+                                }}
+                                onKeyDown={(event) => {
+                                  if (event.key === 'Enter' || event.key === ' ') {
+                                    event.preventDefault()
+                                    setTagFilter(tagFilter === tag ? null : tag)
+                                  }
+                                }}
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        ) : null}
+                        {result.snippet ? (
+                          <p className="search-result-snippet">
+                            {highlight(result.snippet, result.matched)}
+                          </p>
+                        ) : null}
+                        {result.matched.length > 0 ? (
+                          <div className="search-result-terms">
+                            {result.matched.map((term) => (
+                              <Badge key={term} tone="gray">
+                                {term}
+                              </Badge>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
+                    </Link>
+                    {result.assetId ? (
+                      <div className="search-result-actions">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          loading={busyAssetId === result.assetId}
+                          onClick={() => void openResult(result)}
+                        >
+                          <IconExternal size={15} />
+                          Open
+                        </Button>
+                        {canDownload ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            loading={busyAssetId === result.assetId}
+                            onClick={() => void openResult(result, true)}
+                          >
+                            <IconDownload size={15} />
+                            Download
+                          </Button>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
                 ))}
               </div>
             )}

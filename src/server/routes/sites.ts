@@ -978,7 +978,15 @@ siteRouter.get('/:siteId/assets/:assetId/url', asyncHandler(async (req, res) => 
   const site = await requireSiteAccess(req.user!, req.params.siteId)
   const asset = await getItem<AssetRecord>(T.assets, { siteId: site.siteId, assetId: req.params.assetId })
   if (!asset) throw new HttpError(404, 'File not found')
-  res.json({ url: await presignDownload(asset.s3Key), name: asset.name, contentType: asset.contentType })
+  const download = req.query.download === 'true'
+  if (download && !canDo(req.user!, 'downloadFiles')) {
+    throw new HttpError(403, 'You do not have permission to download files')
+  }
+  res.json({
+    url: await presignDownload(asset.s3Key, 900, download ? asset.name : undefined),
+    name: asset.name,
+    contentType: asset.contentType
+  })
 }))
 
 /** Tagging is a curation step, so it follows the same rule as deleting a file. */

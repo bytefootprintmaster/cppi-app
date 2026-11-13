@@ -269,6 +269,9 @@ export const IconMic = makeIcon(
   </>
 )
 
+/** Hamburger — reveals the navigation drawer on phones. */
+export const IconMenu = makeIcon(<path d="M4 7h16M4 12h16M4 17h16" />)
+
 /** Paper plane — send the composed message. */
 export const IconSend = makeIcon(
   <>
