@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-11-13T15:49:44Z",
+  "updatedAt": "2026-11-13T15:50:00Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -225,13 +225,13 @@
         "status": "completed"
       }
     ],
-    "assetCount": 66,
-    "remarkCount": 104,
+    "assetCount": 67,
+    "remarkCount": 106,
     "latestRemark": {
-      "remarkId": "84d57ef8-ebaf-4e0e-b7f7-3796414f96da",
-      "text": "image007.png is a small 3 KB logo graphic reading \"NAVACORD\" with a green maple-leaf mark, most likely an email-signature image from a Navacord sender. It shows no construction work or document content, so it was filed with no progress change.",
+      "remarkId": "244b553f-b95b-4332-aa85-505de33ce5d9",
+      "text": "image008.png is a tiny 2 KB graphic showing a LinkedIn-style \"in\" icon, most likely an email-signature image. It shows no construction work or document content, so it was filed with no progress change.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-13T15:49:37Z"
+      "createdAt": "2026-11-13T15:50:00Z"
     }
   }
 }
