@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-11-13T15:48:58Z",
+  "updatedAt": "2026-11-13T15:49:18Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -225,13 +225,13 @@
         "status": "completed"
       }
     ],
-    "assetCount": 64,
-    "remarkCount": 100,
+    "assetCount": 65,
+    "remarkCount": 102,
     "latestRemark": {
-      "remarkId": "628087a1-baa5-448a-ab86-8326bdaca927",
-      "text": "image005.png is a tiny 393-byte graphic showing a small green chain-link icon, most likely an email-signature image. It shows no construction work, drawing or document content, so it was filed with no progress change.",
+      "remarkId": "a2c9dd34-d2bd-4a03-b573-86d9fd6cffb5",
+      "text": "image006.png is a tiny 407-byte graphic showing a small green location-pin icon, most likely an email-signature image. It shows no construction work, drawing or document content, so it was filed with no progress change.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-13T15:48:51Z"
+      "createdAt": "2026-11-13T15:49:11Z"
     }
   }
 }
