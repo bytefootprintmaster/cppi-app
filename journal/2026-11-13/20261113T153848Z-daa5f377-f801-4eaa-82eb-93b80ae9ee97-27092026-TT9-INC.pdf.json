@@ -1,0 +1,761 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "recordedAt": "2026-11-13T15:38:47Z",
+  "jobId": "7c484af49200",
+  "trigger": "s3",
+  "task": "progress_update_from_file",
+  "agent": "progress",
+  "model": "claude-sonnet-5-5",
+  "source": {
+    "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+    "s3Key": "sites/daa5f377-f801-4eaa-82eb-93b80ae9ee97/document/491c0192-3a2b-5d81-b576-fd11a14f3f58-27092026-TT9-INC.pdf",
+    "fileName": "27092026-TT9-INC.pdf",
+    "kind": "document",
+    "etag": "598a46e6dfbeefc2609e4b0b6dfb554b",
+    "size": 20668
+  },
+  "summary": "Invoice 27092026 was already on the dashboard (it is the Imperial Concrete Forming invoice, $46,301.75 for the foundation wall pour and damp proofing). I added a remark and proposed the 'Foundation walls poured & waterproofed' milestone → in_progress, which is waiting for approval. The document-intelligence record and the two project links failed because the intelligence/relationship tables are missing.",
+  "confidence": 0.85,
+  "steps": 4,
+  "actions": [
+    {
+      "tool": "get_project_state",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97"
+      },
+      "status": "ok"
+    },
+    {
+      "tool": "get_project_intelligence",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97"
+      },
+      "status": "error",
+      "error": "ResourceNotFoundException: An error occurred (ResourceNotFoundException) when calling the Query operation: Requested resource not found"
+    },
+    {
+      "tool": "get_budget",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97"
+      },
+      "status": "ok",
+      "result": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "summary": {
+          "groups": [
+            {
+              "group": "land",
+              "lines": 1,
+              "budget": 1104947.12,
+              "spent": 1104947.12,
+              "hst": 0.0
+            },
+            {
+              "group": "soft",
+              "lines": 8,
+              "budget": 739600.0,
+              "spent": 330613.56,
+              "hst": 12984.95
+            },
+            {
+              "group": "hard",
+              "lines": 24,
+              "budget": 2903680.0,
+              "spent": 149422.24,
+              "hst": 16512.88
+            }
+          ],
+          "lines": 33,
+          "budgeted": 4748227.12,
+          "spent": 1584982.92,
+          "hst": 29497.83,
+          "paid": 1614480.75,
+          "remaining": 3163244.2,
+          "percentUsed": 33
+        },
+        "lines": [
+          {
+            "lineId": "711dc547-2905-4d21-a0ee-8aa79fc9d450",
+            "group": "land",
+            "code": null,
+            "name": "Land",
+            "budget": 1104947.12,
+            "spent": 1104947.12,
+            "hst": 0,
+            "order": 0
+          },
+          {
+            "lineId": "929eb621-0cda-4d2d-b591-1b4b788c5b33",
+            "group": "soft",
+            "code": "S.11",
+            "name": "Development & Consulting (6% of hard costs)",
+            "budget": 83760,
+            "spent": 0,
+            "hst": 0,
+            "order": 0
+          },
+          {
+            "lineId": "7330d2d5-9450-49a9-bb3b-f883fbcb2e5c",
+            "group": "soft",
+            "code": "S.13",
+            "name": "Architectural",
+            "budget": 70000,
+            "spent": 21819.02,
+            "hst": 2836.47,
+            "order": 1
+          },
+          {
+            "lineId": "835ddd20-9efa-4bed-8a12-afb94a3ca0b5",
+            "group": "soft",
+            "code": "S.28",
+            "name": "Development Charges",
+            "budget": 338000,
+            "spent": 171445.3,
+            "hst": 7836.4,
+            "order": 2
+          },
+          {
+            "lineId": "63f10ea0-d115-4903-aca6-dfd53c9bcd6b",
+            "group": "soft",
+            "code": "S.29",
+            "name": "Surveys",
+            "budget": 0,
+            "spent": 10565.78,
+            "hst": 1178.56,
+            "order": 3
+          },
+          {
+            "lineId": "23291ccc-c820-40db-bf39-510d8db544ec",
+            "group": "soft",
+            "code": "S.31",
+            "name": "Accounting & Admin. (2% of hard costs)",
+            "budget": 55840,
+            "spent": 0,
+            "hst": 0,
+            "order": 4
+          },
+          {
+            "lineId": "95deaa96-b57e-4f14-87f4-3ecc970f97f6",
+            "group": "soft",
+            "code": "S.32",
+            "name": "Financing Costs",
+            "budget": 192000,
+            "spent": 75233.74,
+            "hst": 0,
+            "order": 5
+          },
+          {
+            "lineId": "200ccefc-b945-4cce-84e1-07528d55e3fa",
+            "group": "soft",
+            "code": "S.33",
+            "name": "City Building Permit Fees",
+            "budget": 0,
+            "spent": 29101,
+            "hst": 286,
+            "order": 6
+          },
+          {
+            "lineId": "ae281a2e-49b3-404a-9ed3-1d563c423b77",
+            "group": "soft",
+            "code": "S.39",
+            "name": "Property operating expenses",
+            "budget": 0,
+            "spent": 22448.72,
+            "hst": 847.52,
+            "order": 7
+          },
+          {
+            "lineId": "4f09111c-70da-4b61-9900-f840a89a84a4",
+            "group": "hard",
+            "code": "H.01 00 00",
+            "name": "Project management Fee (8% of hard costs)",
+            "budget": 111680,
+            "spent": 13980,
+            "hst": 1817.4,
+            "order": 0
+          },
+          {
+            "lineId": "48a6c0c8-a209-4d19-b366-bdd7bb180b1e",
+            "group": "hard",
+            "code": "H.01 10 00",
+            "name": "Waste Management",
+            "budget": 30000,
+            "spent": 0,
+            "hst": 0,
+            "order": 1
+          },
+          {
+            "lineId": "52130907-ca6c-4f20-807f-c0d0cdfb1073",
+            "group": "hard",
+            "code": "H.02 10 00",
+            "name": "Structural",
+            "budget": 110000,
+            "spent": 0,
+            "hst": 0,
+            "order": 2
+          },
+          {
+            "lineId": "dc68d620-c235-4380-853f-b01dd36bc6a1",
+            "group": "hard",
+            "code": "H.02 26 00",
+            "name": "Fire Stopping",
+            "budget": 30000,
+            "spent": 0,
+            "hst": 0,
+            "order": 3
+          },
+          {
+            "lineId": "e296c832-0419-49c4-975a-345f479d6f72",
+            "group": "hard",
+            "code": "H.02 30 00",
+            "name": "Sitework: Excavation",
+            "budget": 120000,
+            "spent": 62914.1,
+            "hst": 8126.82,
+            "order": 4
+          },
+          {
+            "lineId": "b88aa342-d0bf-45d3-b96b-c33cbf173e1f",
+            "group": "hard",
+            "code": "H.03 30 00",
+            "name": "Concrete: Foundation",
+            "budget": 190000,
+            "spent": 26075,
+            "hst": 3389.75,
+            "order": 5
+          },
+          {
+            "lineId": "32af0732-98d8-42a6-a4e9-893036b633aa",
+            "group": "hard",
+            "code": "H.06 10 00",
+            "name": "Framing",
+            "budget": 330000,
+            "spent": 0,
+            "hst": 0,
+            "order": 6
+          },
+          {
+            "lineId": "261595ce-4adc-4176-b93c-da0f3fda347f",
+            "group": "hard",
+            "code": "H.06 30 00",
+            "name": "Exterior",
+            "budget": 180000,
+            "spent": 0,
+            "hst": 0,
+            "order": 7
+          },
+          {
+            "lineId": "594c0bb6-47d7-438c-9ae2-701901d519cc",
+            "group": "hard",
+            "code": "H.06 40 00",
+            "name": "Cabinetry & Slab",
+            "budget": 198000,
+            "spent": 0,
+            "hst": 0,
+            "order": 8
+          },
+          {
+            "lineId": "4c48998b-08f3-4ec3-8425-3435832661f9",
+            "group": "hard",
+            "code": "H.07 40 00",
+            "name": "Millwork",
+            "budget": 60000,
+            "spent": 0,
+            "hst": 0,
+            "order": 9
+          },
+          {
+            "lineId": "8bbae6e6-6073-44bb-bc0e-fa9ac87fbaeb",
+            "group": "hard",
+            "code": "H.07 50 00",
+            "name": "Roofing",
+            "budget": 100000,
+            "spent": 0,
+            "hst": 0,
+            "order": 10
+          },
+          "… 13 more"
+        ]
+      }
+    },
+    {
+      "tool": "register_asset",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "name": "27092026-TT9-INC.pdf (Imperial Concrete Forming invoice)",
+        "s3Key": "sites/daa5f377-f801-4eaa-82eb-93b80ae9ee97/document/491c0192-3a2b-5d81-b576-fd11a14f3f58-27092026-TT9-INC.pdf",
+        "type": "document",
+        "category": "invoice",
+        "contentType": "application/pdf",
+        "size": 20668,
+        "stageId": "08ded4a9-c0f5-4f46-9e8d-70c7c6209fda"
+      },
+      "status": "already_registered",
+      "result": {
+        "status": "already_registered",
+        "assetId": "ae876567-ffbf-458e-8a32-950825cb6714"
+      }
+    },
+    {
+      "tool": "add_progress_remark",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "text": "Imperial Concrete Forming invoice 27092026 (13/11/2026) to TT9 Inc. bills 35% foundation wall pour and 20% damp proofing/weeping tile completion at 25 & 27 Mandrake St: $40,975.00 + $5,326.75 HST = $46,301.75. Billing record only; not proof the work was done or paid.",
+        "summary": "Contractor invoice for foundation wall pour and damp proofing / weeping tile milestone payments, 25 & 27 Mandrake St.",
+        "category": "invoice",
+        "stageId": "08ded4a9-c0f5-4f46-9e8d-70c7c6209fda",
+        "evidenceClasses": [
+          "financial_payment"
+        ],
+        "verificationStatus": "extracted",
+        "confidence": 0.85,
+        "sourceDocument": "27092026-TT9-INC.pdf",
+        "sourceRef": "Page 1",
+        "extracted": [
+          {
+            "label": "Issuer",
+            "value": "Imperial Concrete Forming Ltd (HST 797178126RT0001)",
+            "verification": "extracted"
+          },
+          {
+            "label": "Billed to",
+            "value": "TT9 INC., 200-190 Harwood Ave. South, Ajax",
+            "verification": "extracted"
+          },
+          {
+            "label": "Invoice number / date",
+            "value": "27092026 / 13/11/2026",
+            "verification": "extracted"
+          },
+          {
+            "label": "Property",
+            "value": "25 & 27 Mandrake St, Ajax, ON L1S 2C7",
+            "verification": "extracted"
+          },
+          {
+            "label": "Line items",
+            "value": "35% foundation wall pour payment; 20% damp proofing and weeping tiles completion payment (single combined amount)",
+            "verification": "extracted"
+          },
+          {
+            "label": "Subtotal / HST 13% / Total",
+            "value": "$40,975.00 / $5,326.75 / $46,301.75",
+            "verification": "extracted"
+          },
+          {
+            "label": "Implied contract value",
+            "value": "About $74,500 (55% = $40,975; matches earlier 35% footing invoice of $26,075)",
+            "verification": "ai_interpretation"
+          }
+        ],
+        "relevance": "Foundation stage: indicates the contractor is billing for foundation wall pour and damp proofing/weeping tile completion, matching the 'Foundation walls poured & waterproofed' milestone and the Concrete: Foundation budget line (H.03 30 00).",
+        "limitations": "An invoice is a request for payment. It does not prove the walls were poured, waterproofed or inspected, that the work is complete, or that payment was made. No payment confirmation, inspection record or photo is part of this file. The two billed items are not split out.",
+        "recommendedActions": [
+          "Confirm on site (photos or inspection) that foundation walls are poured and damp proofing and weeping tiles are complete before approving payment",
+          "Obtain the Imperial Concrete Forming contract or quote to check the 35% / 20% schedule",
+          "Record payment once made so the Concrete: Foundation budget line reflects it",
+          "Ask for the amounts of each billed item separately"
+        ],
+        "relatedDocuments": [
+          "27092029-TT9-INC__1_.pdf (Imperial Concrete Forming invoice, 35% footing payment)"
+        ]
+      },
+      "status": "added",
+      "result": {
+        "status": "added",
+        "remarkId": "26b9dd44-22c1-4bf7-b892-96d02b49d4bd",
+        "evidenceClasses": [
+          "financial_payment"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "tool": "record_document_intelligence",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "assetId": "ae876567-ffbf-458e-8a32-950825cb6714",
+        "docType": "Contractor invoice (progress payment)",
+        "issuer": "Imperial Concrete Forming Ltd",
+        "documentDate": "2026-11-13",
+        "referenceNumber": "27092026",
+        "property": "25 & 27 Mandrake St, Ajax, ON L1S 2C7",
+        "project": "25 & 27 Mandrake",
+        "evidenceClasses": [
+          "financial_payment"
+        ],
+        "summary": "Invoice to TT9 Inc. for 35% foundation wall pour and 20% damp proofing/weeping tiles completion payments, $46,301.75 incl. HST.",
+        "purpose": "Request payment for foundation concrete milestones.",
+        "relevance": "Foundation stage; relates to milestone 'Foundation walls poured & waterproofed' and budget line H.03 30 00 Concrete: Foundation.",
+        "facts": [
+          {
+            "label": "Bill to",
+            "value": "TT9 INC., 200-190 Harwood Ave. South, Ajax ON L1S 2H6",
+            "verification": "extracted"
+          },
+          {
+            "label": "Contractor HST no.",
+            "value": "797178126RT0001",
+            "verification": "extracted"
+          },
+          {
+            "label": "Subtotal",
+            "value": "$40,975.00",
+            "verification": "extracted"
+          },
+          {
+            "label": "HST 13%",
+            "value": "$5,326.75",
+            "verification": "extracted"
+          },
+          {
+            "label": "Total",
+            "value": "$46,301.75",
+            "verification": "extracted"
+          },
+          {
+            "label": "Implied contract value",
+            "value": "About $74,500",
+            "verification": "ai_interpretation"
+          }
+        ],
+        "extracts": [
+          {
+            "kind": "financial",
+            "detail": "35% foundation wall pour + 20% damp proofing and weeping tiles completion = $40,975.00 combined; HST $5,326.75; total $46,301.75",
+            "verification": "extracted"
+          },
+          {
+            "kind": "contractual",
+            "detail": "Percentage-of-contract billing; with the earlier 35% footing invoice ($26,075) the contract appears to total about $74,500, of which 90% is now billed",
+            "verification": "ai_interpretation"
+          }
+        ],
+        "missingInformation": [
+          "Separate amounts per billed item",
+          "Contract or quote supporting the percentages",
+          "Proof of payment",
+          "Inspection or photo evidence of the pour and damp proofing"
+        ],
+        "inconsistencies": [
+          "Invoice number 27092026 is lower than the earlier invoice 27092029 (dated 24/10/2026) although it is dated later; likely a numbering convention, worth confirming"
+        ],
+        "risks": [
+          "Billing for completed damp proofing may precede an inspection; paying ahead of verification"
+        ],
+        "limitations": "Billing document only; does not prove work done, quality, inspection or payment.",
+        "recommendedActions": [
+          "Verify work on site before payment",
+          "Record payment against Concrete: Foundation line when made"
+        ],
+        "verificationStatus": "extracted",
+        "confidence": 0.85,
+        "sourceRef": "Page 1"
+      },
+      "status": "error",
+      "error": "ResourceNotFoundException: An error occurred (ResourceNotFoundException) when calling the GetItem operation: Requested resource not found"
+    },
+    {
+      "tool": "link_project_items",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "fromType": "invoice",
+        "fromId": "27092026",
+        "fromLabel": "Invoice 27092026 (Imperial Concrete Forming)",
+        "relation": "issued_by",
+        "toType": "contractor",
+        "toId": "imperial-concrete-forming",
+        "toLabel": "Imperial Concrete Forming Ltd"
+      },
+      "status": "error",
+      "error": "ResourceNotFoundException: An error occurred (ResourceNotFoundException) when calling the Query operation: Requested resource not found"
+    },
+    {
+      "tool": "link_project_items",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "fromType": "invoice",
+        "fromId": "27092026",
+        "fromLabel": "Invoice 27092026 (Imperial Concrete Forming)",
+        "relation": "references",
+        "toType": "work_package",
+        "toId": "H.03 30 00",
+        "toLabel": "Concrete: Foundation (foundation walls, damp proofing, weeping tiles)"
+      },
+      "status": "error",
+      "error": "ResourceNotFoundException: An error occurred (ResourceNotFoundException) when calling the Query operation: Requested resource not found"
+    },
+    {
+      "tool": "propose_milestone_status",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "milestoneId": "9a846ed5-a529-4f09-9221-5a2ac30f4d48",
+        "status": "in_progress",
+        "reason": "Contractor invoice 27092026 (13/11/2026) bills the foundation wall pour and damp proofing/weeping tile completion, indicating work underway or done. An invoice is not proof of completion, so completed is not proposed pending photos or inspection."
+      },
+      "status": "pending_approval",
+      "result": {
+        "status": "pending_approval",
+        "action_id": "cc21037485b6",
+        "preview": "Mark milestone *Foundation walls poured & waterproofed* on *25 & 27 Mandrake* as *in_progress*\nReason: Contractor invoice 27092026 (13/11/2026) bills the foundation wall pour and damp proofing/weeping tile completion, indicating work underway or done. An invoice is not proof of completion, so completed is not proposed pending photos or inspection.",
+        "note": "Queued for human approval. It has NOT been applied."
+      }
+    },
+    {
+      "tool": "finish",
+      "input": {
+        "summary": "Invoice 27092026 was already on the dashboard (it is the Imperial Concrete Forming invoice, $46,301.75 for the foundation wall pour and damp proofing). I added a remark and proposed the 'Foundation walls poured & waterproofed' milestone → in_progress, which is waiting for approval. The document-intelligence record and the two project links failed because the intelligence/relationship tables are missing.",
+        "confidence": 0.85,
+        "notes": "The record_document_intelligence and link_project_items calls (and get_project_intelligence) returned ResourceNotFoundException, so the full intelligence record and the relationship links were not saved. The budget was left unchanged because the invoice does not show payment; H.03 30 00 Concrete: Foundation still shows only the earlier $26,075 footing payment. Please check payment and site evidence of the pour and damp proofing before approving the milestone. The invoice number 27092026 is lower than the earlier invoice 27092029 although it is dated later."
+      },
+      "status": "done",
+      "result": {
+        "status": "done",
+        "summary": "Invoice 27092026 was already on the dashboard (it is the Imperial Concrete Forming invoice, $46,301.75 for the foundation wall pour and damp proofing). I added a remark and proposed the 'Foundation walls poured & waterproofed' milestone → in_progress, which is waiting for approval. The document-intelligence record and the two project links failed because the intelligence/relationship tables are missing.",
+        "confidence": 0.85
+      }
+    }
+  ],
+  "pendingApprovals": [
+    "cc21037485b6"
+  ],
+  "costUsd": 0.14813,
+  "tokens": {
+    "input": 39011,
+    "output": 5171,
+    "cacheWrite": 2169,
+    "cacheRead": 64879
+  },
+  "dashboard": {
+    "progress": {
+      "stages": 10,
+      "stagesCompleted": 1,
+      "milestones": 32,
+      "milestonesCompleted": 11,
+      "percent": 34
+    },
+    "siteStatus": "in_progress",
+    "stages": [
+      {
+        "stageId": "43d4e0d2-cc81-4912-a186-3ae3a89cd9a2",
+        "name": "Feasibility & Due Diligence",
+        "status": "completed"
+      },
+      {
+        "stageId": "8e037d3e-3511-4c7e-86d1-111e11c26597",
+        "name": "Design & Permits",
+        "status": "not_started"
+      },
+      {
+        "stageId": "3739c5da-64f6-48a4-886f-7bd24138526d",
+        "name": "Site Preparation & Excavation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "08ded4a9-c0f5-4f46-9e8d-70c7c6209fda",
+        "name": "Foundation",
+        "status": "in_progress"
+      },
+      {
+        "stageId": "245c2de5-98b8-43cb-b4af-89f17d55f4bd",
+        "name": "Structural Framing",
+        "status": "not_started"
+      },
+      {
+        "stageId": "6fa286ae-566d-4da2-927e-20af34b228c1",
+        "name": "Building Envelope",
+        "status": "not_started"
+      },
+      {
+        "stageId": "1f414a15-de86-49d7-af51-39a9f5ab5ac6",
+        "name": "Rough-In Services",
+        "status": "not_started"
+      },
+      {
+        "stageId": "74a52551-4007-4d44-aeb3-9cad6ac26f43",
+        "name": "Interior Finishes",
+        "status": "not_started"
+      },
+      {
+        "stageId": "99083336-f837-4297-9b92-1c0bfa2ca966",
+        "name": "Landscaping & Exterior Works",
+        "status": "not_started"
+      },
+      {
+        "stageId": "2424b179-6eb8-4095-8a17-5a46de64555f",
+        "name": "Handover & Closeout",
+        "status": "not_started"
+      }
+    ],
+    "milestones": [
+      {
+        "milestoneId": "83fa64f5-b1ce-4bbb-a81f-15dce5e871e2",
+        "name": "Site survey & boundary confirmed",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "9874d4ae-c81a-40f5-b916-cab949a9a0ea",
+        "name": "Zoning & by-law review completed",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "d77c7fbe-62ab-45bf-84fc-a1477109157f",
+        "name": "Feasibility budget approved",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "a62b8d24-c2f9-47a9-bb2d-98d5309a2d39",
+        "name": "Architectural drawings issued",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "7b7014dc-d118-4140-b460-d533d9c8fbf2",
+        "name": "Structural & MEP drawings complete",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "c4d8aac7-142e-48f7-bf53-24e6b3cee321",
+        "name": "Building permit issued",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "db7dcb04-9bcc-4754-b868-f40815e04c8d",
+        "name": "Utilities & services located",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "6601fc85-dce7-4b1b-91e6-6414c23b7a57",
+        "name": "Clearing & demolition complete",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "374ebe09-f209-41a1-b0b1-e74b7dcdec69",
+        "name": "Excavation & shoring inspected",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "d4e01db8-7c90-491d-8421-20839f85bc20",
+        "name": "Footings inspected",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "9a846ed5-a529-4f09-9221-5a2ac30f4d48",
+        "name": "Foundation walls poured & waterproofed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "04c36fa6-0623-4769-bf97-4bd67362d468",
+        "name": "Backfill & drainage complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "85f717e3-4e87-4382-a10b-9f6eecb38473",
+        "name": "Floor structure complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "1402eab7-cff8-4d3e-a1b3-ab5b64ccff42",
+        "name": "Framing erected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "b90105d8-4d61-4bea-a52b-1acba54b2fc2",
+        "name": "Framing inspection passed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "1cc6cc34-2f3f-44e4-a382-1fad92cf4a61",
+        "name": "Roof trusses & sheathing complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "144849e1-3aac-4a3a-b4b3-c77b2742dfbd",
+        "name": "Roofing watertight",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "3ee0d7ef-842e-46d6-9db5-fa77df484a74",
+        "name": "Windows & exterior doors installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "78a2cba7-3b6c-4be8-8c93-7ae07f21c39f",
+        "name": "Cladding & insulation complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9f91afc3-6474-40e8-9a38-63d6fa8e9420",
+        "name": "Electrical rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "066825dd-e916-4600-8e02-cfd21dd62c15",
+        "name": "Plumbing rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "e73f9394-6db6-4700-885c-e594ba02c73f",
+        "name": "HVAC rough-in complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "715d3b61-a6ee-43e5-8c0f-3619a65ede21",
+        "name": "Drywall & plaster complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "50a2d07b-82ef-4ea5-94a0-ef04c1b1b11e",
+        "name": "Cabinetry & millwork installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "47020274-79ca-45da-ad2e-046573160612",
+        "name": "Flooring & paint complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "a2f28c1f-edb0-44d4-95e9-eb224365c1ab",
+        "name": "Grading & drainage certified",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "e2f05da4-b5c9-4d4f-ab05-4e39eaf5dcb7",
+        "name": "Driveway & hardscaping complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c878ab83-bcec-45cf-bdd4-282ae58fae43",
+        "name": "Landscaping planted",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "cffcf10b-77fb-45bc-a91c-0a3fb1afb02e",
+        "name": "Occupancy permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "457d433f-40a6-4d99-a52d-0cf83f1c9511",
+        "name": "Pre-delivery inspection (PDI) complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9d34eaab-9dd4-4e0e-b8ca-05bfbc95b3cc",
+        "name": "Final accounts & warranty documents issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "5559b462-f2fe-4b38-b2af-8549a324104a",
+        "name": "Feasibility",
+        "status": "completed"
+      }
+    ],
+    "assetCount": 59,
+    "remarkCount": 89,
+    "latestRemark": {
+      "remarkId": "26b9dd44-22c1-4bf7-b892-96d02b49d4bd",
+      "text": "Imperial Concrete Forming invoice 27092026 (13/11/2026) to TT9 Inc. bills 35% foundation wall pour and 20% damp proofing/weeping tile completion at 25 & 27 Mandrake St: $40,975.00 + $5,326.75 HST = $46,301.75. Billing record only; not proof the work was done or paid.",
+      "authorName": "CPPI Agent (AI)",
+      "createdAt": "2026-11-13T15:38:41Z"
+    }
+  }
+}
