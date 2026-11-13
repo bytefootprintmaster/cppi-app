@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-11-13T15:35:40Z",
+  "updatedAt": "2026-11-13T15:38:44Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -225,13 +225,13 @@
         "status": "completed"
       }
     ],
-    "assetCount": 58,
-    "remarkCount": 86,
+    "assetCount": 59,
+    "remarkCount": 89,
     "latestRemark": {
-      "remarkId": "c7a492a0-573b-4cd5-9c0c-408a6c7828c4",
-      "text": "Imperial Concrete Forming invoice 27092029 (24/10/2026) to TT9 Inc. for a 35% footing payment at 25 & 27 Mandrake St: $26,075.00 plus $3,389.75 HST, total $29,464.75. It is a billing record only; the same amounts already sit on the Concrete: Foundation budget line.",
+      "remarkId": "26b9dd44-22c1-4bf7-b892-96d02b49d4bd",
+      "text": "Imperial Concrete Forming invoice 27092026 (13/11/2026) to TT9 Inc. bills 35% foundation wall pour and 20% damp proofing/weeping tile completion at 25 & 27 Mandrake St: $40,975.00 + $5,326.75 HST = $46,301.75. Billing record only; not proof the work was done or paid.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-13T15:35:34Z"
+      "createdAt": "2026-11-13T15:38:41Z"
     }
   }
 }
