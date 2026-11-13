@@ -1,0 +1,520 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "recordedAt": "2026-11-13T15:52:05Z",
+  "jobId": "6faf9161ed63",
+  "trigger": "email",
+  "task": "progress_update_from_file",
+  "agent": "progress",
+  "model": "claude-sonnet-5-5",
+  "source": {
+    "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+    "s3Key": "sites/daa5f377-f801-4eaa-82eb-93b80ae9ee97/document/2bfa5976-8ffb-5e5c-8f1d-3b76205cb9e2-Town_of_Ajax_TT9_INC._26-27_CGL_-_27_Mandrake.pdf",
+    "fileName": "Town_of_Ajax_TT9_INC._26-27_CGL_-_27_Mandrake.pdf",
+    "kind": "document",
+    "etag": "3ce7dbfe388ab11667d173890e2028e8",
+    "size": 394362
+  },
+  "summary": "Registered the 27 Mandrake CGL/Builders' Risk insurance certificate and added a compliance remark. No status changes proposed because insurance is not construction progress.",
+  "confidence": 0.9,
+  "steps": 5,
+  "actions": [
+    {
+      "tool": "get_project_state",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97"
+      },
+      "status": "ok"
+    },
+    {
+      "tool": "get_project_intelligence",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97"
+      },
+      "status": "error",
+      "error": "ResourceNotFoundException: An error occurred (ResourceNotFoundException) when calling the Query operation: Requested resource not found"
+    },
+    {
+      "tool": "register_asset",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "name": "Certificate of Liability Insurance - TT9 Inc. (CGL & Builders' Risk) - 27 Mandrake",
+        "s3Key": "sites/daa5f377-f801-4eaa-82eb-93b80ae9ee97/document/2bfa5976-8ffb-5e5c-8f1d-3b76205cb9e2-Town_of_Ajax_TT9_INC._26-27_CGL_-_27_Mandrake.pdf",
+        "type": "document",
+        "category": "progress",
+        "contentType": "application/pdf",
+        "size": 394362
+      },
+      "status": "registered",
+      "result": {
+        "status": "registered",
+        "assetId": "e89edcc9-d927-4d47-b596-454859d4780e"
+      }
+    },
+    {
+      "tool": "add_progress_remark",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "text": "CSIO certificate of liability insurance dated 2026/11/13 for insured TT9 INC., certificate holder and additional insured Town of Ajax, risk location 27 Mandrake Street. CGL $2M plus Builders' Risk $1.4M, policy SPG1026121 (SPG Canada), 2026/10/01 to 2027/06/01.",
+        "summary": "CSIO certificate of liability insurance (CGL and Builders' Risk) for TT9 Inc., risk location 27 Mandrake Street, issued by Navacord.",
+        "extracted": [
+          {
+            "label": "Insured",
+            "value": "TT9 INC., 200-190 Harwood Avenue South, Ajax ON L1S 2H6",
+            "verification": "extracted"
+          },
+          {
+            "label": "Certificate holder / additional insured",
+            "value": "Town of Ajax, 65 Harwood Ave. S.",
+            "verification": "extracted"
+          },
+          {
+            "label": "Risk location",
+            "value": "27 Mandrake Street, Ajax, Ontario, L1S 2B9",
+            "verification": "extracted"
+          },
+          {
+            "label": "Insurer / policy",
+            "value": "SPG Canada, SPG1026121",
+            "verification": "extracted"
+          },
+          {
+            "label": "Policy period",
+            "value": "2026/10/01 to 2027/06/01",
+            "verification": "extracted"
+          },
+          {
+            "label": "CGL limits",
+            "value": "$2,000,000 each occurrence and general aggregate; med pay $25,000; tenants legal liability $100,000; deductible $2,500",
+            "verification": "extracted"
+          },
+          {
+            "label": "Builders' Risk",
+            "value": "Comprehensive form $1,400,000; soft costs endorsement $300,000; deductible $2,500",
+            "verification": "extracted"
+          },
+          {
+            "label": "Broker",
+            "value": "Navacord Insurance Services Inc., signed by Feiyin (Fifi) Sin, dated 2026/11/13",
+            "verification": "extracted"
+          },
+          {
+            "label": "Cancellation notice",
+            "value": "30 days",
+            "verification": "extracted"
+          }
+        ],
+        "relevance": "Insurance coverage on file for the 27 Mandrake building during construction; policy period runs past the 2027-05-31 target date by one day.",
+        "evidenceClasses": [
+          "contractor_compliance"
+        ],
+        "verificationStatus": "extracted",
+        "limitations": "Certificate is informational only and confers no rights; it does not prove physical construction progress, and does not amend the policy. Policy wording and exclusions not seen. Limits may be reduced by paid claims.",
+        "recommendedActions": [
+          "Confirm policy period covers closeout and handover, as the target date is 2027-05-31 and expiry is 2027-06-01",
+          "Confirm with broker that the policy number differs from the 25 Mandrake certificate (SPG1026124) as intended",
+          "Obtain WSIB clearance for contractors separately"
+        ],
+        "relatedDocuments": [
+          "Certificate of Liability Insurance - TT9 Inc. - 25 Mandrake"
+        ],
+        "category": "progress",
+        "confidence": 0.9,
+        "sourceDocument": "Town_of_Ajax_TT9_INC._26-27_CGL_-_27_Mandrake.pdf",
+        "sourceRef": "Page 1"
+      },
+      "status": "added",
+      "result": {
+        "status": "added",
+        "remarkId": "fd6e631d-2709-4c67-b24e-2bfb599f31c9",
+        "evidenceClasses": [
+          "contractor_compliance"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "tool": "record_document_intelligence",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "assetId": "e89edcc9-d927-4d47-b596-454859d4780e",
+        "docType": "Certificate of Liability Insurance (CSIO CA4301e) - CGL & Builders' Risk",
+        "issuer": "Navacord Insurance Services Inc. (broker); insurer SPG Canada",
+        "documentDate": "2026-11-13",
+        "referenceNumber": "SPG1026121",
+        "property": "27 Mandrake Street, Ajax, Ontario, L1S 2B9",
+        "project": "25 & 27 Mandrake",
+        "evidenceClasses": [
+          "contractor_compliance"
+        ],
+        "purpose": "Evidence to the Town of Ajax (holder and additional insured) that TT9 Inc. carries CGL and builders' risk cover at the 27 Mandrake risk location.",
+        "summary": "CGL $2M and Builders' Risk $1.4M with $300k soft costs, policy SPG1026121, 2026/10/01 to 2027/06/01.",
+        "facts": [
+          {
+            "label": "Insured",
+            "value": "TT9 INC.",
+            "verification": "extracted"
+          },
+          {
+            "label": "Certificate holder",
+            "value": "Town of Ajax",
+            "verification": "extracted"
+          },
+          {
+            "label": "Policy period",
+            "value": "2026/10/01 - 2027/06/01",
+            "verification": "extracted"
+          },
+          {
+            "label": "Broker client ID",
+            "value": "TT9INC0-01",
+            "verification": "extracted"
+          },
+          {
+            "label": "Cancellation notice",
+            "value": "30 days",
+            "verification": "extracted"
+          }
+        ],
+        "extracts": [
+          {
+            "kind": "financial",
+            "detail": "CGL $2,000,000 each occurrence / general aggregate; personal & advertising injury $2,000,000; medical payments $25,000; tenants legal liability $100,000; deductible $2,500.",
+            "verification": "extracted"
+          },
+          {
+            "kind": "financial",
+            "detail": "Builders' Risk Comprehensive Form $1,400,000 (deductible $2,500); Soft Costs Endorsement $300,000 (deductible $2,500).",
+            "verification": "extracted"
+          },
+          {
+            "kind": "regulatory",
+            "detail": "CGL occurrence basis, products/completed operations and cross liability ticked; waiver of subrogation not ticked; no automobile or excess liability shown.",
+            "verification": "extracted"
+          }
+        ],
+        "relevance": "Contractor compliance evidence for the 27 Mandrake building. Not construction progress.",
+        "missingInformation": [
+          "Policy wording and exclusions",
+          "Products/completed operations aggregate not stated",
+          "WSIB clearance certificate",
+          "Whether the builders' risk limit of $1.4M matches the building's replacement or contract value"
+        ],
+        "inconsistencies": [
+          "Policy number SPG1026121 differs from SPG1026124 on the 25 Mandrake certificate - plausible separate policy per address but worth confirming"
+        ],
+        "risks": [
+          "Policy expires 2027/06/01, one day after the project target date of 2027-05-31; any delay leaves the site uninsured unless extended"
+        ],
+        "limitations": "Informational certificate only; confers no rights and does not amend the policies. Does not prove work performed.",
+        "recommendedActions": [
+          "Ask broker to confirm renewal or extension before 2027/06/01",
+          "Confirm separate policy numbers per address"
+        ],
+        "sourceRef": "Page 1",
+        "confidence": 0.9,
+        "verificationStatus": "extracted"
+      },
+      "status": "error",
+      "error": "ResourceNotFoundException: An error occurred (ResourceNotFoundException) when calling the GetItem operation: Requested resource not found"
+    },
+    {
+      "tool": "link_project_items",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "fromType": "document",
+        "fromId": "e89edcc9-d927-4d47-b596-454859d4780e",
+        "fromLabel": "CGL & Builders' Risk certificate - 27 Mandrake",
+        "relation": "relates_to",
+        "toType": "contractor",
+        "toId": "TT9 INC.",
+        "toLabel": "TT9 Inc.",
+        "note": "Insured named on certificate"
+      },
+      "status": "error",
+      "error": "ResourceNotFoundException: An error occurred (ResourceNotFoundException) when calling the Query operation: Requested resource not found"
+    },
+    {
+      "tool": "record_finding",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "kind": "expiring_certificate",
+        "severity": "low",
+        "title": "Insurance expires one day after target completion date",
+        "detail": "TT9 Inc. CGL/Builders' Risk policies (SPG1026121 for 27 Mandrake; SPG1026124 for 25 Mandrake) expire 2027/06/01 while the project target date is 2027-05-31. Any delay would leave the site uninsured; confirm renewal or extension with Navacord.",
+        "relatedAssets": [
+          "e89edcc9-d927-4d47-b596-454859d4780e"
+        ]
+      },
+      "status": "error",
+      "error": "ResourceNotFoundException: An error occurred (ResourceNotFoundException) when calling the Query operation: Requested resource not found"
+    },
+    {
+      "tool": "record_document_intelligence",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "s3Key": "sites/daa5f377-f801-4eaa-82eb-93b80ae9ee97/document/2bfa5976-8ffb-5e5c-8f1d-3b76205cb9e2-Town_of_Ajax_TT9_INC._26-27_CGL_-_27_Mandrake.pdf",
+        "docType": "Certificate of Liability Insurance (CSIO CA4301e)",
+        "evidenceClasses": [
+          "contractor_compliance"
+        ],
+        "summary": "CGL $2M and Builders' Risk $1.4M, policy SPG1026121, 2026/10/01 to 2027/06/01, risk location 27 Mandrake."
+      },
+      "status": "error",
+      "error": "ResourceNotFoundException: An error occurred (ResourceNotFoundException) when calling the GetItem operation: Requested resource not found"
+    },
+    {
+      "tool": "finish",
+      "input": {
+        "summary": "Registered the 27 Mandrake CGL/Builders' Risk insurance certificate and added a compliance remark. No status changes proposed because insurance is not construction progress.",
+        "confidence": 0.9,
+        "notes": "The intelligence backend returned ResourceNotFoundException. get_project_intelligence, record_document_intelligence (tried twice), link_project_items and record_finding all failed, so none of those were saved. Please re-run them once the table is available. The finding to raise is that the policies (SPG1026121 and SPG1026124) expire 2027/06/01, one day after the 2027-05-31 target date. The policy number for 27 Mandrake (SPG1026121) differs from the one on the 25 Mandrake certificate (SPG1026124); confirm that is intended."
+      },
+      "status": "done",
+      "result": {
+        "status": "done",
+        "summary": "Registered the 27 Mandrake CGL/Builders' Risk insurance certificate and added a compliance remark. No status changes proposed because insurance is not construction progress.",
+        "confidence": 0.9
+      }
+    }
+  ],
+  "pendingApprovals": [],
+  "costUsd": 0.163726,
+  "tokens": {
+    "input": 43996,
+    "output": 4776,
+    "cacheWrite": 4055,
+    "cacheRead": 89185
+  },
+  "dashboard": {
+    "progress": {
+      "stages": 10,
+      "stagesCompleted": 1,
+      "milestones": 32,
+      "milestonesCompleted": 11,
+      "percent": 34
+    },
+    "siteStatus": "in_progress",
+    "stages": [
+      {
+        "stageId": "43d4e0d2-cc81-4912-a186-3ae3a89cd9a2",
+        "name": "Feasibility & Due Diligence",
+        "status": "completed"
+      },
+      {
+        "stageId": "8e037d3e-3511-4c7e-86d1-111e11c26597",
+        "name": "Design & Permits",
+        "status": "not_started"
+      },
+      {
+        "stageId": "3739c5da-64f6-48a4-886f-7bd24138526d",
+        "name": "Site Preparation & Excavation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "08ded4a9-c0f5-4f46-9e8d-70c7c6209fda",
+        "name": "Foundation",
+        "status": "in_progress"
+      },
+      {
+        "stageId": "245c2de5-98b8-43cb-b4af-89f17d55f4bd",
+        "name": "Structural Framing",
+        "status": "not_started"
+      },
+      {
+        "stageId": "6fa286ae-566d-4da2-927e-20af34b228c1",
+        "name": "Building Envelope",
+        "status": "not_started"
+      },
+      {
+        "stageId": "1f414a15-de86-49d7-af51-39a9f5ab5ac6",
+        "name": "Rough-In Services",
+        "status": "not_started"
+      },
+      {
+        "stageId": "74a52551-4007-4d44-aeb3-9cad6ac26f43",
+        "name": "Interior Finishes",
+        "status": "not_started"
+      },
+      {
+        "stageId": "99083336-f837-4297-9b92-1c0bfa2ca966",
+        "name": "Landscaping & Exterior Works",
+        "status": "not_started"
+      },
+      {
+        "stageId": "2424b179-6eb8-4095-8a17-5a46de64555f",
+        "name": "Handover & Closeout",
+        "status": "not_started"
+      }
+    ],
+    "milestones": [
+      {
+        "milestoneId": "83fa64f5-b1ce-4bbb-a81f-15dce5e871e2",
+        "name": "Site survey & boundary confirmed",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "9874d4ae-c81a-40f5-b916-cab949a9a0ea",
+        "name": "Zoning & by-law review completed",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "d77c7fbe-62ab-45bf-84fc-a1477109157f",
+        "name": "Feasibility budget approved",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "a62b8d24-c2f9-47a9-bb2d-98d5309a2d39",
+        "name": "Architectural drawings issued",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "7b7014dc-d118-4140-b460-d533d9c8fbf2",
+        "name": "Structural & MEP drawings complete",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "c4d8aac7-142e-48f7-bf53-24e6b3cee321",
+        "name": "Building permit issued",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "db7dcb04-9bcc-4754-b868-f40815e04c8d",
+        "name": "Utilities & services located",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "6601fc85-dce7-4b1b-91e6-6414c23b7a57",
+        "name": "Clearing & demolition complete",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "374ebe09-f209-41a1-b0b1-e74b7dcdec69",
+        "name": "Excavation & shoring inspected",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "d4e01db8-7c90-491d-8421-20839f85bc20",
+        "name": "Footings inspected",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "9a846ed5-a529-4f09-9221-5a2ac30f4d48",
+        "name": "Foundation walls poured & waterproofed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "04c36fa6-0623-4769-bf97-4bd67362d468",
+        "name": "Backfill & drainage complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "85f717e3-4e87-4382-a10b-9f6eecb38473",
+        "name": "Floor structure complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "1402eab7-cff8-4d3e-a1b3-ab5b64ccff42",
+        "name": "Framing erected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "b90105d8-4d61-4bea-a52b-1acba54b2fc2",
+        "name": "Framing inspection passed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "1cc6cc34-2f3f-44e4-a382-1fad92cf4a61",
+        "name": "Roof trusses & sheathing complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "144849e1-3aac-4a3a-b4b3-c77b2742dfbd",
+        "name": "Roofing watertight",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "3ee0d7ef-842e-46d6-9db5-fa77df484a74",
+        "name": "Windows & exterior doors installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "78a2cba7-3b6c-4be8-8c93-7ae07f21c39f",
+        "name": "Cladding & insulation complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9f91afc3-6474-40e8-9a38-63d6fa8e9420",
+        "name": "Electrical rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "066825dd-e916-4600-8e02-cfd21dd62c15",
+        "name": "Plumbing rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "e73f9394-6db6-4700-885c-e594ba02c73f",
+        "name": "HVAC rough-in complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "715d3b61-a6ee-43e5-8c0f-3619a65ede21",
+        "name": "Drywall & plaster complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "50a2d07b-82ef-4ea5-94a0-ef04c1b1b11e",
+        "name": "Cabinetry & millwork installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "47020274-79ca-45da-ad2e-046573160612",
+        "name": "Flooring & paint complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "a2f28c1f-edb0-44d4-95e9-eb224365c1ab",
+        "name": "Grading & drainage certified",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "e2f05da4-b5c9-4d4f-ab05-4e39eaf5dcb7",
+        "name": "Driveway & hardscaping complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c878ab83-bcec-45cf-bdd4-282ae58fae43",
+        "name": "Landscaping planted",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "cffcf10b-77fb-45bc-a91c-0a3fb1afb02e",
+        "name": "Occupancy permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "457d433f-40a6-4d99-a52d-0cf83f1c9511",
+        "name": "Pre-delivery inspection (PDI) complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9d34eaab-9dd4-4e0e-b8ca-05bfbc95b3cc",
+        "name": "Final accounts & warranty documents issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "5559b462-f2fe-4b38-b2af-8549a324104a",
+        "name": "Feasibility",
+        "status": "completed"
+      }
+    ],
+    "assetCount": 71,
+    "remarkCount": 114,
+    "latestRemark": {
+      "remarkId": "69c0f5f3-a561-4a08-a76e-418c997841e4",
+      "text": "CSIO insurance certificate dated 2026/11/13 for TT9 Inc., certificate holder and additional insured Town of Ajax, risk location 27 Mandrake St. Shows CGL $2M and Builders' Risk $1.4M, policy SPG1026121 (SPG Canada), 2026/10/01 to 2027/06/01. Compliance evidence only.",
+      "authorName": "CPPI Agent (AI)",
+      "createdAt": "2026-11-13T15:52:05Z"
+    }
+  }
+}
