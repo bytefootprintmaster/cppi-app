@@ -1,0 +1,592 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "recordedAt": "2026-11-14T07:49:19Z",
+  "jobId": "13726693f8f2",
+  "trigger": "s3",
+  "task": "progress_update_from_file",
+  "agent": "progress",
+  "model": "claude-sonnet-5-5",
+  "source": {
+    "siteId": "49821a42-4dc0-44d1-8fca-63fd10504bad",
+    "s3Key": "sites/49821a42-4dc0-44d1-8fca-63fd10504bad/document/ec730bf7-343e-429b-97c6-66817776cdbf-82_Beaver_Street_plan.pdf",
+    "fileName": "82_Beaver_Street_plan.pdf",
+    "kind": "document",
+    "etag": "a3d91652ed8ab898b6d73f0d8c06972a",
+    "size": 12404295
+  },
+  "summary": "The file was already registered, so I recorded a remark and the document intelligence for the 82 Beaver St. S. triplex plan set (design evidence only). I linked it to the project and flagged a scope mismatch. I proposed \"Architectural drawings issued\" as completed, which is waiting for approval.",
+  "confidence": 0.85,
+  "steps": 4,
+  "actions": [
+    {
+      "tool": "get_project_state",
+      "input": {
+        "siteId": "49821a42-4dc0-44d1-8fca-63fd10504bad"
+      },
+      "status": "ok"
+    },
+    {
+      "tool": "get_project_intelligence",
+      "input": {
+        "siteId": "49821a42-4dc0-44d1-8fca-63fd10504bad"
+      },
+      "status": "ok",
+      "result": {
+        "siteId": "49821a42-4dc0-44d1-8fca-63fd10504bad",
+        "documentCount": 1,
+        "documents": [
+          {
+            "assetId": "baa05f60-0425-4800-85eb-2ef2d6aa93af",
+            "name": "82 Beaver St. S. – 3D model and digital twin.html",
+            "docType": "3D model / digital twin (interactive HTML)",
+            "issuer": "Not stated (derived from New Castle Drafting & Design plan set)",
+            "documentDate": "2026-03-18",
+            "referenceNumber": "Drawing 26-03-09 (source plan set)",
+            "evidenceClasses": [
+              "design"
+            ],
+            "verificationStatus": "extracted",
+            "summary": "Interactive 3D visualization of the proposed triplex built from the March 18, 2026 plan set, with floor cutaways, room labels, systems/safety markers and simulated unit readings.",
+            "missingInformation": [
+              "Underlying sealed plan set not reviewed in this file",
+              "No building permit, engineering or survey reference",
+              "Designer/author of the model not identified"
+            ],
+            "inconsistencies": [
+              "Site description says '2 triplex builds' but the model covers a single triplex"
+            ],
+            "risks": [],
+            "recommendedActions": [
+              "Verify against 82 Beaver Street plan.pdf",
+              "Clarify whether a second triplex is in scope"
+            ],
+            "confidence": 0.85,
+            "updatedAt": "2026-11-14T07:48:21Z"
+          }
+        ],
+        "evidenceCovered": [
+          "design"
+        ],
+        "evidenceMissing": [
+          "land_survey",
+          "engineering",
+          "permit_approval",
+          "contractor_compliance",
+          "procurement_quote",
+          "executed_contract",
+          "commencement",
+          "construction_progress",
+          "inspection_verification",
+          "financial_payment",
+          "completion_occupancy"
+        ],
+        "findingCount": 0,
+        "openFindings": [],
+        "relationshipCount": 1,
+        "relationships": [
+          {
+            "fromType": "document",
+            "fromId": "baa05f60-0425-4800-85eb-2ef2d6aa93af",
+            "fromLabel": "82 Beaver St. S. 3D model and digital twin",
+            "relation": "references",
+            "toType": "document",
+            "toId": "ab81d254-bc98-45c8-8285-7365fc73d56d",
+            "toLabel": "82 Beaver Street plan.pdf",
+            "note": "Model states it is built from the March 18, 2026 plan set (drawing 26-03-09); the link to this specific PDF is assumed from the name."
+          }
+        ]
+      }
+    },
+    {
+      "tool": "register_asset",
+      "input": {
+        "siteId": "49821a42-4dc0-44d1-8fca-63fd10504bad",
+        "name": "82_Beaver_Street_plan.pdf",
+        "s3Key": "sites/49821a42-4dc0-44d1-8fca-63fd10504bad/document/ec730bf7-343e-429b-97c6-66817776cdbf-82_Beaver_Street_plan.pdf",
+        "type": "document",
+        "category": "plan",
+        "contentType": "application/pdf",
+        "size": 12404295,
+        "stageId": "9e24c915-dcc8-4373-a5a8-11a69f4da36e"
+      },
+      "status": "already_registered",
+      "result": {
+        "status": "already_registered",
+        "assetId": "ab81d254-bc98-45c8-8285-7365fc73d56d"
+      }
+    },
+    {
+      "tool": "add_progress_remark",
+      "input": {
+        "siteId": "49821a42-4dc0-44d1-8fca-63fd10504bad",
+        "text": "Plan set \"Plan of Proposed Triplex for 82 Beaver St. S.\" by New Castle Drafting & Design, dated March 18, 2026 (project 7783, drawing 26-03-09), 7 pages. Design drawings only; no construction progress shown.",
+        "category": "plan",
+        "stageId": "9e24c915-dcc8-4373-a5a8-11a69f4da36e",
+        "summary": "Architectural drawing set for a three-storey triplex with unfinished basement: plot plan, floor plans, sections, elevations, construction notes, door and lintel schedules.",
+        "extracted": [
+          {
+            "label": "Designer",
+            "value": "New Castle Drafting & Design Inc., 76 Baldwin St., Newcastle ON",
+            "verification": "extracted"
+          },
+          {
+            "label": "Project / drawing no.",
+            "value": "Project 7783; drawing 26-03-09",
+            "verification": "extracted"
+          },
+          {
+            "label": "Date",
+            "value": "March 18, 2026",
+            "verification": "extracted"
+          },
+          {
+            "label": "Sheets",
+            "value": "1-6 of 6 plus D-1 (construction notes, door and lintel schedules, grab bar details)",
+            "verification": "extracted"
+          },
+          {
+            "label": "Contents",
+            "value": "Basement, first, second and third floor plans; Sections A-A and B-B; porch and reinforced wall details; four elevations; plot plan 1:200",
+            "verification": "extracted"
+          },
+          {
+            "label": "Building",
+            "value": "3 storeys over unfinished basement; one unit per floor (Units 1-3); rear decks and stairs",
+            "verification": "ai_interpretation"
+          },
+          {
+            "label": "Revisions / seal",
+            "value": "Revision table blank; no engineer or designer stamp visible",
+            "verification": "extracted"
+          }
+        ],
+        "relevance": "Supports the 'Architectural drawings issued' milestone in Design & Permits. It is the source for the existing 3D model and is the likely basis for a building permit application.",
+        "evidenceClasses": [
+          "design"
+        ],
+        "verificationStatus": "extracted",
+        "limitations": "Shows what is proposed, not what is built. Does not prove permit approval, structural engineering, survey or site conditions. Not issued for construction as far as can be seen: no seal or revisions.",
+        "recommendedActions": [
+          "Obtain the building permit and permit-stamped drawings",
+          "Obtain structural engineering for floor joists, lintels and foundation",
+          "Obtain a survey to verify the plot plan",
+          "Clarify scope: project description says 2 triplex builds, plans show one"
+        ],
+        "relatedDocuments": [
+          "82 Beaver St. S. – 3D model and digital twin.html"
+        ],
+        "sourceDocument": "82_Beaver_Street_plan.pdf",
+        "sourceRef": "Pages 1-7",
+        "confidence": 0.85
+      },
+      "status": "added",
+      "result": {
+        "status": "added",
+        "remarkId": "f10bca6a-2fc8-42ce-88fa-39406d1052b2",
+        "evidenceClasses": [
+          "design"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "tool": "record_document_intelligence",
+      "input": {
+        "siteId": "49821a42-4dc0-44d1-8fca-63fd10504bad",
+        "assetId": "ab81d254-bc98-45c8-8285-7365fc73d56d",
+        "evidenceClasses": [
+          "design"
+        ],
+        "docType": "Architectural drawing set (triplex)",
+        "issuer": "New Castle Drafting & Design Inc.",
+        "documentDate": "2026-03-18",
+        "referenceNumber": "Project 7783 / Drawing 26-03-09",
+        "property": "82 Beaver St. S., Newcastle, Ontario",
+        "project": "82 Beaver St Newcastle ON",
+        "summary": "Seven-sheet plan set for a proposed three-storey triplex with unfinished basement, drawn by TBJ and checked by TBJ.",
+        "purpose": "Design documentation for permit application and construction.",
+        "relevance": "Evidences the architectural drawings milestone; the baseline for permit, engineering and later progress comparison.",
+        "facts": [
+          {
+            "label": "Designer",
+            "value": "New Castle Drafting & Design Inc.",
+            "verification": "extracted"
+          },
+          {
+            "label": "Date",
+            "value": "March 18, 2026",
+            "verification": "extracted"
+          },
+          {
+            "label": "Scale",
+            "value": "1/4\"=1'-0\" on floor plans; plot plan 1:200",
+            "verification": "extracted"
+          },
+          {
+            "label": "Units",
+            "value": "Three units, one per floor above basement",
+            "verification": "ai_interpretation"
+          },
+          {
+            "label": "Plot plan",
+            "value": "Shows Beaver Street and Emily Street frontages",
+            "verification": "extracted"
+          }
+        ],
+        "extracts": [
+          {
+            "kind": "technical",
+            "detail": "Poured concrete foundation walls with unfinished basement slab; engineered floor joists by supplier; flat roof with 2-ply membrane; brick-clad exterior; rear exterior decks and stairs.",
+            "verification": "extracted"
+          },
+          {
+            "kind": "regulatory",
+            "detail": "Sheet D-1 construction notes require compliance with Ontario Building Code; smoke/CO alarm, mechanical ventilation and grab bar notes included. A compliance package table is on sheet 2.",
+            "verification": "extracted"
+          },
+          {
+            "kind": "technical",
+            "detail": "Door schedule and steel lintel schedule on sheet D-1.",
+            "verification": "extracted"
+          }
+        ],
+        "missingInformation": [
+          "No building permit number or municipal stamp",
+          "No engineer or designer seal/BCIN visible",
+          "Revision table blank",
+          "No survey or lot dimensions confirmed",
+          "Sheet D-1 has no 'of' total"
+        ],
+        "inconsistencies": [
+          "Project description says '2 triplex builds' but the plans show one triplex",
+          "Title block says 6 sheets; PDF has 7 pages (D-1 extra)"
+        ],
+        "risks": [
+          "Drawings may not be permit-ready until sealed and engineered",
+          "Second triplex has no drawings on file"
+        ],
+        "limitations": "Design intent only; proves nothing about construction, approval or compliance. Small text on the pages was hard to read, so dimensions were not extracted.",
+        "recommendedActions": [
+          "Obtain building permit and engineering",
+          "Confirm scope for the second triplex"
+        ],
+        "sourceRef": "Pages 1-7",
+        "verificationStatus": "extracted",
+        "confidence": 0.85
+      },
+      "status": "recorded",
+      "result": {
+        "status": "recorded",
+        "assetId": "ab81d254-bc98-45c8-8285-7365fc73d56d",
+        "evidenceClasses": [
+          "design"
+        ],
+        "revisions": 0,
+        "notes": []
+      }
+    },
+    {
+      "tool": "link_project_items",
+      "input": {
+        "siteId": "49821a42-4dc0-44d1-8fca-63fd10504bad",
+        "fromType": "document",
+        "fromId": "ab81d254-bc98-45c8-8285-7365fc73d56d",
+        "fromLabel": "82 Beaver Street plan.pdf",
+        "relation": "part_of",
+        "toType": "project",
+        "toId": "49821a42-4dc0-44d1-8fca-63fd10504bad",
+        "toLabel": "82 Beaver St Newcastle ON"
+      },
+      "status": "linked",
+      "result": {
+        "status": "linked",
+        "relId": "a02f1d03-4367-46d8-a0a1-10ca5abf25ca"
+      }
+    },
+    {
+      "tool": "record_finding",
+      "input": {
+        "siteId": "49821a42-4dc0-44d1-8fca-63fd10504bad",
+        "kind": "inconsistency",
+        "severity": "low",
+        "title": "Scope mismatch: '2 triplex builds' vs one triplex in plans",
+        "detail": "The project description says \"2 triplex builds\" but the plan set (project 7783, March 18, 2026) covers one triplex at 82 Beaver St. S. Confirm whether a second triplex is in scope and, if so, obtain its drawings.",
+        "relatedAssets": [
+          "ab81d254-bc98-45c8-8285-7365fc73d56d"
+        ]
+      },
+      "status": "recorded",
+      "result": {
+        "status": "recorded",
+        "findingId": "a815b3cb-dcf9-4c4e-84a3-ff5c99877df2"
+      }
+    },
+    {
+      "tool": "propose_milestone_status",
+      "input": {
+        "siteId": "49821a42-4dc0-44d1-8fca-63fd10504bad",
+        "milestoneId": "d5e65d8a-0336-4d2e-ad55-f65e62e32495",
+        "status": "completed",
+        "reason": "A full architectural plan set dated March 18, 2026 (New Castle Drafting & Design, drawing 26-03-09) is on file: plans, sections, elevations and notes. It is unsealed, so a reviewer should confirm it counts as issued."
+      },
+      "status": "pending_approval",
+      "result": {
+        "status": "pending_approval",
+        "action_id": "8bc4dffb5df3",
+        "preview": "Mark milestone *Architectural drawings issued* on *82 Beaver St Newcastle ON* as *completed*\nReason: A full architectural plan set dated March 18, 2026 (New Castle Drafting & Design, drawing 26-03-09) is on file: plans, sections, elevations and notes. It is unsealed, so a reviewer should confirm it counts as issued.",
+        "note": "Queued for human approval. It has NOT been applied."
+      }
+    },
+    {
+      "tool": "finish",
+      "input": {
+        "summary": "The file was already registered, so I recorded a remark and the document intelligence for the 82 Beaver St. S. triplex plan set (design evidence only). I linked it to the project and flagged a scope mismatch. I proposed \"Architectural drawings issued\" as completed, which is waiting for approval.",
+        "confidence": 0.85,
+        "notes": "The plans have no seal, permit stamp or revisions, so please check whether they count as issued before approving the milestone. The project description says 2 triplexes but the drawings show only one. The register call returned already_registered, so the asset category may still read \"other\" rather than \"plan\"."
+      },
+      "status": "done",
+      "result": {
+        "status": "done",
+        "summary": "The file was already registered, so I recorded a remark and the document intelligence for the 82 Beaver St. S. triplex plan set (design evidence only). I linked it to the project and flagged a scope mismatch. I proposed \"Architectural drawings issued\" as completed, which is waiting for approval.",
+        "confidence": 0.85
+      }
+    }
+  ],
+  "pendingApprovals": [
+    "8bc4dffb5df3"
+  ],
+  "costUsd": 0.137089,
+  "tokens": {
+    "input": 23389,
+    "output": 4307,
+    "cacheWrite": 11473,
+    "cacheRead": 92791
+  },
+  "dashboard": {
+    "progress": {
+      "stages": 10,
+      "stagesCompleted": 0,
+      "milestones": 31,
+      "milestonesCompleted": 0,
+      "percent": 0
+    },
+    "siteStatus": "planning",
+    "stages": [
+      {
+        "stageId": "0f4f0b29-ae9f-4074-86cc-df86ba249be7",
+        "name": "Feasibility & Due Diligence",
+        "status": "not_started"
+      },
+      {
+        "stageId": "9e24c915-dcc8-4373-a5a8-11a69f4da36e",
+        "name": "Design & Permits",
+        "status": "not_started"
+      },
+      {
+        "stageId": "b9ccb69b-cae3-4f71-80f6-543ef9724645",
+        "name": "Site Preparation & Excavation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "c9c67deb-d42b-43e0-9949-df68d27129e5",
+        "name": "Foundation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "51279587-017e-453f-962f-c48f85e92b12",
+        "name": "Structural Framing",
+        "status": "not_started"
+      },
+      {
+        "stageId": "8530e722-cc0d-4c83-84c4-8aa6c8ce127b",
+        "name": "Building Envelope",
+        "status": "not_started"
+      },
+      {
+        "stageId": "3bd58096-5a8a-4905-b294-510a229414a6",
+        "name": "Rough-In Services",
+        "status": "not_started"
+      },
+      {
+        "stageId": "eaab1b75-a764-4f38-83ed-4f42ff9faec4",
+        "name": "Interior Finishes",
+        "status": "not_started"
+      },
+      {
+        "stageId": "99b4a2df-cdc7-434e-81be-7b27ab495934",
+        "name": "Landscaping & Exterior Works",
+        "status": "not_started"
+      },
+      {
+        "stageId": "2ece2a0b-830f-4533-8b7e-d0fb2b784cb0",
+        "name": "Handover & Closeout",
+        "status": "not_started"
+      }
+    ],
+    "milestones": [
+      {
+        "milestoneId": "d05ef073-f48b-47f5-be37-ec76bb039fb6",
+        "name": "Site survey & boundary confirmed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "8d2b1129-9933-4801-99e4-7be547406b68",
+        "name": "Zoning & by-law review completed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "a7435fc9-0ab5-4461-8404-b500bf3b85c8",
+        "name": "Feasibility budget approved",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "d5e65d8a-0336-4d2e-ad55-f65e62e32495",
+        "name": "Architectural drawings issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "94e11277-6e1a-411e-b050-9867a28098db",
+        "name": "Structural & MEP drawings complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "b68fbe72-53ce-4b04-958e-fc7edf1e14f8",
+        "name": "Building permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9f5100e2-c83f-4dfe-b859-e347780e93bd",
+        "name": "Utilities & services located",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "2b420dd9-38de-4ed7-913f-f136e6610789",
+        "name": "Clearing & demolition complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "633019ed-3e72-40d4-a982-aca16d2aadb9",
+        "name": "Excavation & shoring inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "d28b54b6-dd22-46a3-a7fd-52499a336dc0",
+        "name": "Footings inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "90c61d5b-0101-4ade-a197-0242b0dd08ca",
+        "name": "Foundation walls poured & waterproofed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "72cf5c11-4a64-44ce-8bfe-f90d4875ee08",
+        "name": "Backfill & drainage complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "4f65e7d4-eb0e-4f12-9e69-e90584d9bea9",
+        "name": "Floor structure complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "36ace596-0109-44b3-ac93-e9cb9f618445",
+        "name": "Framing erected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "a7e8de30-8713-427d-bb71-067f3738f4fc",
+        "name": "Framing inspection passed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "7abd0837-fac2-465e-a67d-73bf0b287084",
+        "name": "Roof trusses & sheathing complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "99a6621a-9941-425f-b8ca-737e9ccb9f96",
+        "name": "Roofing watertight",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9d8000e2-01d5-428c-b4ec-a27e801ef8ab",
+        "name": "Windows & exterior doors installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "6a8ee4f6-6e65-4618-87b9-141fd062b712",
+        "name": "Cladding & insulation complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "26480e3b-11c1-4d25-aec7-373a9000ccb2",
+        "name": "Electrical rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "bc52725d-c7b8-4562-9ec1-27e1397b84b2",
+        "name": "Plumbing rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "53ebfc94-dfef-4370-9af8-17c93c020d49",
+        "name": "HVAC rough-in complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "7fe11613-63d7-4ccb-94f7-a138a5259a18",
+        "name": "Drywall & plaster complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "a5dabbe2-ec5a-48be-a8e4-3ed77f9d9414",
+        "name": "Cabinetry & millwork installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "1e24bbf8-a6cb-4365-9f84-08072b8b8539",
+        "name": "Flooring & paint complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9a2ec99c-2dd6-4147-aeee-1a7742935e1d",
+        "name": "Grading & drainage certified",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "57f0bbd5-146f-46c5-99cd-fa6eea7d0d3c",
+        "name": "Driveway & hardscaping complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "ba0ca6fd-06e2-4608-967b-9648f2b75a1b",
+        "name": "Landscaping planted",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "94d2750b-05bc-469e-88e2-ba5edc57f897",
+        "name": "Occupancy permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "97760845-a589-40a8-be7a-c46fa3057964",
+        "name": "Pre-delivery inspection (PDI) complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "5798fb88-b810-48a3-8c7c-20b5dcc3e295",
+        "name": "Final accounts & warranty documents issued",
+        "status": "pending"
+      }
+    ],
+    "assetCount": 2,
+    "remarkCount": 2,
+    "latestRemark": {
+      "remarkId": "f10bca6a-2fc8-42ce-88fa-39406d1052b2",
+      "text": "Plan set \"Plan of Proposed Triplex for 82 Beaver St. S.\" by New Castle Drafting & Design, dated March 18, 2026 (project 7783, drawing 26-03-09), 7 pages. Design drawings only; no construction progress shown.",
+      "authorName": "CPPI Agent (AI)",
+      "createdAt": "2026-11-14T07:49:10Z"
+    }
+  }
+}

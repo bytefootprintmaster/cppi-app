@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "49821a42-4dc0-44d1-8fca-63fd10504bad",
-  "updatedAt": "2026-11-14T07:48:27Z",
+  "updatedAt": "2026-11-14T07:49:19Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 2,
-    "remarkCount": 1,
+    "remarkCount": 2,
     "latestRemark": {
-      "remarkId": "311d1476-3029-49b2-bb6a-1cd0079e3eba",
-      "text": "Interactive 3D model / digital twin of the proposed 82 Beaver St. S. triplex, built from the March 18, 2026 plan set (drawing 26-03-09). It is a design visualization only and shows no built work.",
+      "remarkId": "f10bca6a-2fc8-42ce-88fa-39406d1052b2",
+      "text": "Plan set \"Plan of Proposed Triplex for 82 Beaver St. S.\" by New Castle Drafting & Design, dated March 18, 2026 (project 7783, drawing 26-03-09), 7 pages. Design drawings only; no construction progress shown.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-14T07:48:21Z"
+      "createdAt": "2026-11-14T07:49:10Z"
     }
   }
 }
