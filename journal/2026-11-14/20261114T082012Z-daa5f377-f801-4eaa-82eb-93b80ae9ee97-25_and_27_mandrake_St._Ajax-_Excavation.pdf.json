@@ -1,0 +1,744 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "recordedAt": "2026-11-14T08:20:10Z",
+  "jobId": "283bf022b1d8",
+  "trigger": "s3",
+  "task": "progress_update_from_file",
+  "agent": "progress",
+  "model": "claude-sonnet-5-5",
+  "source": {
+    "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+    "s3Key": "sites/daa5f377-f801-4eaa-82eb-93b80ae9ee97/document/da947e66-e79f-470a-9604-b3564a89a987-25_and_27_mandrake_St._Ajax-_Excavation.pdf",
+    "fileName": "25_and_27_mandrake_St._Ajax-_Excavation.pdf",
+    "kind": "document",
+    "etag": "cac364e9ebd28245ddaa9a4209db735b",
+    "size": 521443
+  },
+  "summary": "Recorded the executed Pennella excavation contract 2026-0172-REVISED (already registered) as contract evidence with full intelligence and 3 map links. Raised findings for missing Pennella WSIB/CGL and inconsistent HST treatment. No status changes proposed because a contract doesn't prove work done.",
+  "confidence": 0.93,
+  "steps": 3,
+  "actions": [
+    {
+      "tool": "get_project_state",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97"
+      },
+      "status": "ok"
+    },
+    {
+      "tool": "get_project_intelligence",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97"
+      },
+      "status": "ok",
+      "result": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "documentCount": 2,
+        "documents": [
+          {
+            "assetId": "5a9c31e4-4fca-49c7-82fc-a69e11ae8d18",
+            "name": "27 Mandrake-builder's risk policy-Oct. 1, 2026 to June 1, 2027-full package.pdf",
+            "docType": "Builders' risk & CGL policy endorsement package (Add Mortgagees)",
+            "issuer": "Specialty Program Group Canada Inc. (SPG Canada), for subscribing insurers",
+            "documentDate": "2026-10-13",
+            "referenceNumber": "SPG1026121 / BO91078",
+            "evidenceClasses": [
+              "contractor_compliance"
+            ],
+            "verificationStatus": "extracted",
+            "summary": "Endorsement to builders' risk/CGL/equipment breakdown policy SPG1026121 adding two first mortgagees; followed by policy wordings and statutory conditions.",
+            "missingInformation": [
+              "Base policy declarations and premium details",
+              "Signed insurer entries on subscription list",
+              "Proof of premium payment"
+            ],
+            "inconsistencies": [
+              "Endorsement period starts 9-Oct-2026 while certificates show policy period from 1-Oct-2026 (likely endorsement effective date vs inception)",
+              "Postal code on policy (L1S 2B9) differs from project record (L1S 2c7)",
+              "Project record's primary address is 25 Mandrake; policy insures 27 Mandrake"
+            ],
+            "risks": [
+              "Policy expires 1-Jun-2027, one day after the 2027-05-31 target date",
+              "Products-Completed Operations Hazard excluded",
+              "Hot works / open flame warranty breach could prejudice cover"
+            ],
+            "recommendedActions": [
+              "Verify mortgagees against lender documents",
+              "Plan renewal/extension before 1-Jun-2027",
+              "Circulate hot-works and open-flame warranty requirements to trades"
+            ],
+            "confidence": 0.92,
+            "updatedAt": "2026-11-14T01:32:02Z"
+          },
+          {
+            "assetId": "ef4d94c8-0fa8-4dca-8fc9-ba7b4b60b74f",
+            "name": "25 Mandrake-builder's risk policy-Oct. 1, 2026 to June 1, 2027-full package.pdf",
+            "docType": "Builders' risk & CGL policy endorsement package (Add Mortgagees)",
+            "issuer": "Specialty Program Group Canada Inc. (SPG Canada), for subscribing insurers",
+            "documentDate": "2026-10-13",
+            "referenceNumber": "SPG1026124 / BO91076",
+            "evidenceClasses": [
+              "contractor_compliance"
+            ],
+            "verificationStatus": "extracted",
+            "summary": "Endorsement to builders' risk/CGL/equipment breakdown policy SPG1026124 adding two first mortgagees; followed by policy wordings and statutory conditions.",
+            "missingInformation": [
+              "Base policy declarations and premium details (only the endorsement is included)",
+              "Signed insurer entries on the subscription list",
+              "Proof of premium payment"
+            ],
+            "inconsistencies": [
+              "Endorsement period begins 9-Oct-2026 while the file name and project certificates show 1-Oct-2026 to 1-Jun-2027 (likely endorsement effective date versus policy inception)",
+              "Postal code on policy (L1S 2B9) differs from project record (L1S 2c7)"
+            ],
+            "risks": [
+              "Policy expires 1-Jun-2027, one day after project target date 2027-05-31; no buffer if schedule slips",
+              "Products-Completed Operations Hazard excluded under CGL",
+              "Hot Works and Open Flame warranties could void cover if breached"
+            ],
+            "recommendedActions": [
+              "Verify mortgagees against lender documents",
+              "Plan renewal or extension before 1-Jun-2027",
+              "Circulate hot-works and open-flame warranty requirements to trades"
+            ],
+            "confidence": 0.92,
+            "updatedAt": "2026-11-14T01:30:57Z"
+          }
+        ],
+        "evidenceCovered": [
+          "contractor_compliance"
+        ],
+        "evidenceMissing": [
+          "land_survey",
+          "design",
+          "engineering",
+          "permit_approval",
+          "procurement_quote",
+          "executed_contract",
+          "commencement",
+          "construction_progress",
+          "inspection_verification",
+          "financial_payment",
+          "completion_occupancy"
+        ],
+        "findingCount": 1,
+        "openFindings": [
+          {
+            "findingId": "36e487f5-8fa3-417c-be47-f8c19a66379e",
+            "kind": "expiring_certificate",
+            "severity": "low",
+            "title": "Builders' risk policy expires 1-Jun-2027, one day after target completion",
+            "detail": "Policy SPG1026124 (25 Mandrake) runs to 1-Jun-2027 while the project target date is 2027-05-31. Any delay would leave the site without builders' risk cover; arrange extension/renewal with Acera Insurance Services. Same applies to 27 Mandrake policy SPG1026121.",
+            "relatedAssets": [
+              "ef4d94c8-0fa8-4dca-8fc9-ba7b4b60b74f"
+            ],
+            "status": "open",
+            "createdAt": "2026-11-14T01:30:58Z"
+          }
+        ],
+        "relationshipCount": 4,
+        "relationships": [
+          {
+            "fromType": "document",
+            "fromId": "5a9c31e4-4fca-49c7-82fc-a69e11ae8d18",
+            "fromLabel": "27 Mandrake builder's risk policy package (SPG1026121)",
+            "relation": "relates_to",
+            "toType": "property",
+            "toId": "27 Mandrake Street, Ajax",
+            "toLabel": "27 Mandrake Street, Ajax",
+            "note": null
+          },
+          {
+            "fromType": "document",
+            "fromId": "ef4d94c8-0fa8-4dca-8fc9-ba7b4b60b74f",
+            "fromLabel": "25 Mandrake builder's risk policy package (SPG1026124)",
+            "relation": "relates_to",
+            "toType": "property",
+            "toId": "25 Mandrake Street, Ajax",
+            "toLabel": "25 Mandrake Street, Ajax",
+            "note": null
+          },
+          {
+            "fromType": "document",
+            "fromId": "5a9c31e4-4fca-49c7-82fc-a69e11ae8d18",
+            "fromLabel": "27 Mandrake builder's risk policy package (SPG1026121)",
+            "relation": "relates_to",
+            "toType": "contractor",
+            "toId": "TT9 Inc.",
+            "toLabel": "TT9 Inc. (named insured)",
+            "note": null
+          },
+          {
+            "fromType": "document",
+            "fromId": "ef4d94c8-0fa8-4dca-8fc9-ba7b4b60b74f",
+            "fromLabel": "25 Mandrake builder's risk policy package (SPG1026124)",
+            "relation": "relates_to",
+            "toType": "contractor",
+            "toId": "TT9 Inc.",
+            "toLabel": "TT9 Inc. (named insured)",
+            "note": null
+          }
+        ]
+      }
+    },
+    {
+      "tool": "add_progress_remark",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "text": "Executed excavation contract 2026-0172-REVISED between TT9 Inc. and Pennella Excavating for 25 & 27 Mandrake, fixed value $30,900 + HST plus tree pass-through. Signed by both parties 29-Sep-2026. Contract evidence only, not proof that excavation has been done.",
+        "category": "other",
+        "summary": "Dropbox Sign-executed excavation and backfill subcontract (Pennella) for two foundations, with 10% holdback and a 5-payment milestone schedule.",
+        "extracted": [
+          {
+            "label": "Contract no.",
+            "value": "2026-0172-REVISED",
+            "verification": "verified"
+          },
+          {
+            "label": "Date of issuance",
+            "value": "29-Sep-2026",
+            "verification": "verified"
+          },
+          {
+            "label": "Owner",
+            "value": "TT9 Inc. (Michael Poon)",
+            "verification": "verified"
+          },
+          {
+            "label": "Subcontractor",
+            "value": "Pennella Excavating & Demolition / Pennella C Haulage Inc, 21 Shaft Rd, Etobicoke",
+            "verification": "verified"
+          },
+          {
+            "label": "Base scope",
+            "value": "$25,500 + HST: excavation for two foundations (USF #27 98.93 m, #25 99.05 m), haulage, stump removal in envelope, backfill",
+            "verification": "extracted"
+          },
+          {
+            "label": "Additional scope",
+            "value": "Driveway/parking rough grading, 12 tri-axle loads at $450 = $5,400; property line tree and stump removal billed at cost ($250/bin + $92.50/ton) with scale tickets",
+            "verification": "extracted"
+          },
+          {
+            "label": "Total fixed value",
+            "value": "$30,900 + $4,017 HST = $34,917 (excl. tree tipping)",
+            "verification": "extracted"
+          },
+          {
+            "label": "Holdback",
+            "value": "10% statutory, released 60 days after backfill substantial completion if no liens; $3,090 plus tree holdback",
+            "verification": "extracted"
+          },
+          {
+            "label": "Payment schedule",
+            "value": "P1 mobilization $2,500; P2 excavation and rough grade $26,400; P3 tree removal at cost; P4 backfill $2,000; P5 holdback release",
+            "verification": "extracted"
+          },
+          {
+            "label": "Signatures",
+            "value": "Michael Poon 29-Sep-2026 11:58 and Carmen Pennella 29-Sep-2026 12:06 UTC-4; Dropbox Sign audit trail completed",
+            "verification": "verified"
+          }
+        ],
+        "relevance": "Procurement and contract for the Site Preparation & Excavation stage and the backfill milestone in Foundation. It sets the cost, payment triggers and compliance conditions for Pennella.",
+        "evidenceClasses": [
+          "executed_contract",
+          "procurement_quote"
+        ],
+        "verificationStatus": "extracted",
+        "limitations": "Shows scope, price and terms agreed. It does not prove mobilization, excavation, grading, backfill or any payment. It does not include Pennella's WSIB clearance or insurance, which the contract requires before site entry.",
+        "recommendedActions": [
+          "Obtain Pennella's WSIB clearance certificate and CGL insurance naming TT9 Inc. as additional insured",
+          "Check the HST treatment in the payment schedule before approving invoices",
+          "Match Pennella invoices to payment milestones and require scale tickets for tree removal",
+          "Confirm utility locates are complete, which the contract assigns to TT9"
+        ],
+        "relatedDocuments": [
+          "Imperial Concrete Forming invoices",
+          "Builder's risk policy packages SPG1026124 / SPG1026121"
+        ],
+        "sourceDocument": "25_and_27_mandrake_St._Ajax-_Excavation.pdf",
+        "sourceRef": "Pages 1-5 (signature page 4, audit trail page 5)",
+        "confidence": 0.93
+      },
+      "status": "added",
+      "result": {
+        "status": "added",
+        "remarkId": "e5554aed-351d-4171-a44c-5bca839c0268",
+        "evidenceClasses": [
+          "executed_contract",
+          "procurement_quote"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "tool": "record_document_intelligence",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "assetId": "12602dac-73e0-4cfe-a28b-299bdc8bdd02",
+        "evidenceClasses": [
+          "executed_contract",
+          "procurement_quote"
+        ],
+        "docType": "Executed excavation subcontract",
+        "issuer": "TT9 Inc. (owner); signed via Dropbox Sign",
+        "documentDate": "2026-09-29",
+        "referenceNumber": "2026-0172-REVISED (Dropbox Sign ID 2b7b9b4d16632b2eb79bdceabcdcb9a867185ecd)",
+        "property": "25 & 27 Mandrake Street, Ajax, Ontario",
+        "project": "25 & 27 Mandrake",
+        "name": "TT9 Inc. Excavation Contract - Pennella",
+        "summary": "Subcontract with Pennella Excavating & Demolition for foundation excavation and backfill of two houses, driveway rough grading and a property line tree removal. It carries a 10% holdback and a five-step payment schedule.",
+        "purpose": "To fix scope, price, payment milestones, holdback, compliance and change-order rules for excavation and backfill at 25 and 27 Mandrake.",
+        "relevance": "Contract basis for the Site Preparation & Excavation stage and the Foundation backfill milestone. It is the reference for checking Pennella's invoices and payments.",
+        "facts": [
+          {
+            "label": "Owner",
+            "value": "TT9 Inc., 200-190 Harwood Ave South, Ajax; rep Michael Poon",
+            "verification": "verified"
+          },
+          {
+            "label": "Subcontractor",
+            "value": "Pennella Excavating & Demolition / Pennella C Haulage Inc (Carmen Pennella signed)",
+            "verification": "verified"
+          },
+          {
+            "label": "Governing law",
+            "value": "Ontario Construction Act",
+            "verification": "verified"
+          },
+          {
+            "label": "USF elevations",
+            "value": "#27 at 98.93 m; #25 at 99.05 m",
+            "verification": "extracted"
+          },
+          {
+            "label": "Fixed value",
+            "value": "$30,900 + HST $4,017 = $34,917",
+            "verification": "extracted"
+          },
+          {
+            "label": "Execution",
+            "value": "Both parties signed 29-Sep-2026; audit trail marked completed 12:06:25 UTC-4",
+            "verification": "verified"
+          }
+        ],
+        "extracts": [
+          {
+            "kind": "financial",
+            "detail": "Base excavation & backfill $25,500; rough grading 12 loads x $450 = $5,400; total fixed $30,900 + 13% HST $4,017 = $34,917. Tree removal is a pass-through at $250/bin + $92.50/ton plus HST.",
+            "verification": "extracted"
+          },
+          {
+            "kind": "financial",
+            "detail": "Payments: P1 $2,500 mobilization; P2 $26,400 excavation and rough grade completion; P3 tree removal at cost with scale tickets; P4 $2,000 backfill completion; P5 release of holdback ($3,090 + tree holdback pool).",
+            "verification": "extracted"
+          },
+          {
+            "kind": "contractual",
+            "detail": "10% statutory holdback on every invoice, released 60 days after substantial completion of backfill if no liens are registered. Extra work needs a written Change Order signed by Michael Poon; otherwise it is at the subcontractor's expense.",
+            "verification": "extracted"
+          },
+          {
+            "kind": "regulatory",
+            "detail": "Pre-commencement: current WSIB clearance before site entry and with each billing; CGL of at least $2M per occurrence naming TT9 Inc. as additional insured.",
+            "verification": "extracted"
+          },
+          {
+            "kind": "technical",
+            "detail": "Backfill needs a clean, level site with a 4 ft machine access envelope and no other trades on-site. Exclusions: shale rock, dewatering, shoring, contaminated or spoiled soil, geotechnical testing and permits. TT9 must confirm utility locates before excavation.",
+            "verification": "extracted"
+          },
+          {
+            "kind": "contractual",
+            "detail": "Overdue balances accrue interest at 2% per month (24% per annum).",
+            "verification": "extracted"
+          }
+        ],
+        "missingInformation": [
+          "Pennella WSIB clearance certificate",
+          "Pennella CGL certificate naming TT9 Inc. as additional insured",
+          "Utility locate confirmation",
+          "Commencement or mobilization evidence",
+          "Pennella invoices and payment records",
+          "Scale tickets for tree removal"
+        ],
+        "inconsistencies": [
+          "Net payable HST in Payments 1, 2 and 4 is computed on the net-of-holdback amount (e.g. $23,760 + $3,088.80 HST = $26,848.80 on Payment 2). Payment 3 pays 100% of HST, and HST on the gross would be $3,432. The HST treatment is inconsistent across the schedule.",
+          "The owner signature block reads 'TT9 INC. (OWNER / CONTRACTOR)'.",
+          "The document is dated 29-Sep-2026, before the project's recorded start date of 2026-10-26 and before the builders' risk policies were issued (13-Oct-2026), although the contract requires insurance and WSIB before site entry."
+        ],
+        "risks": [
+          "Without WSIB and insurance on file, a payment may be made against a non-compliant subcontractor.",
+          "The holdback release depends on a lien search, which is not yet evidenced.",
+          "The spoiled soil, rock and dewatering exclusions could produce change-order claims."
+        ],
+        "limitations": "The document is a contract only. It proves what was agreed, not that any work has started or been paid.",
+        "recommendedActions": [
+          "Collect Pennella's WSIB clearance and CGL certificate",
+          "Clarify the HST treatment with Pennella before processing Payment 1, 2 or 4",
+          "Record each Pennella invoice and payment against the milestone schedule",
+          "Run a lien search on titles of 25 and 27 Mandrake before releasing holdback"
+        ],
+        "sourceRef": "Pages 1-5",
+        "verificationStatus": "extracted",
+        "confidence": 0.93
+      },
+      "status": "recorded",
+      "result": {
+        "status": "recorded",
+        "assetId": "12602dac-73e0-4cfe-a28b-299bdc8bdd02",
+        "evidenceClasses": [
+          "executed_contract",
+          "procurement_quote"
+        ],
+        "revisions": 0,
+        "notes": []
+      }
+    },
+    {
+      "tool": "link_project_items",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "fromType": "document",
+        "fromId": "12602dac-73e0-4cfe-a28b-299bdc8bdd02",
+        "fromLabel": "Excavation contract 2026-0172-REVISED",
+        "relation": "relates_to",
+        "toType": "contractor",
+        "toId": "Pennella Excavating & Demolition",
+        "toLabel": "Pennella Excavating & Demolition"
+      },
+      "status": "linked",
+      "result": {
+        "status": "linked",
+        "relId": "57931c17-ced9-47cc-bc92-31dc7b83b4b5"
+      }
+    },
+    {
+      "tool": "link_project_items",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "fromType": "document",
+        "fromId": "12602dac-73e0-4cfe-a28b-299bdc8bdd02",
+        "fromLabel": "Excavation contract 2026-0172-REVISED",
+        "relation": "issued_to",
+        "toType": "contractor",
+        "toId": "TT9 Inc.",
+        "toLabel": "TT9 Inc. (owner)"
+      },
+      "status": "linked",
+      "result": {
+        "status": "linked",
+        "relId": "86d0d086-3405-4841-9097-4c7b9c4ce83e"
+      }
+    },
+    {
+      "tool": "link_project_items",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "fromType": "contract",
+        "fromId": "2026-0172-REVISED",
+        "fromLabel": "Excavation contract 2026-0172-REVISED",
+        "relation": "references",
+        "toType": "work_package",
+        "toId": "Foundation excavation & backfill",
+        "toLabel": "Foundation excavation, backfill and rough grading"
+      },
+      "status": "linked",
+      "result": {
+        "status": "linked",
+        "relId": "988471ca-e3ba-44fa-9a67-60ee4fefe306"
+      }
+    },
+    {
+      "tool": "record_finding",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "kind": "missing_document",
+        "severity": "medium",
+        "title": "No Pennella WSIB clearance or CGL certificate on file",
+        "detail": "Excavation contract 2026-0172-REVISED requires Pennella to provide a current WSIB clearance before site entry and with each billing, and CGL of at least $2M naming TT9 Inc. as additional insured. Only TT9's own insurance is on file. Obtain both before approving payments.",
+        "relatedAssets": [
+          "12602dac-73e0-4cfe-a28b-299bdc8bdd02"
+        ]
+      },
+      "status": "recorded",
+      "result": {
+        "status": "recorded",
+        "findingId": "69a32d55-1823-48c5-a051-4848f1523c16"
+      }
+    },
+    {
+      "tool": "record_finding",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "kind": "inconsistency",
+        "severity": "low",
+        "title": "HST treatment inconsistent in Pennella payment schedule",
+        "detail": "In contract 2026-0172-REVISED, net payable HST for Payments 1, 2 and 4 is calculated on the amount after holdback (e.g. Payment 2: $26,848.80), but Payment 3 states 100% of HST is paid. Clarify with Pennella before processing invoices.",
+        "relatedAssets": [
+          "12602dac-73e0-4cfe-a28b-299bdc8bdd02"
+        ]
+      },
+      "status": "recorded",
+      "result": {
+        "status": "recorded",
+        "findingId": "cb03b6c7-cc36-4a2e-ae18-9252bf7e9dac"
+      }
+    },
+    {
+      "tool": "finish",
+      "input": {
+        "summary": "Recorded the executed Pennella excavation contract 2026-0172-REVISED (already registered) as contract evidence with full intelligence and 3 map links. Raised findings for missing Pennella WSIB/CGL and inconsistent HST treatment. No status changes proposed because a contract doesn't prove work done.",
+        "confidence": 0.93,
+        "notes": "The contract total ($30,900 + HST) was not written to the budget because this is a contract, not a budget document. The project's excavation milestones are already marked completed. This file does not evidence that work. Check the HST arithmetic in the payment schedule with Pennella."
+      },
+      "status": "done",
+      "result": {
+        "status": "done",
+        "summary": "Recorded the executed Pennella excavation contract 2026-0172-REVISED (already registered) as contract evidence with full intelligence and 3 map links. Raised findings for missing Pennella WSIB/CGL and inconsistent HST treatment. No status changes proposed because a contract doesn't prove work done.",
+        "confidence": 0.93
+      }
+    }
+  ],
+  "pendingApprovals": [],
+  "costUsd": 0.202661,
+  "tokens": {
+    "input": 29598,
+    "output": 6533,
+    "cacheWrite": 26943,
+    "cacheRead": 53886
+  },
+  "dashboard": {
+    "progress": {
+      "stages": 10,
+      "stagesCompleted": 1,
+      "milestones": 32,
+      "milestonesCompleted": 11,
+      "percent": 34
+    },
+    "siteStatus": "in_progress",
+    "stages": [
+      {
+        "stageId": "43d4e0d2-cc81-4912-a186-3ae3a89cd9a2",
+        "name": "Feasibility & Due Diligence",
+        "status": "completed"
+      },
+      {
+        "stageId": "8e037d3e-3511-4c7e-86d1-111e11c26597",
+        "name": "Design & Permits",
+        "status": "not_started"
+      },
+      {
+        "stageId": "3739c5da-64f6-48a4-886f-7bd24138526d",
+        "name": "Site Preparation & Excavation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "08ded4a9-c0f5-4f46-9e8d-70c7c6209fda",
+        "name": "Foundation",
+        "status": "in_progress"
+      },
+      {
+        "stageId": "245c2de5-98b8-43cb-b4af-89f17d55f4bd",
+        "name": "Structural Framing",
+        "status": "not_started"
+      },
+      {
+        "stageId": "6fa286ae-566d-4da2-927e-20af34b228c1",
+        "name": "Building Envelope",
+        "status": "not_started"
+      },
+      {
+        "stageId": "1f414a15-de86-49d7-af51-39a9f5ab5ac6",
+        "name": "Rough-In Services",
+        "status": "not_started"
+      },
+      {
+        "stageId": "74a52551-4007-4d44-aeb3-9cad6ac26f43",
+        "name": "Interior Finishes",
+        "status": "not_started"
+      },
+      {
+        "stageId": "99083336-f837-4297-9b92-1c0bfa2ca966",
+        "name": "Landscaping & Exterior Works",
+        "status": "not_started"
+      },
+      {
+        "stageId": "2424b179-6eb8-4095-8a17-5a46de64555f",
+        "name": "Handover & Closeout",
+        "status": "not_started"
+      }
+    ],
+    "milestones": [
+      {
+        "milestoneId": "83fa64f5-b1ce-4bbb-a81f-15dce5e871e2",
+        "name": "Site survey & boundary confirmed",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "9874d4ae-c81a-40f5-b916-cab949a9a0ea",
+        "name": "Zoning & by-law review completed",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "d77c7fbe-62ab-45bf-84fc-a1477109157f",
+        "name": "Feasibility budget approved",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "a62b8d24-c2f9-47a9-bb2d-98d5309a2d39",
+        "name": "Architectural drawings issued",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "7b7014dc-d118-4140-b460-d533d9c8fbf2",
+        "name": "Structural & MEP drawings complete",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "c4d8aac7-142e-48f7-bf53-24e6b3cee321",
+        "name": "Building permit issued",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "db7dcb04-9bcc-4754-b868-f40815e04c8d",
+        "name": "Utilities & services located",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "6601fc85-dce7-4b1b-91e6-6414c23b7a57",
+        "name": "Clearing & demolition complete",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "374ebe09-f209-41a1-b0b1-e74b7dcdec69",
+        "name": "Excavation & shoring inspected",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "d4e01db8-7c90-491d-8421-20839f85bc20",
+        "name": "Footings inspected",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "9a846ed5-a529-4f09-9221-5a2ac30f4d48",
+        "name": "Foundation walls poured & waterproofed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "04c36fa6-0623-4769-bf97-4bd67362d468",
+        "name": "Backfill & drainage complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "85f717e3-4e87-4382-a10b-9f6eecb38473",
+        "name": "Floor structure complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "1402eab7-cff8-4d3e-a1b3-ab5b64ccff42",
+        "name": "Framing erected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "b90105d8-4d61-4bea-a52b-1acba54b2fc2",
+        "name": "Framing inspection passed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "1cc6cc34-2f3f-44e4-a382-1fad92cf4a61",
+        "name": "Roof trusses & sheathing complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "144849e1-3aac-4a3a-b4b3-c77b2742dfbd",
+        "name": "Roofing watertight",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "3ee0d7ef-842e-46d6-9db5-fa77df484a74",
+        "name": "Windows & exterior doors installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "78a2cba7-3b6c-4be8-8c93-7ae07f21c39f",
+        "name": "Cladding & insulation complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9f91afc3-6474-40e8-9a38-63d6fa8e9420",
+        "name": "Electrical rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "066825dd-e916-4600-8e02-cfd21dd62c15",
+        "name": "Plumbing rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "e73f9394-6db6-4700-885c-e594ba02c73f",
+        "name": "HVAC rough-in complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "715d3b61-a6ee-43e5-8c0f-3619a65ede21",
+        "name": "Drywall & plaster complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "50a2d07b-82ef-4ea5-94a0-ef04c1b1b11e",
+        "name": "Cabinetry & millwork installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "47020274-79ca-45da-ad2e-046573160612",
+        "name": "Flooring & paint complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "a2f28c1f-edb0-44d4-95e9-eb224365c1ab",
+        "name": "Grading & drainage certified",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "e2f05da4-b5c9-4d4f-ab05-4e39eaf5dcb7",
+        "name": "Driveway & hardscaping complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c878ab83-bcec-45cf-bdd4-282ae58fae43",
+        "name": "Landscaping planted",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "cffcf10b-77fb-45bc-a91c-0a3fb1afb02e",
+        "name": "Occupancy permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "457d433f-40a6-4d99-a52d-0cf83f1c9511",
+        "name": "Pre-delivery inspection (PDI) complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9d34eaab-9dd4-4e0e-b8ca-05bfbc95b3cc",
+        "name": "Final accounts & warranty documents issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "5559b462-f2fe-4b38-b2af-8549a324104a",
+        "name": "Feasibility",
+        "status": "completed"
+      }
+    ],
+    "assetCount": 64,
+    "remarkCount": 118,
+    "latestRemark": {
+      "remarkId": "e5554aed-351d-4171-a44c-5bca839c0268",
+      "text": "Executed excavation contract 2026-0172-REVISED between TT9 Inc. and Pennella Excavating for 25 & 27 Mandrake, fixed value $30,900 + HST plus tree pass-through. Signed by both parties 29-Sep-2026. Contract evidence only, not proof that excavation has been done.",
+      "authorName": "CPPI Agent (AI)",
+      "createdAt": "2026-11-14T08:20:01Z"
+    }
+  }
+}

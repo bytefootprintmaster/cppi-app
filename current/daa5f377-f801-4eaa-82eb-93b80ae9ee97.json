@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-11-14T01:32:16Z",
+  "updatedAt": "2026-11-14T08:20:10Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -225,13 +225,13 @@
         "status": "completed"
       }
     ],
-    "assetCount": 73,
-    "remarkCount": 117,
+    "assetCount": 64,
+    "remarkCount": 118,
     "latestRemark": {
-      "remarkId": "36f81119-bb0c-4e8b-b544-2e96ce8cc2e4",
-      "text": "Builder's risk policy package SPG1026121 for TT9 Inc., 27 Mandrake St (endorsement issued 13-Oct-2026 adding two first mortgagees, period 9-Oct-2026 to 1-Jun-2027). Builders' Risk $1.4M hard / $300K soft, CGL $2M. Insurance evidence only, not construction progress.",
+      "remarkId": "e5554aed-351d-4171-a44c-5bca839c0268",
+      "text": "Executed excavation contract 2026-0172-REVISED between TT9 Inc. and Pennella Excavating for 25 & 27 Mandrake, fixed value $30,900 + HST plus tree pass-through. Signed by both parties 29-Sep-2026. Contract evidence only, not proof that excavation has been done.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-14T01:32:01Z"
+      "createdAt": "2026-11-14T08:20:01Z"
     }
   }
 }
