@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-11-13T15:52:12Z",
+  "updatedAt": "2026-11-14T01:32:16Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -225,13 +225,13 @@
         "status": "completed"
       }
     ],
-    "assetCount": 71,
-    "remarkCount": 114,
+    "assetCount": 73,
+    "remarkCount": 117,
     "latestRemark": {
-      "remarkId": "69c0f5f3-a561-4a08-a76e-418c997841e4",
-      "text": "CSIO insurance certificate dated 2026/11/13 for TT9 Inc., certificate holder and additional insured Town of Ajax, risk location 27 Mandrake St. Shows CGL $2M and Builders' Risk $1.4M, policy SPG1026121 (SPG Canada), 2026/10/01 to 2027/06/01. Compliance evidence only.",
+      "remarkId": "36f81119-bb0c-4e8b-b544-2e96ce8cc2e4",
+      "text": "Builder's risk policy package SPG1026121 for TT9 Inc., 27 Mandrake St (endorsement issued 13-Oct-2026 adding two first mortgagees, period 9-Oct-2026 to 1-Jun-2027). Builders' Risk $1.4M hard / $300K soft, CGL $2M. Insurance evidence only, not construction progress.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-13T15:52:05Z"
+      "createdAt": "2026-11-14T01:32:01Z"
     }
   }
 }

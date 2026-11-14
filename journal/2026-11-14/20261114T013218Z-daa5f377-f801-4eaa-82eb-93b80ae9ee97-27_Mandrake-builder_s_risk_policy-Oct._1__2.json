@@ -1,0 +1,586 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "recordedAt": "2026-11-14T01:32:16Z",
+  "jobId": "0f473cdb1be5",
+  "trigger": "reconcile",
+  "task": "progress_update_from_file",
+  "agent": "progress",
+  "model": "claude-sonnet-5-5",
+  "source": {
+    "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+    "s3Key": "sites/daa5f377-f801-4eaa-82eb-93b80ae9ee97/document/8d373e6a-06b8-4c0e-8795-28376f82e3b6-27_Mandrake-builder_s_risk_policy-Oct._1__2026_to_June_1__2027-full_package.pdf",
+    "fileName": "27_Mandrake-builder_s_risk_policy-Oct._1__2026_to_June_1__2027-full_package.pdf",
+    "kind": "document",
+    "etag": "d10a6bfa300ece4d46544be9d345d7d2",
+    "size": 442433
+  },
+  "summary": "",
+  "confidence": null,
+  "steps": 3,
+  "actions": [
+    {
+      "tool": "get_project_state",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97"
+      },
+      "status": "ok"
+    },
+    {
+      "tool": "get_project_intelligence",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97"
+      },
+      "status": "ok",
+      "result": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "documentCount": 1,
+        "documents": [
+          {
+            "assetId": "ef4d94c8-0fa8-4dca-8fc9-ba7b4b60b74f",
+            "name": "25 Mandrake-builder's risk policy-Oct. 1, 2026 to June 1, 2027-full package.pdf",
+            "docType": "Builders' risk & CGL policy endorsement package (Add Mortgagees)",
+            "issuer": "Specialty Program Group Canada Inc. (SPG Canada), for subscribing insurers",
+            "documentDate": "2026-10-13",
+            "referenceNumber": "SPG1026124 / BO91076",
+            "evidenceClasses": [
+              "contractor_compliance"
+            ],
+            "verificationStatus": "extracted",
+            "summary": "Endorsement to builders' risk/CGL/equipment breakdown policy SPG1026124 adding two first mortgagees; followed by policy wordings and statutory conditions.",
+            "missingInformation": [
+              "Base policy declarations and premium details (only the endorsement is included)",
+              "Signed insurer entries on the subscription list",
+              "Proof of premium payment"
+            ],
+            "inconsistencies": [
+              "Endorsement period begins 9-Oct-2026 while the file name and project certificates show 1-Oct-2026 to 1-Jun-2027 (likely endorsement effective date versus policy inception)",
+              "Postal code on policy (L1S 2B9) differs from project record (L1S 2c7)"
+            ],
+            "risks": [
+              "Policy expires 1-Jun-2027, one day after project target date 2027-05-31; no buffer if schedule slips",
+              "Products-Completed Operations Hazard excluded under CGL",
+              "Hot Works and Open Flame warranties could void cover if breached"
+            ],
+            "recommendedActions": [
+              "Verify mortgagees against lender documents",
+              "Plan renewal or extension before 1-Jun-2027",
+              "Circulate hot-works and open-flame warranty requirements to trades"
+            ],
+            "confidence": 0.92,
+            "updatedAt": "2026-11-14T01:30:57Z"
+          }
+        ],
+        "evidenceCovered": [
+          "contractor_compliance"
+        ],
+        "evidenceMissing": [
+          "land_survey",
+          "design",
+          "engineering",
+          "permit_approval",
+          "procurement_quote",
+          "executed_contract",
+          "commencement",
+          "construction_progress",
+          "inspection_verification",
+          "financial_payment",
+          "completion_occupancy"
+        ],
+        "findingCount": 1,
+        "openFindings": [
+          {
+            "findingId": "36e487f5-8fa3-417c-be47-f8c19a66379e",
+            "kind": "expiring_certificate",
+            "severity": "low",
+            "title": "Builders' risk policy expires 1-Jun-2027, one day after target completion",
+            "detail": "Policy SPG1026124 (25 Mandrake) runs to 1-Jun-2027 while the project target date is 2027-05-31. Any delay would leave the site without builders' risk cover; arrange extension/renewal with Acera Insurance Services. Same applies to 27 Mandrake policy SPG1026121.",
+            "relatedAssets": [
+              "ef4d94c8-0fa8-4dca-8fc9-ba7b4b60b74f"
+            ],
+            "status": "open",
+            "createdAt": "2026-11-14T01:30:58Z"
+          }
+        ],
+        "relationshipCount": 2,
+        "relationships": [
+          {
+            "fromType": "document",
+            "fromId": "ef4d94c8-0fa8-4dca-8fc9-ba7b4b60b74f",
+            "fromLabel": "25 Mandrake builder's risk policy package (SPG1026124)",
+            "relation": "relates_to",
+            "toType": "property",
+            "toId": "25 Mandrake Street, Ajax",
+            "toLabel": "25 Mandrake Street, Ajax",
+            "note": null
+          },
+          {
+            "fromType": "document",
+            "fromId": "ef4d94c8-0fa8-4dca-8fc9-ba7b4b60b74f",
+            "fromLabel": "25 Mandrake builder's risk policy package (SPG1026124)",
+            "relation": "relates_to",
+            "toType": "contractor",
+            "toId": "TT9 Inc.",
+            "toLabel": "TT9 Inc. (named insured)",
+            "note": null
+          }
+        ]
+      }
+    },
+    {
+      "tool": "add_progress_remark",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "text": "Builder's risk policy package SPG1026121 for TT9 Inc., 27 Mandrake St (endorsement issued 13-Oct-2026 adding two first mortgagees, period 9-Oct-2026 to 1-Jun-2027). Builders' Risk $1.4M hard / $300K soft, CGL $2M. Insurance evidence only, not construction progress.",
+        "category": "other",
+        "summary": "SPG Canada endorsement (Add Mortgagees) to builders' risk / equipment breakdown / CGL policy SPG1026121, followed by policy wordings and statutory conditions (88 pages).",
+        "evidenceClasses": [
+          "contractor_compliance"
+        ],
+        "verificationStatus": "extracted",
+        "extracted": [
+          {
+            "label": "Policy number",
+            "value": "SPG1026121 (ref BO91078)",
+            "verification": "extracted"
+          },
+          {
+            "label": "Named insured",
+            "value": "TT9 Inc., 200-190 Harwood Ave, Ajax",
+            "verification": "extracted"
+          },
+          {
+            "label": "Broker",
+            "value": "Acera Insurance Services Ltd",
+            "verification": "extracted"
+          },
+          {
+            "label": "Insured location",
+            "value": "27 Mandrake Street, Ajax, ON L1S 2B9 - construction of two 4-plexes, 3 storeys, frame",
+            "verification": "extracted"
+          },
+          {
+            "label": "Endorsement",
+            "value": "Add Mortgagees, issued 13-Oct-2026, period 9-Oct-2026 to 1-Jun-2027, $0 premium",
+            "verification": "extracted"
+          },
+          {
+            "label": "Builders' Risk",
+            "value": "$1,400,000 hard costs, $2,500 deductible; soft costs $300,000; flood and earthquake $1.7M each",
+            "verification": "extracted"
+          },
+          {
+            "label": "CGL",
+            "value": "$2M per occurrence / $2M aggregate; products-completed operations excluded",
+            "verification": "extracted"
+          },
+          {
+            "label": "Mortgagees",
+            "value": "Frank Carnevale and Fatima Stuart (first mortgagees, 30 days cancellation notice)",
+            "verification": "extracted"
+          },
+          {
+            "label": "Insurers",
+            "value": "Property: Aviva, Arch, Wawanesa, Zurich, HDI (20% each); GL: Aviva; EB: BI&I",
+            "verification": "extracted"
+          }
+        ],
+        "relevance": "Shows 27 Mandrake has builders' risk and liability cover in force, with lender interests noted. Sits in the Construction phase as contractor/owner compliance.",
+        "limitations": "Insurance document only: proves cover was arranged, not that any work was built, inspected or paid for. Base declarations and proof of premium payment are not included; insurer signature column is blank.",
+        "recommendedActions": [
+          "Verify mortgagees against lender documents",
+          "Arrange extension or renewal before 1-Jun-2027",
+          "Circulate hot-works and open-flame warranty requirements to trades"
+        ],
+        "relatedDocuments": [
+          "Certificate of Liability Insurance - TT9 Inc. (CGL & Builders' Risk) - 27 Mandrake",
+          "25 Mandrake builder's risk policy package (SPG1026124)"
+        ],
+        "sourceDocument": "27_Mandrake-builder_s_risk_policy-Oct._1__2026_to_June_1__2027-full_package.pdf",
+        "sourceRef": "Pages 1-12 endorsement; 13-88 wordings",
+        "confidence": 0.92
+      },
+      "status": "added",
+      "result": {
+        "status": "added",
+        "remarkId": "36f81119-bb0c-4e8b-b544-2e96ce8cc2e4",
+        "evidenceClasses": [
+          "contractor_compliance"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "tool": "record_document_intelligence",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "assetId": "5a9c31e4-4fca-49c7-82fc-a69e11ae8d18",
+        "evidenceClasses": [
+          "contractor_compliance"
+        ],
+        "docType": "Builders' risk & CGL policy endorsement package (Add Mortgagees)",
+        "issuer": "Specialty Program Group Canada Inc. (SPG Canada), for subscribing insurers",
+        "documentDate": "2026-10-13",
+        "referenceNumber": "SPG1026121 / BO91078",
+        "property": "27 Mandrake Street, Ajax, ON L1S 2B9",
+        "project": "25 & 27 Mandrake",
+        "summary": "Endorsement to builders' risk/CGL/equipment breakdown policy SPG1026121 adding two first mortgagees; followed by policy wordings and statutory conditions.",
+        "purpose": "Evidence insurance cover for the 27 Mandrake construction and record mortgagee interests.",
+        "relevance": "Contractor/owner compliance for 27 Mandrake; companion to the 25 Mandrake policy SPG1026124.",
+        "facts": [
+          {
+            "label": "Named insured",
+            "value": "TT9 Inc.",
+            "verification": "extracted"
+          },
+          {
+            "label": "Broker",
+            "value": "Acera Insurance Services Ltd",
+            "verification": "extracted"
+          },
+          {
+            "label": "Endorsement period",
+            "value": "9-Oct-2026 to 1-Jun-2027",
+            "verification": "extracted"
+          },
+          {
+            "label": "Business operations",
+            "value": "Construction of Two 4-Plexes",
+            "verification": "extracted"
+          },
+          {
+            "label": "Mortgagees",
+            "value": "Frank Carnevale; Fatima Stuart (first mortgagees)",
+            "verification": "extracted"
+          }
+        ],
+        "extracts": [
+          {
+            "kind": "financial",
+            "detail": "Builders' Risk limit $1,400,000 (deductible $2,500); Soft Costs $300,000 (30-day waiting period); Earthquake and Flood $1,700,000 each (EQ deductible 10% min $100,000, flood $25,000); Equipment Breakdown $1,700,000",
+            "verification": "extracted"
+          },
+          {
+            "kind": "contractual",
+            "detail": "CGL $2,000,000 each occurrence and aggregate; Tenants' Legal Liability $100,000; Products-Completed Operations Hazard excluded; Torch-on membrane exclusion; Sub-Contractor Warranty min limit $2M",
+            "verification": "extracted"
+          },
+          {
+            "kind": "regulatory",
+            "detail": "Hot Works Warranty (two hour with final inspection) and Open Flame Heating Warranty apply; Standard Mortgage Clause attached",
+            "verification": "extracted"
+          }
+        ],
+        "missingInformation": [
+          "Base policy declarations and premium details",
+          "Signed insurer entries on subscription list",
+          "Proof of premium payment"
+        ],
+        "inconsistencies": [
+          "Endorsement period starts 9-Oct-2026 while certificates show policy period from 1-Oct-2026 (likely endorsement effective date vs inception)",
+          "Postal code on policy (L1S 2B9) differs from project record (L1S 2c7)",
+          "Project record's primary address is 25 Mandrake; policy insures 27 Mandrake"
+        ],
+        "risks": [
+          "Policy expires 1-Jun-2027, one day after the 2027-05-31 target date",
+          "Products-Completed Operations Hazard excluded",
+          "Hot works / open flame warranty breach could prejudice cover"
+        ],
+        "limitations": "Proves insurance was arranged; not construction progress, inspection or payment.",
+        "recommendedActions": [
+          "Verify mortgagees against lender documents",
+          "Plan renewal/extension before 1-Jun-2027",
+          "Circulate hot-works and open-flame warranty requirements to trades"
+        ],
+        "sourceRef": "Pages 1-12 endorsement; 13-88 wordings",
+        "verificationStatus": "extracted",
+        "confidence": 0.92
+      },
+      "status": "recorded",
+      "result": {
+        "status": "recorded",
+        "assetId": "5a9c31e4-4fca-49c7-82fc-a69e11ae8d18",
+        "evidenceClasses": [
+          "contractor_compliance"
+        ],
+        "revisions": 0,
+        "notes": []
+      }
+    },
+    {
+      "tool": "link_project_items",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "fromType": "document",
+        "fromId": "5a9c31e4-4fca-49c7-82fc-a69e11ae8d18",
+        "fromLabel": "27 Mandrake builder's risk policy package (SPG1026121)",
+        "relation": "relates_to",
+        "toType": "property",
+        "toId": "27 Mandrake Street, Ajax",
+        "toLabel": "27 Mandrake Street, Ajax"
+      },
+      "status": "linked",
+      "result": {
+        "status": "linked",
+        "relId": "06a04f6c-ac33-4d56-b301-99c0304c4dc5"
+      }
+    },
+    {
+      "tool": "link_project_items",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "fromType": "document",
+        "fromId": "5a9c31e4-4fca-49c7-82fc-a69e11ae8d18",
+        "fromLabel": "27 Mandrake builder's risk policy package (SPG1026121)",
+        "relation": "relates_to",
+        "toType": "contractor",
+        "toId": "TT9 Inc.",
+        "toLabel": "TT9 Inc. (named insured)"
+      },
+      "status": "linked",
+      "result": {
+        "status": "linked",
+        "relId": "c689f92d-d671-42da-8ea8-35c42483cefb"
+      }
+    }
+  ],
+  "pendingApprovals": [],
+  "costUsd": 0.66725,
+  "tokens": {
+    "input": 24732,
+    "output": 4306,
+    "cacheWrite": 195162,
+    "cacheRead": 434103
+  },
+  "dashboard": {
+    "progress": {
+      "stages": 10,
+      "stagesCompleted": 1,
+      "milestones": 32,
+      "milestonesCompleted": 11,
+      "percent": 34
+    },
+    "siteStatus": "in_progress",
+    "stages": [
+      {
+        "stageId": "43d4e0d2-cc81-4912-a186-3ae3a89cd9a2",
+        "name": "Feasibility & Due Diligence",
+        "status": "completed"
+      },
+      {
+        "stageId": "8e037d3e-3511-4c7e-86d1-111e11c26597",
+        "name": "Design & Permits",
+        "status": "not_started"
+      },
+      {
+        "stageId": "3739c5da-64f6-48a4-886f-7bd24138526d",
+        "name": "Site Preparation & Excavation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "08ded4a9-c0f5-4f46-9e8d-70c7c6209fda",
+        "name": "Foundation",
+        "status": "in_progress"
+      },
+      {
+        "stageId": "245c2de5-98b8-43cb-b4af-89f17d55f4bd",
+        "name": "Structural Framing",
+        "status": "not_started"
+      },
+      {
+        "stageId": "6fa286ae-566d-4da2-927e-20af34b228c1",
+        "name": "Building Envelope",
+        "status": "not_started"
+      },
+      {
+        "stageId": "1f414a15-de86-49d7-af51-39a9f5ab5ac6",
+        "name": "Rough-In Services",
+        "status": "not_started"
+      },
+      {
+        "stageId": "74a52551-4007-4d44-aeb3-9cad6ac26f43",
+        "name": "Interior Finishes",
+        "status": "not_started"
+      },
+      {
+        "stageId": "99083336-f837-4297-9b92-1c0bfa2ca966",
+        "name": "Landscaping & Exterior Works",
+        "status": "not_started"
+      },
+      {
+        "stageId": "2424b179-6eb8-4095-8a17-5a46de64555f",
+        "name": "Handover & Closeout",
+        "status": "not_started"
+      }
+    ],
+    "milestones": [
+      {
+        "milestoneId": "83fa64f5-b1ce-4bbb-a81f-15dce5e871e2",
+        "name": "Site survey & boundary confirmed",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "9874d4ae-c81a-40f5-b916-cab949a9a0ea",
+        "name": "Zoning & by-law review completed",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "d77c7fbe-62ab-45bf-84fc-a1477109157f",
+        "name": "Feasibility budget approved",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "a62b8d24-c2f9-47a9-bb2d-98d5309a2d39",
+        "name": "Architectural drawings issued",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "7b7014dc-d118-4140-b460-d533d9c8fbf2",
+        "name": "Structural & MEP drawings complete",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "c4d8aac7-142e-48f7-bf53-24e6b3cee321",
+        "name": "Building permit issued",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "db7dcb04-9bcc-4754-b868-f40815e04c8d",
+        "name": "Utilities & services located",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "6601fc85-dce7-4b1b-91e6-6414c23b7a57",
+        "name": "Clearing & demolition complete",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "374ebe09-f209-41a1-b0b1-e74b7dcdec69",
+        "name": "Excavation & shoring inspected",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "d4e01db8-7c90-491d-8421-20839f85bc20",
+        "name": "Footings inspected",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "9a846ed5-a529-4f09-9221-5a2ac30f4d48",
+        "name": "Foundation walls poured & waterproofed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "04c36fa6-0623-4769-bf97-4bd67362d468",
+        "name": "Backfill & drainage complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "85f717e3-4e87-4382-a10b-9f6eecb38473",
+        "name": "Floor structure complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "1402eab7-cff8-4d3e-a1b3-ab5b64ccff42",
+        "name": "Framing erected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "b90105d8-4d61-4bea-a52b-1acba54b2fc2",
+        "name": "Framing inspection passed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "1cc6cc34-2f3f-44e4-a382-1fad92cf4a61",
+        "name": "Roof trusses & sheathing complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "144849e1-3aac-4a3a-b4b3-c77b2742dfbd",
+        "name": "Roofing watertight",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "3ee0d7ef-842e-46d6-9db5-fa77df484a74",
+        "name": "Windows & exterior doors installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "78a2cba7-3b6c-4be8-8c93-7ae07f21c39f",
+        "name": "Cladding & insulation complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9f91afc3-6474-40e8-9a38-63d6fa8e9420",
+        "name": "Electrical rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "066825dd-e916-4600-8e02-cfd21dd62c15",
+        "name": "Plumbing rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "e73f9394-6db6-4700-885c-e594ba02c73f",
+        "name": "HVAC rough-in complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "715d3b61-a6ee-43e5-8c0f-3619a65ede21",
+        "name": "Drywall & plaster complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "50a2d07b-82ef-4ea5-94a0-ef04c1b1b11e",
+        "name": "Cabinetry & millwork installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "47020274-79ca-45da-ad2e-046573160612",
+        "name": "Flooring & paint complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "a2f28c1f-edb0-44d4-95e9-eb224365c1ab",
+        "name": "Grading & drainage certified",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "e2f05da4-b5c9-4d4f-ab05-4e39eaf5dcb7",
+        "name": "Driveway & hardscaping complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c878ab83-bcec-45cf-bdd4-282ae58fae43",
+        "name": "Landscaping planted",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "cffcf10b-77fb-45bc-a91c-0a3fb1afb02e",
+        "name": "Occupancy permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "457d433f-40a6-4d99-a52d-0cf83f1c9511",
+        "name": "Pre-delivery inspection (PDI) complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9d34eaab-9dd4-4e0e-b8ca-05bfbc95b3cc",
+        "name": "Final accounts & warranty documents issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "5559b462-f2fe-4b38-b2af-8549a324104a",
+        "name": "Feasibility",
+        "status": "completed"
+      }
+    ],
+    "assetCount": 73,
+    "remarkCount": 117,
+    "latestRemark": {
+      "remarkId": "36f81119-bb0c-4e8b-b544-2e96ce8cc2e4",
+      "text": "Builder's risk policy package SPG1026121 for TT9 Inc., 27 Mandrake St (endorsement issued 13-Oct-2026 adding two first mortgagees, period 9-Oct-2026 to 1-Jun-2027). Builders' Risk $1.4M hard / $300K soft, CGL $2M. Insurance evidence only, not construction progress.",
+      "authorName": "CPPI Agent (AI)",
+      "createdAt": "2026-11-14T01:32:01Z"
+    }
+  }
+}
