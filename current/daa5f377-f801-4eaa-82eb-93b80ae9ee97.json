@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-11-14T08:20:10Z",
+  "updatedAt": "2026-11-14T18:43:18Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -225,13 +225,13 @@
         "status": "completed"
       }
     ],
-    "assetCount": 64,
-    "remarkCount": 118,
+    "assetCount": 65,
+    "remarkCount": 119,
     "latestRemark": {
-      "remarkId": "e5554aed-351d-4171-a44c-5bca839c0268",
-      "text": "Executed excavation contract 2026-0172-REVISED between TT9 Inc. and Pennella Excavating for 25 & 27 Mandrake, fixed value $30,900 + HST plus tree pass-through. Signed by both parties 29-Sep-2026. Contract evidence only, not proof that excavation has been done.",
+      "remarkId": "c57bae37-d107-49bf-85ef-c96b5d588f1f",
+      "text": "Interactive 3D site model (HTML) covering 25 & 27 Mandrake St (two 4-unit buildings plus basement each) and, in a separate tab, 4 Barnes Dr. Schematic only, built from permit sets and not engineered. Design evidence, not proof of construction progress.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-14T08:20:01Z"
+      "createdAt": "2026-11-14T18:43:12Z"
     }
   }
 }
