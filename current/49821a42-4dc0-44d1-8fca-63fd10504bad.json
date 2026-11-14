@@ -1,0 +1,232 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "siteId": "49821a42-4dc0-44d1-8fca-63fd10504bad",
+  "updatedAt": "2026-11-14T07:48:27Z",
+  "dashboard": {
+    "progress": {
+      "stages": 10,
+      "stagesCompleted": 0,
+      "milestones": 31,
+      "milestonesCompleted": 0,
+      "percent": 0
+    },
+    "siteStatus": "planning",
+    "stages": [
+      {
+        "stageId": "0f4f0b29-ae9f-4074-86cc-df86ba249be7",
+        "name": "Feasibility & Due Diligence",
+        "status": "not_started"
+      },
+      {
+        "stageId": "9e24c915-dcc8-4373-a5a8-11a69f4da36e",
+        "name": "Design & Permits",
+        "status": "not_started"
+      },
+      {
+        "stageId": "b9ccb69b-cae3-4f71-80f6-543ef9724645",
+        "name": "Site Preparation & Excavation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "c9c67deb-d42b-43e0-9949-df68d27129e5",
+        "name": "Foundation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "51279587-017e-453f-962f-c48f85e92b12",
+        "name": "Structural Framing",
+        "status": "not_started"
+      },
+      {
+        "stageId": "8530e722-cc0d-4c83-84c4-8aa6c8ce127b",
+        "name": "Building Envelope",
+        "status": "not_started"
+      },
+      {
+        "stageId": "3bd58096-5a8a-4905-b294-510a229414a6",
+        "name": "Rough-In Services",
+        "status": "not_started"
+      },
+      {
+        "stageId": "eaab1b75-a764-4f38-83ed-4f42ff9faec4",
+        "name": "Interior Finishes",
+        "status": "not_started"
+      },
+      {
+        "stageId": "99b4a2df-cdc7-434e-81be-7b27ab495934",
+        "name": "Landscaping & Exterior Works",
+        "status": "not_started"
+      },
+      {
+        "stageId": "2ece2a0b-830f-4533-8b7e-d0fb2b784cb0",
+        "name": "Handover & Closeout",
+        "status": "not_started"
+      }
+    ],
+    "milestones": [
+      {
+        "milestoneId": "d05ef073-f48b-47f5-be37-ec76bb039fb6",
+        "name": "Site survey & boundary confirmed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "8d2b1129-9933-4801-99e4-7be547406b68",
+        "name": "Zoning & by-law review completed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "a7435fc9-0ab5-4461-8404-b500bf3b85c8",
+        "name": "Feasibility budget approved",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "d5e65d8a-0336-4d2e-ad55-f65e62e32495",
+        "name": "Architectural drawings issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "94e11277-6e1a-411e-b050-9867a28098db",
+        "name": "Structural & MEP drawings complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "b68fbe72-53ce-4b04-958e-fc7edf1e14f8",
+        "name": "Building permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9f5100e2-c83f-4dfe-b859-e347780e93bd",
+        "name": "Utilities & services located",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "2b420dd9-38de-4ed7-913f-f136e6610789",
+        "name": "Clearing & demolition complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "633019ed-3e72-40d4-a982-aca16d2aadb9",
+        "name": "Excavation & shoring inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "d28b54b6-dd22-46a3-a7fd-52499a336dc0",
+        "name": "Footings inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "90c61d5b-0101-4ade-a197-0242b0dd08ca",
+        "name": "Foundation walls poured & waterproofed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "72cf5c11-4a64-44ce-8bfe-f90d4875ee08",
+        "name": "Backfill & drainage complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "4f65e7d4-eb0e-4f12-9e69-e90584d9bea9",
+        "name": "Floor structure complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "36ace596-0109-44b3-ac93-e9cb9f618445",
+        "name": "Framing erected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "a7e8de30-8713-427d-bb71-067f3738f4fc",
+        "name": "Framing inspection passed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "7abd0837-fac2-465e-a67d-73bf0b287084",
+        "name": "Roof trusses & sheathing complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "99a6621a-9941-425f-b8ca-737e9ccb9f96",
+        "name": "Roofing watertight",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9d8000e2-01d5-428c-b4ec-a27e801ef8ab",
+        "name": "Windows & exterior doors installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "6a8ee4f6-6e65-4618-87b9-141fd062b712",
+        "name": "Cladding & insulation complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "26480e3b-11c1-4d25-aec7-373a9000ccb2",
+        "name": "Electrical rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "bc52725d-c7b8-4562-9ec1-27e1397b84b2",
+        "name": "Plumbing rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "53ebfc94-dfef-4370-9af8-17c93c020d49",
+        "name": "HVAC rough-in complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "7fe11613-63d7-4ccb-94f7-a138a5259a18",
+        "name": "Drywall & plaster complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "a5dabbe2-ec5a-48be-a8e4-3ed77f9d9414",
+        "name": "Cabinetry & millwork installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "1e24bbf8-a6cb-4365-9f84-08072b8b8539",
+        "name": "Flooring & paint complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9a2ec99c-2dd6-4147-aeee-1a7742935e1d",
+        "name": "Grading & drainage certified",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "57f0bbd5-146f-46c5-99cd-fa6eea7d0d3c",
+        "name": "Driveway & hardscaping complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "ba0ca6fd-06e2-4608-967b-9648f2b75a1b",
+        "name": "Landscaping planted",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "94d2750b-05bc-469e-88e2-ba5edc57f897",
+        "name": "Occupancy permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "97760845-a589-40a8-be7a-c46fa3057964",
+        "name": "Pre-delivery inspection (PDI) complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "5798fb88-b810-48a3-8c7c-20b5dcc3e295",
+        "name": "Final accounts & warranty documents issued",
+        "status": "pending"
+      }
+    ],
+    "assetCount": 2,
+    "remarkCount": 1,
+    "latestRemark": {
+      "remarkId": "311d1476-3029-49b2-bb6a-1cd0079e3eba",
+      "text": "Interactive 3D model / digital twin of the proposed 82 Beaver St. S. triplex, built from the March 18, 2026 plan set (drawing 26-03-09). It is a design visualization only and shows no built work.",
+      "authorName": "CPPI Agent (AI)",
+      "createdAt": "2026-11-14T07:48:21Z"
+    }
+  }
+}

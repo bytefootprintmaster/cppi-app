@@ -1,0 +1,510 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "recordedAt": "2026-11-14T07:48:27Z",
+  "jobId": "aca507c47296",
+  "trigger": "s3",
+  "task": "progress_update_from_file",
+  "agent": "progress",
+  "model": "claude-sonnet-5-5",
+  "source": {
+    "siteId": "49821a42-4dc0-44d1-8fca-63fd10504bad",
+    "s3Key": "sites/49821a42-4dc0-44d1-8fca-63fd10504bad/document/022c3ff8-4cb4-40f8-9d67-d8ed1d285d89-82_Beaver_St._S.___3D_model_and_digital_twin.html",
+    "fileName": "82_Beaver_St._S.___3D_model_and_digital_twin.html",
+    "kind": "document",
+    "etag": "5c06d7a7877a498cb1fa42783bedadd9",
+    "size": 16490
+  },
+  "summary": "Recorded the 82 Beaver St. S. 3D model/digital twin as design evidence (already registered), added a remark, stored the document intelligence and linked it to the plan PDF. I proposed no status changes because a model proves no built work.",
+  "confidence": 0.85,
+  "steps": 4,
+  "actions": [
+    {
+      "tool": "get_project_state",
+      "input": {
+        "siteId": "49821a42-4dc0-44d1-8fca-63fd10504bad"
+      },
+      "status": "ok"
+    },
+    {
+      "tool": "get_project_intelligence",
+      "input": {
+        "siteId": "49821a42-4dc0-44d1-8fca-63fd10504bad"
+      },
+      "status": "ok",
+      "result": {
+        "siteId": "49821a42-4dc0-44d1-8fca-63fd10504bad",
+        "documentCount": 0,
+        "documents": [],
+        "evidenceCovered": [],
+        "evidenceMissing": [
+          "land_survey",
+          "design",
+          "engineering",
+          "permit_approval",
+          "contractor_compliance",
+          "procurement_quote",
+          "executed_contract",
+          "commencement",
+          "construction_progress",
+          "inspection_verification",
+          "financial_payment",
+          "completion_occupancy"
+        ],
+        "findingCount": 0,
+        "openFindings": [],
+        "relationshipCount": 0,
+        "relationships": []
+      }
+    },
+    {
+      "tool": "register_asset",
+      "input": {
+        "siteId": "49821a42-4dc0-44d1-8fca-63fd10504bad",
+        "name": "82 Beaver St. S. – 3D model and digital twin.html",
+        "s3Key": "sites/49821a42-4dc0-44d1-8fca-63fd10504bad/document/022c3ff8-4cb4-40f8-9d67-d8ed1d285d89-82_Beaver_St._S.___3D_model_and_digital_twin.html",
+        "type": "document",
+        "category": "plan",
+        "contentType": "text/html",
+        "size": 16490
+      },
+      "status": "already_registered",
+      "result": {
+        "status": "already_registered",
+        "assetId": "baa05f60-0425-4800-85eb-2ef2d6aa93af"
+      }
+    },
+    {
+      "tool": "add_progress_remark",
+      "input": {
+        "siteId": "49821a42-4dc0-44d1-8fca-63fd10504bad",
+        "text": "Interactive 3D model / digital twin of the proposed 82 Beaver St. S. triplex, built from the March 18, 2026 plan set (drawing 26-03-09). It is a design visualization only and shows no built work.",
+        "summary": "HTML three.js 3D model of a proposed triplex (basement plus three unit levels) with simulated sensor readings, derived from the drafted plan set.",
+        "category": "plan",
+        "evidenceClasses": [
+          "design"
+        ],
+        "verificationStatus": "extracted",
+        "sourceDocument": "82 Beaver St. S. – 3D model and digital twin.html",
+        "sourceRef": "Page text and embedded script / side-panel note",
+        "extracted": [
+          {
+            "label": "Document type",
+            "value": "Interactive 3D model / digital twin (HTML, three.js)",
+            "verification": "extracted"
+          },
+          {
+            "label": "Source plan set",
+            "value": "Seven-sheet plan set dated March 18, 2026, drawing 26-03-09, New Castle Drafting & Design",
+            "verification": "extracted"
+          },
+          {
+            "label": "Building",
+            "value": "Proposed triplex, 25' x 54' footprint, three storeys over unfinished basement, 34'-1½\" to top of roof joist",
+            "verification": "extracted"
+          },
+          {
+            "label": "Units",
+            "value": "Each unit: 2 bedrooms, 1 bathroom, kitchen, in-unit laundry, own gas furnace, ~1,350 sq ft, 9'-1\" ceilings, 45-min fire-rated entry door",
+            "verification": "extracted"
+          },
+          {
+            "label": "Basement",
+            "value": "Unfinished, poured slab, floor drain, radon rough-in",
+            "verification": "extracted"
+          },
+          {
+            "label": "Sensor readings",
+            "value": "Simulated placeholders, not a real feed",
+            "verification": "extracted"
+          },
+          {
+            "label": "Status marking",
+            "value": "Not for construction",
+            "verification": "extracted"
+          }
+        ],
+        "relevance": "Supports the Design & Permits stage as a visualization of the architectural design; the underlying drawings are the authoritative record. Possible later use for asset management.",
+        "limitations": "Simplified model (partitions and rear stair flights simplified), marked Not for construction. Does not prove permit approval, engineering, construction progress or real sensor data. Not a substitute for the sealed drawings.",
+        "recommendedActions": [
+          "Confirm the model matches the issued permit drawings once the building permit is issued",
+          "Note the project description says 2 triplex builds; this model covers one triplex at 82 Beaver St. S.",
+          "Connect a real sensor feed only after occupancy"
+        ],
+        "relatedDocuments": [
+          "82 Beaver Street plan.pdf"
+        ],
+        "confidence": 0.85
+      },
+      "status": "added",
+      "result": {
+        "status": "added",
+        "remarkId": "311d1476-3029-49b2-bb6a-1cd0079e3eba",
+        "evidenceClasses": [
+          "design"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "tool": "record_document_intelligence",
+      "input": {
+        "siteId": "49821a42-4dc0-44d1-8fca-63fd10504bad",
+        "assetId": "baa05f60-0425-4800-85eb-2ef2d6aa93af",
+        "docType": "3D model / digital twin (interactive HTML)",
+        "issuer": "Not stated (derived from New Castle Drafting & Design plan set)",
+        "documentDate": "2026-03-18",
+        "referenceNumber": "Drawing 26-03-09 (source plan set)",
+        "property": "82 Beaver St. S., Newcastle, Ontario",
+        "project": "82 Beaver St Newcastle ON – proposed triplex",
+        "evidenceClasses": [
+          "design"
+        ],
+        "verificationStatus": "extracted",
+        "summary": "Interactive 3D visualization of the proposed triplex built from the March 18, 2026 plan set, with floor cutaways, room labels, systems/safety markers and simulated unit readings.",
+        "purpose": "Visualize the design and serve as a prototype digital twin for review and later asset management.",
+        "relevance": "Design-stage reference for Design & Permits; not authoritative over the drawings.",
+        "facts": [
+          {
+            "label": "Footprint",
+            "value": "25 ft x 54 ft",
+            "verification": "extracted"
+          },
+          {
+            "label": "Storeys",
+            "value": "Three over an unfinished basement; 34'-1½\" to top of roof joist",
+            "verification": "extracted"
+          },
+          {
+            "label": "Units",
+            "value": "3 units, one per level, ~1,350 sq ft each",
+            "verification": "extracted"
+          },
+          {
+            "label": "Source plans",
+            "value": "Seven sheets dated March 18, 2026, drawing 26-03-09, New Castle Drafting & Design",
+            "verification": "extracted"
+          },
+          {
+            "label": "Disclaimer",
+            "value": "Not for construction; readings are placeholders",
+            "verification": "extracted"
+          }
+        ],
+        "extracts": [
+          {
+            "kind": "technical",
+            "detail": "Each unit has 2 bedrooms, bathroom, washroom, kitchen, laundry, utilities room, living/family room; 9'-1\" ceiling height; rear deck.",
+            "verification": "extracted"
+          },
+          {
+            "kind": "technical",
+            "detail": "Systems: forced-air gas furnace and hot water tank per unit, ducted bath exhaust fan, interconnected smoke/CO alarms, basement floor drain, radon rough-in (capped, labelled sub-slab pipe).",
+            "verification": "extracted"
+          },
+          {
+            "kind": "regulatory",
+            "detail": "45-minute fire-rated unit entry door and interconnected smoke/CO alarms noted per plan notes (not independently verified against the drawings).",
+            "verification": "ai_interpretation"
+          },
+          {
+            "kind": "other",
+            "detail": "Simulated sensor readings for Units 1-3 (temp, CO2, RH) generated randomly in script.",
+            "verification": "extracted"
+          }
+        ],
+        "missingInformation": [
+          "Underlying sealed plan set not reviewed in this file",
+          "No building permit, engineering or survey reference",
+          "Designer/author of the model not identified"
+        ],
+        "inconsistencies": [
+          "Site description says '2 triplex builds' but the model covers a single triplex"
+        ],
+        "limitations": "Visualization only; simplified geometry; marked not for construction; shows nothing about built work, permit status or real conditions.",
+        "recommendedActions": [
+          "Verify against 82 Beaver Street plan.pdf",
+          "Clarify whether a second triplex is in scope"
+        ],
+        "confidence": 0.85
+      },
+      "status": "recorded",
+      "result": {
+        "status": "recorded",
+        "assetId": "baa05f60-0425-4800-85eb-2ef2d6aa93af",
+        "evidenceClasses": [
+          "design"
+        ],
+        "revisions": 0,
+        "notes": []
+      }
+    },
+    {
+      "tool": "link_project_items",
+      "input": {
+        "siteId": "49821a42-4dc0-44d1-8fca-63fd10504bad",
+        "fromType": "document",
+        "fromId": "baa05f60-0425-4800-85eb-2ef2d6aa93af",
+        "fromLabel": "82 Beaver St. S. 3D model and digital twin",
+        "relation": "references",
+        "toType": "document",
+        "toId": "ab81d254-bc98-45c8-8285-7365fc73d56d",
+        "toLabel": "82 Beaver Street plan.pdf",
+        "note": "Model states it is built from the March 18, 2026 plan set (drawing 26-03-09); the link to this specific PDF is assumed from the name."
+      },
+      "status": "linked",
+      "result": {
+        "status": "linked",
+        "relId": "41b833b6-4a8d-4b65-b158-d76394d62d4d"
+      }
+    },
+    {
+      "tool": "finish",
+      "input": {
+        "summary": "Recorded the 82 Beaver St. S. 3D model/digital twin as design evidence (already registered), added a remark, stored the document intelligence and linked it to the plan PDF. I proposed no status changes because a model proves no built work.",
+        "confidence": 0.85,
+        "notes": "The link to \"82 Beaver Street plan.pdf\" is assumed from the file name. The site description says \"2 triplex builds\", but the model shows only one triplex. The sensor readings in the model are simulated."
+      },
+      "status": "done",
+      "result": {
+        "status": "done",
+        "summary": "Recorded the 82 Beaver St. S. 3D model/digital twin as design evidence (already registered), added a remark, stored the document intelligence and linked it to the plan PDF. I proposed no status changes because a model proves no built work.",
+        "confidence": 0.85
+      }
+    }
+  ],
+  "pendingApprovals": [],
+  "costUsd": 0.153739,
+  "tokens": {
+    "input": 20236,
+    "output": 3741,
+    "cacheWrite": 24470,
+    "cacheRead": 73410
+  },
+  "dashboard": {
+    "progress": {
+      "stages": 10,
+      "stagesCompleted": 0,
+      "milestones": 31,
+      "milestonesCompleted": 0,
+      "percent": 0
+    },
+    "siteStatus": "planning",
+    "stages": [
+      {
+        "stageId": "0f4f0b29-ae9f-4074-86cc-df86ba249be7",
+        "name": "Feasibility & Due Diligence",
+        "status": "not_started"
+      },
+      {
+        "stageId": "9e24c915-dcc8-4373-a5a8-11a69f4da36e",
+        "name": "Design & Permits",
+        "status": "not_started"
+      },
+      {
+        "stageId": "b9ccb69b-cae3-4f71-80f6-543ef9724645",
+        "name": "Site Preparation & Excavation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "c9c67deb-d42b-43e0-9949-df68d27129e5",
+        "name": "Foundation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "51279587-017e-453f-962f-c48f85e92b12",
+        "name": "Structural Framing",
+        "status": "not_started"
+      },
+      {
+        "stageId": "8530e722-cc0d-4c83-84c4-8aa6c8ce127b",
+        "name": "Building Envelope",
+        "status": "not_started"
+      },
+      {
+        "stageId": "3bd58096-5a8a-4905-b294-510a229414a6",
+        "name": "Rough-In Services",
+        "status": "not_started"
+      },
+      {
+        "stageId": "eaab1b75-a764-4f38-83ed-4f42ff9faec4",
+        "name": "Interior Finishes",
+        "status": "not_started"
+      },
+      {
+        "stageId": "99b4a2df-cdc7-434e-81be-7b27ab495934",
+        "name": "Landscaping & Exterior Works",
+        "status": "not_started"
+      },
+      {
+        "stageId": "2ece2a0b-830f-4533-8b7e-d0fb2b784cb0",
+        "name": "Handover & Closeout",
+        "status": "not_started"
+      }
+    ],
+    "milestones": [
+      {
+        "milestoneId": "d05ef073-f48b-47f5-be37-ec76bb039fb6",
+        "name": "Site survey & boundary confirmed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "8d2b1129-9933-4801-99e4-7be547406b68",
+        "name": "Zoning & by-law review completed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "a7435fc9-0ab5-4461-8404-b500bf3b85c8",
+        "name": "Feasibility budget approved",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "d5e65d8a-0336-4d2e-ad55-f65e62e32495",
+        "name": "Architectural drawings issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "94e11277-6e1a-411e-b050-9867a28098db",
+        "name": "Structural & MEP drawings complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "b68fbe72-53ce-4b04-958e-fc7edf1e14f8",
+        "name": "Building permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9f5100e2-c83f-4dfe-b859-e347780e93bd",
+        "name": "Utilities & services located",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "2b420dd9-38de-4ed7-913f-f136e6610789",
+        "name": "Clearing & demolition complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "633019ed-3e72-40d4-a982-aca16d2aadb9",
+        "name": "Excavation & shoring inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "d28b54b6-dd22-46a3-a7fd-52499a336dc0",
+        "name": "Footings inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "90c61d5b-0101-4ade-a197-0242b0dd08ca",
+        "name": "Foundation walls poured & waterproofed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "72cf5c11-4a64-44ce-8bfe-f90d4875ee08",
+        "name": "Backfill & drainage complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "4f65e7d4-eb0e-4f12-9e69-e90584d9bea9",
+        "name": "Floor structure complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "36ace596-0109-44b3-ac93-e9cb9f618445",
+        "name": "Framing erected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "a7e8de30-8713-427d-bb71-067f3738f4fc",
+        "name": "Framing inspection passed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "7abd0837-fac2-465e-a67d-73bf0b287084",
+        "name": "Roof trusses & sheathing complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "99a6621a-9941-425f-b8ca-737e9ccb9f96",
+        "name": "Roofing watertight",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9d8000e2-01d5-428c-b4ec-a27e801ef8ab",
+        "name": "Windows & exterior doors installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "6a8ee4f6-6e65-4618-87b9-141fd062b712",
+        "name": "Cladding & insulation complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "26480e3b-11c1-4d25-aec7-373a9000ccb2",
+        "name": "Electrical rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "bc52725d-c7b8-4562-9ec1-27e1397b84b2",
+        "name": "Plumbing rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "53ebfc94-dfef-4370-9af8-17c93c020d49",
+        "name": "HVAC rough-in complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "7fe11613-63d7-4ccb-94f7-a138a5259a18",
+        "name": "Drywall & plaster complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "a5dabbe2-ec5a-48be-a8e4-3ed77f9d9414",
+        "name": "Cabinetry & millwork installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "1e24bbf8-a6cb-4365-9f84-08072b8b8539",
+        "name": "Flooring & paint complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9a2ec99c-2dd6-4147-aeee-1a7742935e1d",
+        "name": "Grading & drainage certified",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "57f0bbd5-146f-46c5-99cd-fa6eea7d0d3c",
+        "name": "Driveway & hardscaping complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "ba0ca6fd-06e2-4608-967b-9648f2b75a1b",
+        "name": "Landscaping planted",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "94d2750b-05bc-469e-88e2-ba5edc57f897",
+        "name": "Occupancy permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "97760845-a589-40a8-be7a-c46fa3057964",
+        "name": "Pre-delivery inspection (PDI) complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "5798fb88-b810-48a3-8c7c-20b5dcc3e295",
+        "name": "Final accounts & warranty documents issued",
+        "status": "pending"
+      }
+    ],
+    "assetCount": 2,
+    "remarkCount": 1,
+    "latestRemark": {
+      "remarkId": "311d1476-3029-49b2-bb6a-1cd0079e3eba",
+      "text": "Interactive 3D model / digital twin of the proposed 82 Beaver St. S. triplex, built from the March 18, 2026 plan set (drawing 26-03-09). It is a design visualization only and shows no built work.",
+      "authorName": "CPPI Agent (AI)",
+      "createdAt": "2026-11-14T07:48:21Z"
+    }
+  }
+}
