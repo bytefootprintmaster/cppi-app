@@ -71,7 +71,13 @@ export function Layout() {
           >
             <IconMenu />
           </button>
-          <img className="mobile-brand" src="/icons/icon-192.png" alt="CPPI Management" />
+          <img
+            className="mobile-brand"
+            src="/android-chrome-192x192.png"
+            alt="CPPI Management"
+            width={26}
+            height={26}
+          />
         </header>
 
         <aside id="app-sidebar" className={`sidebar${menuOpen ? ' open' : ''}`}>

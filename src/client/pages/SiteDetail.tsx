@@ -74,6 +74,8 @@ import type {
   SiteRecord,
   StageRecord,
   StageStatus,
+  TimelineEvent,
+  TimelineEventKind,
   VerificationStatus
 } from '../../server/types'
 
@@ -160,7 +162,9 @@ const FINDING_SEVERITY_TONE: Record<FindingSeverity, 'red' | 'amber' | 'gray'> =
   low: 'gray'
 }
 
-type Tab = 'overview' | 'framework' | 'budget' | 'files' | 'remarks' | 'findings'
+type Tab = 'overview' | 'timeline' | 'framework' | 'budget' | 'files' | 'remarks' | 'findings'
+
+const TAB_KEYS: Tab[] = ['overview', 'timeline', 'framework', 'budget', 'files', 'remarks', 'findings']
 
 export function SiteDetailPage() {
   const { siteId = '' } = useParams()
@@ -180,7 +184,7 @@ export function SiteDetailPage() {
   const canViewBudget = isAdmin || user?.permissions?.viewBudget === true
 
   useEffect(() => {
-    if (['overview', 'framework', 'budget', 'files', 'remarks', 'findings'].includes(requestedTab ?? '')) {
+    if (TAB_KEYS.includes(requestedTab as Tab)) {
       setTab(requestedTab as Tab)
     }
   }, [requestedTab])
@@ -266,6 +270,7 @@ export function SiteDetailPage() {
           {(
             [
               ['overview', 'Overview'],
+              ['timeline', 'Timeline'],
               ['framework', 'Framework'],
               ['budget', 'Budget'],
               ['files', 'Files'],
@@ -291,6 +296,7 @@ export function SiteDetailPage() {
             onChanged={reload}
           />
         ) : null}
+        {tab === 'timeline' ? <TimelineTab siteId={site.siteId} /> : null}
         {tab === 'framework' ? (
           <FrameworkTab
             siteId={site.siteId}
@@ -3757,6 +3763,129 @@ function FindingsTab({ siteId, isAdmin }: { siteId: string; isAdmin: boolean }) 
         </div>
       </Card>
     </div>
+  )
+}
+
+/* ------------------------------- timeline -------------------------------- */
+
+/** Event groups the timeline can be filtered by. */
+type TimelineFilter = 'all' | 'project' | 'stages' | 'milestones' | 'files' | 'notes' | 'findings'
+
+const TIMELINE_FILTERS: Array<{ key: TimelineFilter; label: string }> = [
+  { key: 'all', label: 'All' },
+  { key: 'project', label: 'Project' },
+  { key: 'stages', label: 'Stages' },
+  { key: 'milestones', label: 'Milestones' },
+  { key: 'files', label: 'Files' },
+  { key: 'notes', label: 'Notes' },
+  { key: 'findings', label: 'Findings' }
+]
+
+const TIMELINE_FILTER_KINDS: Record<TimelineFilter, TimelineEventKind[]> = {
+  all: [],
+  project: ['project_created', 'project_start', 'project_target'],
+  stages: ['stage_start', 'stage_end'],
+  milestones: ['milestone_due', 'milestone_completed'],
+  files: ['file_uploaded'],
+  notes: ['remark'],
+  findings: ['finding']
+}
+
+/** Dot colour per event kind, so categories read apart at a glance. */
+const TIMELINE_TONE: Record<TimelineEventKind, string> = {
+  project_created: 'project',
+  project_start: 'project',
+  project_target: 'project',
+  stage_start: 'stage',
+  stage_end: 'stage',
+  milestone_due: 'milestone',
+  milestone_completed: 'milestone',
+  file_uploaded: 'file',
+  remark: 'note',
+  finding: 'finding'
+}
+
+/**
+ * The main events of a project in date order. Everything shown is derived from
+ * the project's own records, so it updates itself as work happens.
+ */
+function TimelineTab({ siteId }: { siteId: string }) {
+  const { data, error, loading } = useApi<{ events: TimelineEvent[] }>(`/sites/${siteId}/timeline`)
+  const [filter, setFilter] = useState<TimelineFilter>('all')
+
+  const events = data?.events ?? []
+  const kinds = TIMELINE_FILTER_KINDS[filter]
+  const shown = filter === 'all' ? events : events.filter((event) => kinds.includes(event.kind))
+  const upcoming = events.filter((event) => event.planned).length
+
+  return (
+    <Card>
+      <CardHeader
+        title="Timeline"
+        sub={
+          events.length === 0
+            ? 'The main events of this project, newest first'
+            : `${events.length} event${events.length === 1 ? '' : 's'} · newest first${
+                upcoming ? ` · ${upcoming} upcoming` : ''
+              }`
+        }
+      />
+      <div className="card-body">
+        <ErrorNote message={error} />
+
+        {loading && !data ? (
+          <Loading />
+        ) : events.length === 0 ? (
+          <Empty title="Nothing on the timeline yet">
+            Events appear here as the project moves: its start and target dates, stages, milestones,
+            uploaded files, notes and findings.
+          </Empty>
+        ) : (
+          <>
+            <div className="kpi-picker" style={{ marginBottom: 18 }}>
+              {TIMELINE_FILTERS.map((entry) => (
+                <button
+                  key={entry.key}
+                  className={`chip${filter === entry.key ? ' on' : ''}`}
+                  onClick={() => setFilter(entry.key)}
+                >
+                  {entry.label}
+                </button>
+              ))}
+            </div>
+
+            {shown.length === 0 ? (
+              <Empty title="No events in this category">Nothing has been recorded here yet.</Empty>
+            ) : (
+              <div className="timeline">
+                {shown.map((event, index) => {
+                  const day = formatDate(event.at)
+                  const startsDay = index === 0 || day !== formatDate(shown[index - 1].at)
+                  return (
+                    <Fragment key={event.id}>
+                      {startsDay ? <div className="timeline-day">{day}</div> : null}
+                      <div className="timeline-item">
+                        <span className={`timeline-dot ${TIMELINE_TONE[event.kind]}`} />
+                        <div className="timeline-body">
+                          <div className="timeline-head">
+                            <span className="timeline-title">{event.title}</span>
+                            {event.planned ? <Badge tone="blue">Planned</Badge> : null}
+                            <span className="timeline-when">
+                              {formatDateTime(event.at)} · {relativeTime(event.at)}
+                            </span>
+                          </div>
+                          {event.detail ? <p className="timeline-detail">{event.detail}</p> : null}
+                        </div>
+                      </div>
+                    </Fragment>
+                  )
+                })}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </Card>
   )
 }
 

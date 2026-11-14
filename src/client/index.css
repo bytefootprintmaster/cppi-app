@@ -1137,6 +1137,38 @@ tr.drop-target > td {
   box-shadow: 0 0 0 4px var(--green-100);
 }
 
+/* Project timeline: a day heading, then the events that fall on it. */
+.timeline-day {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-top: 2px;
+}
+.timeline-day:not(:first-child) { margin-top: 6px; }
+.timeline-body { flex: 1; min-width: 0; }
+.timeline-head { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.timeline-title { font-weight: 600; }
+.timeline-when { margin-left: auto; font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+.timeline-detail {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* Dot colours by event category. */
+.timeline-dot.project { background: var(--green-600); box-shadow: 0 0 0 4px var(--green-100); }
+.timeline-dot.stage { background: var(--green-400); box-shadow: 0 0 0 4px var(--green-100); }
+.timeline-dot.milestone { background: var(--green-500); box-shadow: 0 0 0 4px var(--green-100); }
+.timeline-dot.file { background: var(--blue); box-shadow: 0 0 0 4px var(--blue-bg); }
+.timeline-dot.note { background: var(--muted); box-shadow: 0 0 0 4px var(--slate-bg); }
+.timeline-dot.finding { background: var(--amber); box-shadow: 0 0 0 4px var(--amber-bg); }
+
 /* --------------------- document intelligence (agent) ------------------- */
 
 /* Evidence badge on a file card. */
@@ -1396,7 +1428,7 @@ tr.drop-target > td {
     cursor: pointer;
   }
   .mobile-menu-btn:hover { background: var(--green-50); border-color: var(--green-200); }
-  .mobile-brand { display: block; width: auto; height: 26px; border-radius: 7px; }
+  .mobile-brand { display: block; width: 26px; height: 26px; object-fit: contain; border-radius: 7px; }
 
   /* The sidebar slides in from the left instead of sitting in the flow. */
   .sidebar {

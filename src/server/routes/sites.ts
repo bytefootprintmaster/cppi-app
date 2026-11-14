@@ -36,7 +36,8 @@ import type {
   RelationshipRecord,
   RemarkRecord,
   SiteRecord,
-  StageRecord
+  StageRecord,
+  TimelineEvent
 } from '../types'
 
 export const siteRouter = Router()
@@ -1134,4 +1135,105 @@ siteRouter.get('/:siteId/relationships', asyncHandler(async (req, res) => {
     ExpressionAttributeValues: { ':s': req.params.siteId }
   })
   res.json({ relationships: rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt)) })
+}))
+
+/* ------------------------------- timeline -------------------------------- */
+
+/**
+ * The main events of a project, newest first. Everything is derived from
+ * records the portal already keeps — dates on the project, stages and
+ * milestones, plus uploads, notes and findings — so the timeline can never
+ * disagree with the project itself.
+ */
+siteRouter.get('/:siteId/timeline', asyncHandler(async (req, res) => {
+  const site = await requireSiteAccess(req.user!, req.params.siteId)
+  const bySite = { KeyConditionExpression: 'siteId = :s', ExpressionAttributeValues: { ':s': site.siteId } }
+  const [stages, milestones, assets, remarks, findings] = await Promise.all([
+    listStages(site.siteId),
+    listMilestones(site.siteId),
+    queryAll<AssetRecord>(T.assets, bySite),
+    queryAll<RemarkRecord>(T.remarks, bySite),
+    queryAll<FindingRecord>(T.findings, bySite)
+  ])
+
+  const events: TimelineEvent[] = []
+  const now = Date.now()
+
+  // Dates arrive either as a full ISO timestamp or date-only (a date input).
+  // Anything unparseable is dropped rather than shown as an empty row, and a
+  // date beyond today is a plan rather than a record of something that happened.
+  const push = (event: Omit<TimelineEvent, 'at'> & { at?: string }) => {
+    if (!event.at) return
+    const at = new Date(event.at)
+    if (Number.isNaN(at.getTime())) return
+    events.push({ ...event, at: at.toISOString(), planned: at.getTime() > now })
+  }
+
+  push({ id: `site-created-${site.siteId}`, kind: 'project_created', title: 'Project created', at: site.createdAt })
+  push({ id: `site-start-${site.siteId}`, kind: 'project_start', title: 'Project start', at: site.startDate })
+  push({ id: `site-target-${site.siteId}`, kind: 'project_target', title: 'Target completion', at: site.targetDate })
+
+  for (const stage of stages) {
+    push({
+      id: `stage-start-${stage.stageId}`,
+      kind: 'stage_start',
+      title: `Stage started · ${stage.name}`,
+      detail: stage.description,
+      at: stage.startDate
+    })
+    push({ id: `stage-end-${stage.stageId}`, kind: 'stage_end', title: `Stage complete · ${stage.name}`, at: stage.endDate })
+  }
+
+  for (const milestone of milestones) {
+    // A completed milestone records when it actually finished; otherwise its due
+    // date stands in as the event.
+    if (milestone.completedAt) {
+      push({
+        id: `milestone-done-${milestone.milestoneId}`,
+        kind: 'milestone_completed',
+        title: `Milestone completed · ${milestone.name}`,
+        at: milestone.completedAt
+      })
+    } else {
+      push({
+        id: `milestone-due-${milestone.milestoneId}`,
+        kind: 'milestone_due',
+        title: `Milestone due · ${milestone.name}`,
+        at: milestone.dueDate
+      })
+    }
+  }
+
+  for (const asset of assets) {
+    push({
+      id: `asset-${asset.assetId}`,
+      kind: 'file_uploaded',
+      title: `File uploaded · ${asset.name}`,
+      detail: asset.uploadedByName,
+      at: asset.uploadedAt
+    })
+  }
+
+  for (const remark of remarks) {
+    push({
+      id: `remark-${remark.remarkId}`,
+      kind: 'remark',
+      title: `Note added by ${remark.authorName}`,
+      detail: remark.text.slice(0, 240),
+      at: remark.createdAt
+    })
+  }
+
+  for (const finding of findings) {
+    push({
+      id: `finding-${finding.findingId}`,
+      kind: 'finding',
+      title: `Finding raised · ${finding.title}`,
+      detail: finding.detail,
+      at: finding.createdAt
+    })
+  }
+
+  events.sort((a, b) => b.at.localeCompare(a.at))
+  res.json({ events })
 }))

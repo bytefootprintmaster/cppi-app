@@ -343,6 +343,38 @@ export interface RelationshipRecord {
   createdAt: string
 }
 
+/* --------------------------------- timeline --------------------------------- */
+
+/**
+ * What a timeline entry is. Every kind is derived from a record the portal
+ * already keeps, so the timeline needs no storage of its own and always matches
+ * the project data.
+ */
+export type TimelineEventKind =
+  | 'project_created'
+  | 'project_start'
+  | 'project_target'
+  | 'stage_start'
+  | 'stage_end'
+  | 'milestone_due'
+  | 'milestone_completed'
+  | 'file_uploaded'
+  | 'remark'
+  | 'finding'
+
+/** One entry on a project's timeline. */
+export interface TimelineEvent {
+  /** Stable id, so list keys survive a re-fetch. */
+  id: string
+  kind: TimelineEventKind
+  title: string
+  detail?: string
+  /** ISO timestamp the event happened (or is planned for). */
+  at: string
+  /** True when `at` is a future planned date rather than something recorded. */
+  planned?: boolean
+}
+
 /**
  * A named bucket of cost lines inside one group — the middle layer of the
  * budget tree (e.g. Hard costs → Structural). Each project keeps its own list,
