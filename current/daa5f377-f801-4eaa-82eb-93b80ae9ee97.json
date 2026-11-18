@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-11-14T18:43:18Z",
+  "updatedAt": "2026-11-18T17:40:38Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -226,12 +226,12 @@
       }
     ],
     "assetCount": 65,
-    "remarkCount": 119,
+    "remarkCount": 120,
     "latestRemark": {
-      "remarkId": "c57bae37-d107-49bf-85ef-c96b5d588f1f",
-      "text": "Interactive 3D site model (HTML) covering 25 & 27 Mandrake St (two 4-unit buildings plus basement each) and, in a separate tab, 4 Barnes Dr. Schematic only, built from permit sets and not engineered. Design evidence, not proof of construction progress.",
+      "remarkId": "bdc0a587-2ed4-4e62-b614-f773db69048f",
+      "text": "Deposited reference plan 40R-33392 (Pearson & Pearson Surveying, J. Mo OLS; survey completed 30-Jul-2026, deposited 19-Aug-2026) for Parts 1-8 of Lots 112/113 and closed Cedar St (now Mandrake St), Plan 377, Ajax. Survey evidence only, not construction progress.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-14T18:43:12Z"
+      "createdAt": "2026-11-18T17:40:04Z"
     }
   }
 }
