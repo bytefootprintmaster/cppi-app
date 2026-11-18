@@ -8,6 +8,7 @@ import { Badge, Button, Empty, ErrorNote, Loading, Modal } from '../components/u
 import {
   IconChat,
   IconCheck,
+  IconChevronDown,
   IconCopy,
   IconDownload,
   IconFile,
@@ -408,6 +409,9 @@ export function ChatPage() {
   const [clearing, setClearing] = useState(false)
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null)
   const copyResetRef = useRef<number | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<ChatMessageRecord | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [showJumpToLatest, setShowJumpToLatest] = useState(false)
 
   const sites = useApi<{ sites: SiteRecord[] }>('/sites')
   const status = useApi<ChatServiceStatus>('/chat/status')
@@ -478,6 +482,20 @@ export function ChatPage() {
     const el = scrollRef.current
     if (el) el.scrollTop = el.scrollHeight
   }, [messages.length, overlay.length, sending, query])
+
+  // Offer a jump back to the newest turn once the reader has scrolled away from it,
+  // so they never have to drag the transcript down by hand.
+  function onScroll() {
+    const el = scrollRef.current
+    if (!el) return
+    setShowJumpToLatest(el.scrollHeight - el.scrollTop - el.clientHeight > 120)
+  }
+
+  function scrollToLatest() {
+    const el = scrollRef.current
+    if (!el) return
+    el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' })
+  }
 
   function chooseFiles(files: FileList | null) {
     if (!files?.length) return
@@ -683,6 +701,20 @@ export function ChatPage() {
     }
   }
 
+  async function deleteMessage(message: ChatMessageRecord) {
+    setDeleting(true)
+    setError(null)
+    try {
+      await api(`/chat/messages/${message.messageId}`, { method: 'DELETE' })
+      setConfirmDelete(null)
+      await loadThread()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not delete this message')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   const needle = query.trim()
   const searching = needle.length > 0
   const visibleMessages = searching
@@ -733,18 +765,29 @@ export function ChatPage() {
             {message.role === 'assistant' && message.agent ? `${message.agent} · ` : ''}
             {clockTime(message.createdAt)}
           </span>
-          {message.role === 'assistant' && message.text.trim() ? (
+          <div className="chat-actions">
+            {message.role === 'assistant' && message.text.trim() ? (
+              <button
+                type="button"
+                className="chat-copy"
+                aria-label={copiedMessageId === message.messageId ? 'Response copied' : 'Copy response'}
+                title={copiedMessageId === message.messageId ? 'Copied' : 'Copy response'}
+                onClick={() => void copyMessage(message.messageId, message.text)}
+              >
+                {copiedMessageId === message.messageId ? <IconCheck size={14} /> : <IconCopy size={14} />}
+                <span>{copiedMessageId === message.messageId ? 'Copied' : 'Copy'}</span>
+              </button>
+            ) : null}
             <button
               type="button"
-              className="chat-copy"
-              aria-label={copiedMessageId === message.messageId ? 'Response copied' : 'Copy response'}
-              title={copiedMessageId === message.messageId ? 'Copied' : 'Copy response'}
-              onClick={() => void copyMessage(message.messageId, message.text)}
+              className="chat-delete"
+              aria-label={message.role === 'user' ? 'Delete this question' : 'Delete this answer'}
+              title={message.role === 'user' ? 'Delete this question' : 'Delete this answer'}
+              onClick={() => setConfirmDelete(message)}
             >
-              {copiedMessageId === message.messageId ? <IconCheck size={14} /> : <IconCopy size={14} />}
-              <span>{copiedMessageId === message.messageId ? 'Copied' : 'Copy'}</span>
+              <IconTrash size={14} />
             </button>
-          ) : null}
+          </div>
         </div>
       </div>
     )
@@ -799,83 +842,96 @@ export function ChatPage() {
             </div>
           ) : null}
 
-          <div className="chat-scroll" ref={scrollRef}>
-            {loadingThread && !conversationStarted ? (
-              <Loading label="Loading the conversation…" />
-            ) : !conversationStarted ? (
-              <div className="chat-empty">
-                <div className="chat-empty-icon">
-                  <IconChat size={26} />
-                </div>
-                <h2>How can I help?</h2>
-                <p className="muted">
-                  Tell me what you are looking at and I will answer from the project files, or write it up.
-                </p>
-                <div className="chat-suggest">
-                  {EXAMPLES.map((example) => (
-                    <button
-                      key={example}
-                      type="button"
-                      className="chip"
-                      onClick={() => {
-                        setDraft(example)
-                        if (paramSiteId) setSiteId(paramSiteId)
-                      }}
-                    >
-                      {example}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : searching && visibleMessages.length === 0 ? (
-              <Empty title="No matching messages">
-                Nothing in this conversation matches “{needle}”.
-              </Empty>
-            ) : (
-              <>
-                {visibleMessages.map(renderTurn)}
-
-                {overlay.map((turn, index) => (
-                  <div key={`overlay-${index}`} className={`chat-turn chat-turn-${turn.role}`}>
-                    <div
-                      className={`chat-bubble${
-                        turn.role === 'user'
-                          ? ' chat-bubble-user'
-                          : turn.thinking
-                            ? ' chat-bubble-bot chat-bubble-thinking'
-                            : ' chat-bubble-error'
-                      }`}
-                    >
-                      {turn.thinking
-                        ? <Thinking />
-                        : turn.role === 'assistant'
-                          ? renderMarkdown(turn.text)
-                          : turn.text}
-                    </div>
-                    {turn.role === 'assistant' && !turn.thinking && turn.text.trim() ? (
-                      <div className="chat-meta">
-                        <span />
-                        <button
-                          type="button"
-                          className="chat-copy"
-                          aria-label={copiedMessageId === `overlay-${index}` ? 'Response copied' : 'Copy response'}
-                          title={copiedMessageId === `overlay-${index}` ? 'Copied' : 'Copy response'}
-                          onClick={() => void copyMessage(`overlay-${index}`, turn.text)}
-                        >
-                          {copiedMessageId === `overlay-${index}`
-                            ? <IconCheck size={14} />
-                            : <IconCopy size={14} />}
-                          <span>{copiedMessageId === `overlay-${index}` ? 'Copied' : 'Copy'}</span>
-                        </button>
-                      </div>
-                    ) : null}
-                    {turn.attachments?.length ? (
-                      <ChatAttachmentList attachments={turn.attachments} onOpen={downloadAttachment} />
-                    ) : null}
+          <div className="chat-scroll-wrap">
+            <div className="chat-scroll" ref={scrollRef} onScroll={onScroll}>
+              {loadingThread && !conversationStarted ? (
+                <Loading label="Loading the conversation…" />
+              ) : !conversationStarted ? (
+                <div className="chat-empty">
+                  <div className="chat-empty-icon">
+                    <IconChat size={26} />
                   </div>
-                ))}
-              </>
-            )}
+                  <h2>How can I help?</h2>
+                  <p className="muted">
+                    Tell me what you are looking at and I will answer from the project files, or write it up.
+                  </p>
+                  <div className="chat-suggest">
+                    {EXAMPLES.map((example) => (
+                      <button
+                        key={example}
+                        type="button"
+                        className="chip"
+                        onClick={() => {
+                          setDraft(example)
+                          if (paramSiteId) setSiteId(paramSiteId)
+                        }}
+                      >
+                        {example}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : searching && visibleMessages.length === 0 ? (
+                <Empty title="No matching messages">
+                  Nothing in this conversation matches “{needle}”.
+                </Empty>
+              ) : (
+                <>
+                  {visibleMessages.map(renderTurn)}
+
+                  {overlay.map((turn, index) => (
+                    <div key={`overlay-${index}`} className={`chat-turn chat-turn-${turn.role}`}>
+                      <div
+                        className={`chat-bubble${
+                          turn.role === 'user'
+                            ? ' chat-bubble-user'
+                            : turn.thinking
+                              ? ' chat-bubble-bot chat-bubble-thinking'
+                              : ' chat-bubble-error'
+                        }`}
+                      >
+                        {turn.thinking
+                          ? <Thinking />
+                          : turn.role === 'assistant'
+                            ? renderMarkdown(turn.text)
+                            : turn.text}
+                      </div>
+                      {turn.role === 'assistant' && !turn.thinking && turn.text.trim() ? (
+                        <div className="chat-meta">
+                          <span />
+                          <button
+                            type="button"
+                            className="chat-copy"
+                            aria-label={copiedMessageId === `overlay-${index}` ? 'Response copied' : 'Copy response'}
+                            title={copiedMessageId === `overlay-${index}` ? 'Copied' : 'Copy response'}
+                            onClick={() => void copyMessage(`overlay-${index}`, turn.text)}
+                          >
+                            {copiedMessageId === `overlay-${index}`
+                              ? <IconCheck size={14} />
+                              : <IconCopy size={14} />}
+                            <span>{copiedMessageId === `overlay-${index}` ? 'Copied' : 'Copy'}</span>
+                          </button>
+                        </div>
+                      ) : null}
+                      {turn.attachments?.length ? (
+                        <ChatAttachmentList attachments={turn.attachments} onOpen={downloadAttachment} />
+                      ) : null}
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+            {showJumpToLatest ? (
+              <button
+                type="button"
+                className="chat-jump"
+                onClick={scrollToLatest}
+                aria-label="Jump to the latest message"
+                title="Jump to the latest message"
+              >
+                <IconChevronDown size={18} />
+              </button>
+            ) : null}
           </div>
 
           <form
@@ -1078,6 +1134,31 @@ export function ChatPage() {
           <p className="muted" style={{ margin: 0 }}>
             This deletes every message in your conversation with the assistant. Project files and reports it
             created are not affected.
+          </p>
+        </Modal>
+      ) : null}
+
+      {confirmDelete ? (
+        <Modal
+          title="Delete this message?"
+          onClose={() => (deleting ? undefined : setConfirmDelete(null))}
+          footer={
+            <>
+              <Button variant="ghost" disabled={deleting} onClick={() => setConfirmDelete(null)}>
+                <IconX size={15} />
+                Cancel
+              </Button>
+              <Button variant="danger" loading={deleting} onClick={() => void deleteMessage(confirmDelete)}>
+                <IconTrash size={15} />
+                Delete
+              </Button>
+            </>
+          }
+        >
+          <p className="muted" style={{ margin: 0 }}>
+            {confirmDelete.role === 'user'
+              ? 'This removes your question from the conversation.'
+              : 'This removes this answer from the conversation. Project files and reports it mentions are not affected.'}
           </p>
         </Modal>
       ) : null}

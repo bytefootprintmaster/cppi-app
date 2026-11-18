@@ -363,6 +363,28 @@ chatRouter.post('/messages', asyncHandler(async (req, res) => {
   res.json({ user: userMessage, assistant: assistantMessage, thread: updated })
 }))
 
+/** Remove one question or answer from the conversation. */
+chatRouter.delete('/messages/:messageId', asyncHandler(async (req, res) => {
+  if (!canWrite(req.user!)) throw new HttpError(403, 'You do not have permission to use the assistant')
+  const thread = await findThread(req.user!.userId)
+  if (!thread) throw new HttpError(404, 'Conversation not found')
+
+  const messageId = str(req.params.messageId, 'messageId', 60)
+  const message = await getItem<ChatMessageRecord>(T.chatMessages, { threadId: thread.threadId, messageId })
+  if (!message) throw new HttpError(404, 'Message not found')
+
+  await deleteItem(T.chatMessages, { threadId: thread.threadId, messageId })
+
+  // The thread's counter only reflects what is still there.
+  const remaining = await listMessages(thread.threadId)
+  await updateFields(T.chatThreads, { threadId: thread.threadId }, {
+    messageCount: remaining.length,
+    updatedAt: now()
+  })
+
+  res.json({ ok: true, messageCount: remaining.length })
+}))
+
 /** Clear the conversation. The thread stays so history simply restarts empty. */
 chatRouter.delete('/thread', asyncHandler(async (req, res) => {
   const thread = await findThread(req.user!.userId)

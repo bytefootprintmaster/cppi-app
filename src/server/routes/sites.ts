@@ -1140,6 +1140,26 @@ siteRouter.get('/:siteId/relationships', asyncHandler(async (req, res) => {
 /* ------------------------------- timeline -------------------------------- */
 
 /**
+ * Reads one optional timeline source. The timeline gathers rows from several
+ * tables, and a table this environment has not provisioned (or that is briefly
+ * unavailable) must not sink the whole view — it degrades to no rows and says
+ * so in the log instead.
+ */
+async function optionalTimelineRows<Row>(table: string, siteId: string): Promise<Row[]> {
+  try {
+    return await queryAll<Row>(table, {
+      KeyConditionExpression: 'siteId = :s',
+      ExpressionAttributeValues: { ':s': siteId }
+    })
+  } catch (err) {
+    console.warn(
+      `[cppi] timeline: skipping ${table} for site ${siteId} — ${err instanceof Error ? err.message : String(err)}`
+    )
+    return []
+  }
+}
+
+/**
  * The main events of a project, newest first. Everything is derived from
  * records the portal already keeps — dates on the project, stages and
  * milestones, plus uploads, notes and findings — so the timeline can never
@@ -1147,13 +1167,12 @@ siteRouter.get('/:siteId/relationships', asyncHandler(async (req, res) => {
  */
 siteRouter.get('/:siteId/timeline', asyncHandler(async (req, res) => {
   const site = await requireSiteAccess(req.user!, req.params.siteId)
-  const bySite = { KeyConditionExpression: 'siteId = :s', ExpressionAttributeValues: { ':s': site.siteId } }
   const [stages, milestones, assets, remarks, findings] = await Promise.all([
     listStages(site.siteId),
     listMilestones(site.siteId),
-    queryAll<AssetRecord>(T.assets, bySite),
-    queryAll<RemarkRecord>(T.remarks, bySite),
-    queryAll<FindingRecord>(T.findings, bySite)
+    optionalTimelineRows<AssetRecord>(T.assets, site.siteId),
+    optionalTimelineRows<RemarkRecord>(T.remarks, site.siteId),
+    optionalTimelineRows<FindingRecord>(T.findings, site.siteId)
   ])
 
   const events: TimelineEvent[] = []
