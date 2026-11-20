@@ -1,0 +1,851 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "recordedAt": "2026-11-20T04:04:24Z",
+  "jobId": "d28db160b441",
+  "trigger": "s3",
+  "task": "progress_update_from_file",
+  "agent": "progress",
+  "model": "claude-sonnet-5-5",
+  "source": {
+    "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+    "s3Key": "sites/2e49b782-4e65-4f45-aa39-16bad1072c1d/document/9b776e9d-e88f-5a1a-b820-5d34687036b1-288_Salisbury_Ave._Cambridge_Electrical_Contract_Addendum.pdf",
+    "fileName": "288_Salisbury_Ave._Cambridge_Electrical_Contract_Addendum.pdf",
+    "kind": "document",
+    "etag": "53064e7558a07a82fef236e84662338c",
+    "size": 420940
+  },
+  "summary": "Processed the executed Electrical Contract Addendum ELEC-01 ($9,990 excl. HST, signed 19-Nov-2026). Added a remark, recorded the document intelligence and linked it to the contractor and the permit card. Raised a finding for the missing base contract and WSIB/insurance. No status changes proposed because a contract is not evidence of work done.",
+  "confidence": 0.9,
+  "steps": 4,
+  "actions": [
+    {
+      "tool": "get_project_state",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d"
+      },
+      "status": "ok"
+    },
+    {
+      "tool": "get_project_intelligence",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d"
+      },
+      "status": "ok",
+      "result": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+        "documentCount": 0,
+        "documents": [],
+        "evidenceCovered": [],
+        "evidenceMissing": [
+          "land_survey",
+          "design",
+          "engineering",
+          "permit_approval",
+          "contractor_compliance",
+          "procurement_quote",
+          "executed_contract",
+          "commencement",
+          "construction_progress",
+          "inspection_verification",
+          "financial_payment",
+          "completion_occupancy"
+        ],
+        "findingCount": 2,
+        "openFindings": [
+          {
+            "findingId": "39d208f0-dea4-4253-9981-608a1b2b7746",
+            "kind": "missing_document",
+            "severity": "low",
+            "title": "Electrical contract addendum pending signature; no base contract on file",
+            "detail": "A HelloSign request (19-Nov-2026) shows the \"288 Salisbury Ave. Cambridge Electrical Contract Addendum\" sent to Michael Poon and Mahmudul Hossain for signature. No executed addendum, base electrical contract or electrical contractor compliance documents (WSIB, insurance) are on the dashboard. Upload them once signed. The request came from ssindhu@cppimi.com, whereas earlier project emails used cppigroup.com; confirm this is expected.",
+            "relatedAssets": [],
+            "status": "open",
+            "createdAt": "2026-11-19T22:00:42Z"
+          },
+          {
+            "findingId": "0b7f21fa-0049-4adc-8a9f-9f2150445b2d",
+            "kind": "inconsistency",
+            "severity": "medium",
+            "title": "Framing milestones marked in progress before footings inspected and with no construction evidence",
+            "detail": "Milestones 'Floor structure complete' and 'Framing erected' are marked in_progress, while the Foundation stage is not started, 'Footings inspected' and 'Excavation & shoring inspected' are pending, and 'Clearing & demolition complete' is still in progress. The uploaded records state that 'no construction work is evidenced' (Revision 1 drawing set and permit card remarks). No inspection record is on file. Confirm what work has actually occurred and whether the framing milestones were set in error. The progress agent should review the status before any change; this review has not altered it.",
+            "relatedAssets": [
+              "c69ca856-0783-4ac0-b4f9-b84b7f3f0991",
+              "b3dec205-627f-40e8-9f16-c624f2ccd0a1"
+            ],
+            "status": "open",
+            "createdAt": "2026-11-17T12:00:56Z"
+          }
+        ],
+        "relationshipCount": 0,
+        "relationships": []
+      }
+    },
+    {
+      "tool": "get_budget",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d"
+      },
+      "status": "ok",
+      "result": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+        "summary": {
+          "groups": [
+            {
+              "group": "land",
+              "lines": 1,
+              "budget": 774624.78,
+              "spent": 774624.78,
+              "hst": 0.0
+            },
+            {
+              "group": "soft",
+              "lines": 5,
+              "budget": 23718.0,
+              "spent": 4858.0,
+              "hst": 555.64
+            },
+            {
+              "group": "hard",
+              "lines": 13,
+              "budget": 202875.0,
+              "spent": 8990.0,
+              "hst": 1168.7
+            }
+          ],
+          "lines": 19,
+          "budgeted": 1001217.78,
+          "spent": 788472.78,
+          "hst": 1724.34,
+          "paid": 790197.12,
+          "remaining": 212745.0,
+          "percentUsed": 79
+        },
+        "lines": [
+          {
+            "lineId": "16585317-3675-4570-bfb0-3050020066f7",
+            "group": "land",
+            "code": null,
+            "name": "Land (book value)",
+            "budget": 774624.78,
+            "spent": 774624.78,
+            "hst": 0,
+            "order": 1
+          },
+          {
+            "lineId": "3d8e62f4-b355-47d2-a96e-da779b8a0959",
+            "group": "soft",
+            "code": "S.11",
+            "name": "Development & Consulting (6% of hard cost)",
+            "budget": 10012.5,
+            "spent": 0,
+            "hst": 0,
+            "order": 1
+          },
+          {
+            "lineId": "ea3f562c-5b4f-4209-9251-0033ec367616",
+            "group": "soft",
+            "code": "S.13",
+            "name": "General Conditions - Building permit fee & BCIN Design Fee",
+            "budget": 9648,
+            "spent": 3500,
+            "hst": 455,
+            "order": 2
+          },
+          {
+            "lineId": "52b4b445-c9c6-4887-a5f4-33d7b8da25fe",
+            "group": "soft",
+            "code": "S.31",
+            "name": "Accounting & Admin. (2% of hard costs)",
+            "budget": 4057.5,
+            "spent": 0,
+            "hst": 0,
+            "order": 3
+          },
+          {
+            "lineId": "3291db1c-673e-4763-bf58-82804275dead",
+            "group": "soft",
+            "code": "S.32",
+            "name": "Financing Costs",
+            "budget": 0,
+            "spent": 0,
+            "hst": 0,
+            "order": 4
+          },
+          {
+            "lineId": "80b8c669-f245-4bbe-b471-305e2d89509f",
+            "group": "soft",
+            "code": "S.39",
+            "name": "Property operating expenses (property taxes, insurance, utilities)",
+            "budget": 0,
+            "spent": 1358,
+            "hst": 100.64,
+            "order": 5
+          },
+          {
+            "lineId": "42e7e881-3509-4d07-88b3-4e77c32d9154",
+            "group": "hard",
+            "code": "H.01 00 00",
+            "name": "Project Management / site supervision (~12 wks)",
+            "budget": 36000,
+            "spent": 8990,
+            "hst": 1168.7,
+            "order": 1
+          },
+          {
+            "lineId": "c8d22c45-8712-49e2-916a-f82b4bca0bdf",
+            "group": "hard",
+            "code": "H.01 15 00",
+            "name": "Demolition",
+            "budget": 4400,
+            "spent": 0,
+            "hst": 0,
+            "order": 2
+          },
+          {
+            "lineId": "0aa4d797-a484-460c-aec3-62a41271e0e9",
+            "group": "hard",
+            "code": "H.02 10 00",
+            "name": "Deck & Guards",
+            "budget": 5100,
+            "spent": 0,
+            "hst": 0,
+            "order": 3
+          },
+          {
+            "lineId": "1b648f4b-b567-4223-bc93-bbdd58c14973",
+            "group": "hard",
+            "code": "H.02 12 00",
+            "name": "Structural/Framing",
+            "budget": 20800,
+            "spent": 0,
+            "hst": 0,
+            "order": 4
+          },
+          {
+            "lineId": "27cdee0e-1e28-4eb0-9259-d8373afdbb78",
+            "group": "hard",
+            "code": "H.02 16 00",
+            "name": "Doors & Hardware",
+            "budget": 6800,
+            "spent": 0,
+            "hst": 0,
+            "order": 5
+          },
+          {
+            "lineId": "fbacb367-9446-441e-9a35-e227c642445a",
+            "group": "hard",
+            "code": "H.02 16 10",
+            "name": "Windows",
+            "budget": 3800,
+            "spent": 0,
+            "hst": 0,
+            "order": 6
+          },
+          {
+            "lineId": "127165ef-f1ad-4e79-a5df-1221e1108141",
+            "group": "hard",
+            "code": "H.02 21 00",
+            "name": "Plumbing",
+            "budget": 20700,
+            "spent": 0,
+            "hst": 0,
+            "order": 7
+          },
+          {
+            "lineId": "723eb8df-93d7-40db-b824-307f5398fc85",
+            "group": "hard",
+            "code": "H.02 23 00",
+            "name": "Electrical",
+            "budget": 22400,
+            "spent": 0,
+            "hst": 0,
+            "order": 8
+          },
+          {
+            "lineId": "3f65bfb2-adc2-4cc7-80f7-fb056ceb7560",
+            "group": "hard",
+            "code": "H.02 24 00",
+            "name": "HVAC/Mechanical",
+            "budget": 5400,
+            "spent": 0,
+            "hst": 0,
+            "order": 9
+          },
+          {
+            "lineId": "5c3a97f8-5856-43e5-86af-d4c4dc07f320",
+            "group": "hard",
+            "code": "H.02 27 00",
+            "name": "Fire Separation & Drywall",
+            "budget": 25850,
+            "spent": 0,
+            "hst": 0,
+            "order": 10
+          },
+          {
+            "lineId": "7488361a-10d9-45f8-811d-4b3ac2054802",
+            "group": "hard",
+            "code": "H.02 32 00",
+            "name": "Finishes",
+            "budget": 10900,
+            "spent": 0,
+            "hst": 0,
+            "order": 11
+          },
+          {
+            "lineId": "0a602410-fce1-4164-b903-f70b72b85569",
+            "group": "hard",
+            "code": "H.02 33 00",
+            "name": "Kitchen & Bath",
+            "budget": 25425,
+            "spent": 0,
+            "hst": 0,
+            "order": 12
+          },
+          {
+            "lineId": "846186e9-5aa9-4e00-aecd-385c1b8d52f9",
+            "group": "hard",
+            "code": "H.05 00 00",
+            "name": "Contingency",
+            "budget": 15300,
+            "spent": 0,
+            "hst": 0,
+            "order": 13
+          }
+        ]
+      }
+    },
+    {
+      "tool": "register_asset",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+        "name": "288 Salisbury Ave. Cambridge Electrical Contract Addendum.pdf",
+        "s3Key": "sites/2e49b782-4e65-4f45-aa39-16bad1072c1d/document/9b776e9d-e88f-5a1a-b820-5d34687036b1-288_Salisbury_Ave._Cambridge_Electrical_Contract_Addendum.pdf",
+        "type": "document",
+        "category": "other",
+        "contentType": "application/pdf",
+        "size": 420940,
+        "stageId": "ec35698a-8cb1-4314-8a96-1e86798c6641"
+      },
+      "status": "already_registered",
+      "result": {
+        "status": "already_registered",
+        "assetId": "a47080b1-2bb0-46e2-b37f-9b6c36bc7e09"
+      }
+    },
+    {
+      "tool": "add_progress_remark",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+        "text": "Electrical Contract Addendum #1 (ELEC-01), signed by TT9 Inc. and Wahida Electrical & Plumbing Inc. on 19-Nov-2026, raises the electrical subcontract from $7,500 to $9,990 excl. HST ($11,288.70 incl.) for Revision 1 scope. It is a contract, not evidence of work done.",
+        "category": "other",
+        "summary": "Fully executed electrical subcontract addendum with revised price, scope and ESA-gated milestone payment schedule.",
+        "evidenceClasses": [
+          "executed_contract",
+          "procurement_quote"
+        ],
+        "verificationStatus": "extracted",
+        "sourceDocument": "288 Salisbury Ave. Cambridge Electrical Contract Addendum.pdf",
+        "sourceRef": "Pages 1-4 (price summary p1-2, scope p2, payment schedule p3, Dropbox Sign audit trail p4)",
+        "confidence": 0.9,
+        "extracted": [
+          {
+            "label": "Addendum No.",
+            "value": "ELEC-01 (Contract Addendum #1), dated 19-Nov-2026",
+            "verification": "extracted"
+          },
+          {
+            "label": "Parties",
+            "value": "TT9 Inc. (Michael Poon, President) and Wahida Electrical & Plumbing Inc. (Mahmudul Hossain)",
+            "verification": "extracted"
+          },
+          {
+            "label": "Original base electrical sum",
+            "value": "$7,500.00 net",
+            "verification": "extracted"
+          },
+          {
+            "label": "Addendum addition",
+            "value": "+$2,490.00",
+            "verification": "extracted"
+          },
+          {
+            "label": "Revised net price",
+            "value": "$9,990.00 excl. HST; HST $1,298.70; total $11,288.70",
+            "verification": "extracted"
+          },
+          {
+            "label": "Permit referenced",
+            "value": "26 008338 000 00, Revision 1 issued 3-Nov-2026",
+            "verification": "extracted"
+          },
+          {
+            "label": "Payment schedule",
+            "value": "20% mobilization, 40% passed ESA rough-in, 30% device trim, 10% ESA Certificate of Acceptance; 10% statutory holdback released 60 days post substantial performance",
+            "verification": "extracted"
+          },
+          {
+            "label": "Signatures",
+            "value": "Both parties signed 19-Nov-2026; Dropbox Sign audit trail shows completed 23:01 UTC-5",
+            "verification": "extracted"
+          },
+          {
+            "label": "Scope",
+            "value": "Added branch circuits, smoke/CO interconnects, furnace duct smoke detector interlock, firestop at fire-rated penetrations",
+            "verification": "extracted"
+          }
+        ],
+        "relevance": "Supersedes the earlier pending-signature notices and fixes the electrical trade price for the Rough-In Services stage. The contract value ($9,990) is well under the $22,400 Electrical budget line.",
+        "limitations": "Proves the contract terms and signing only. It does not prove any electrical work has started, been inspected by ESA, or been paid. The base subcontract and contractor WSIB/insurance are not on file.",
+        "recommendedActions": [
+          "Upload the base electrical subcontract/quotation referenced by the addendum",
+          "Obtain Wahida Electrical WSIB clearance and insurance certificates",
+          "Obtain ESA permit/notification for the electrical work",
+          "Confirm the electrical budget line against the $9,990 contract"
+        ],
+        "relatedDocuments": [
+          "288 Salisbury Ave - Revision 1 - Revised Permit Card.pdf",
+          "Revision 1 - Reviewed Drawings - 288 Salisbury Ave.pdf",
+          "Budget-288_Salisbury.xlsx"
+        ]
+      },
+      "status": "added",
+      "result": {
+        "status": "added",
+        "remarkId": "71f7a50a-c684-473a-8f3f-6a4edc65e585",
+        "evidenceClasses": [
+          "executed_contract",
+          "procurement_quote"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "tool": "record_document_intelligence",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+        "assetId": "a47080b1-2bb0-46e2-b37f-9b6c36bc7e09",
+        "docType": "Subcontract addendum (electrical scope & price revision)",
+        "issuer": "TT9 Inc. (signed via Dropbox Sign, sent from ssindhu@cppimi.com)",
+        "documentDate": "2026-11-19",
+        "referenceNumber": "ELEC-01",
+        "property": "288 Salisbury Ave, Cambridge, ON N1S 4H4",
+        "project": "288 Salisbury Ave. Cambridge - 3-unit residential conversion",
+        "evidenceClasses": [
+          "executed_contract",
+          "procurement_quote"
+        ],
+        "verificationStatus": "extracted",
+        "confidence": 0.9,
+        "purpose": "Revise electrical subcontract scope and price for Building Permit Revision 1 changes and set an ESA-gated draw schedule.",
+        "summary": "Executed addendum raising electrical subcontract from $7,500 to $9,990 excl. HST with new life-safety, interlock and firestop scope.",
+        "relevance": "Contractual basis for the electrical trade in the Rough-In Services stage; links Revision 1 permit changes to cost.",
+        "facts": [
+          {
+            "label": "Builder/Developer",
+            "value": "TT9 Inc. - Michael Poon, President",
+            "verification": "extracted"
+          },
+          {
+            "label": "Electrical contractor",
+            "value": "Wahida Electrical & Plumbing Inc. - Mahmudul Hossain",
+            "verification": "extracted"
+          },
+          {
+            "label": "Designer",
+            "value": "Stonewood Partners Ltd. (Vijaykumar Patel, BCIN 121151 / firm 208339)",
+            "verification": "extracted"
+          },
+          {
+            "label": "Building permit",
+            "value": "26 008338 000 00 Rev 1, issued 3-Nov-2026, 2024 OBC",
+            "verification": "extracted"
+          },
+          {
+            "label": "Revised price",
+            "value": "$9,990.00 net; HST $1,298.70; total $11,288.70",
+            "verification": "extracted"
+          },
+          {
+            "label": "Signing",
+            "value": "Both parties signed 19-Nov-2026; audit trail doc ID a25bfea9be3ab9e9a7d0d098bebaed69a6ce8fe0",
+            "verification": "extracted"
+          }
+        ],
+        "extracts": [
+          {
+            "kind": "financial",
+            "detail": "Draws (gross excl. HST): mobilization $1,998.00; rough-in $3,996.00; device trim $2,997.00; final sign-off $999.00; holdback $999.00 released 60 days post substantial performance.",
+            "verification": "extracted"
+          },
+          {
+            "kind": "contractual",
+            "detail": "Addendum governs over the original quotation/base agreement where terms conflict; 10% holdback under Section 22 of the Ontario Construction Act.",
+            "verification": "extracted"
+          },
+          {
+            "kind": "technical",
+            "detail": "Scope: added branch circuits (receptacle, AFCI bedroom, appliance/laundry) in Units 1-3; combination smoke/CO alarms in sleeping rooms near/above garage; furnace return-plenum duct smoke detector interlock; ULC-listed intumescent firestop at rated assemblies.",
+            "verification": "extracted"
+          },
+          {
+            "kind": "regulatory",
+            "detail": "Draw gates tied to ESA rough-in inspection and ESA Certificate of Acceptance.",
+            "verification": "extracted"
+          }
+        ],
+        "missingInformation": [
+          "Base electrical subcontract / original quotation ($7,500)",
+          "Wahida Electrical WSIB and insurance certificates",
+          "ESA notification/permit for the electrical work"
+        ],
+        "inconsistencies": [
+          "Dashboard Electrical budget line is $22,400 while the revised electrical contract is $9,990 excl. HST; the difference is not explained by this document."
+        ],
+        "risks": [
+          "Electrical contractor compliance not evidenced on file before work begins",
+          "Draw schedule depends on ESA inspections for which no record exists yet"
+        ],
+        "limitations": "Evidences agreed terms and signatures only; no work, inspection or payment is proven. Signature images and the audit trail were read from the PDF; not independently verified with Dropbox Sign.",
+        "recommendedActions": [
+          "Upload base electrical contract and contractor WSIB/insurance",
+          "Reconcile electrical budget line to contract value",
+          "Track ESA rough-in inspection for the 'Electrical rough-in inspected' milestone"
+        ],
+        "sourceRef": "Pages 1-4"
+      },
+      "status": "recorded",
+      "result": {
+        "status": "recorded",
+        "assetId": "a47080b1-2bb0-46e2-b37f-9b6c36bc7e09",
+        "evidenceClasses": [
+          "executed_contract",
+          "procurement_quote"
+        ],
+        "revisions": 1,
+        "notes": []
+      }
+    },
+    {
+      "tool": "link_project_items",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+        "fromType": "document",
+        "fromId": "a47080b1-2bb0-46e2-b37f-9b6c36bc7e09",
+        "fromLabel": "Electrical Contract Addendum ELEC-01",
+        "relation": "relates_to",
+        "toType": "contractor",
+        "toId": "wahida-electrical-plumbing-inc",
+        "toLabel": "Wahida Electrical & Plumbing Inc."
+      },
+      "status": "already_linked",
+      "result": {
+        "status": "already_linked",
+        "relId": "d1d44c19-d887-4628-8c11-a7e499ec20e6"
+      }
+    },
+    {
+      "tool": "link_project_items",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+        "fromType": "document",
+        "fromId": "a47080b1-2bb0-46e2-b37f-9b6c36bc7e09",
+        "fromLabel": "Electrical Contract Addendum ELEC-01",
+        "relation": "references",
+        "toType": "document",
+        "toId": "b3dec205-627f-40e8-9f16-c624f2ccd0a1",
+        "toLabel": "Revision 1 Revised Permit Card (permit 26 008338 000 00)"
+      },
+      "status": "already_linked",
+      "result": {
+        "status": "already_linked",
+        "relId": "05bff854-edb2-40b3-a8f9-445dcfd4ff3a"
+      }
+    },
+    {
+      "tool": "link_project_items",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+        "fromType": "contract",
+        "fromId": "elec-01",
+        "fromLabel": "Electrical Subcontract Addendum ELEC-01",
+        "relation": "issued_to",
+        "toType": "contractor",
+        "toId": "wahida-electrical-plumbing-inc",
+        "toLabel": "Wahida Electrical & Plumbing Inc.",
+        "note": "Issued by TT9 Inc."
+      },
+      "status": "linked",
+      "result": {
+        "status": "linked",
+        "relId": "ed41edb5-a61a-4b15-b41f-4cebb9af4c26"
+      }
+    },
+    {
+      "tool": "record_finding",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+        "kind": "missing_document",
+        "severity": "medium",
+        "title": "Electrical addendum executed; base contract and contractor WSIB/insurance still missing",
+        "detail": "Addendum ELEC-01 was signed by both parties on 19-Nov-2026, so the earlier pending-signature finding is resolved. The base electrical subcontract it modifies, Wahida Electrical's WSIB and insurance certificates, and any ESA notification are still not on file. Also, the dashboard Electrical budget line ($22,400) differs from the contract value ($9,990 excl. HST); reconcile.",
+        "relatedAssets": [
+          "a47080b1-2bb0-46e2-b37f-9b6c36bc7e09"
+        ]
+      },
+      "status": "recorded",
+      "result": {
+        "status": "recorded",
+        "findingId": "78422d89-11df-4ce0-8c5a-e5a01225ebe2"
+      }
+    },
+    {
+      "tool": "finish",
+      "input": {
+        "summary": "Processed the executed Electrical Contract Addendum ELEC-01 ($9,990 excl. HST, signed 19-Nov-2026). Added a remark, recorded the document intelligence and linked it to the contractor and the permit card. Raised a finding for the missing base contract and WSIB/insurance. No status changes proposed because a contract is not evidence of work done.",
+        "confidence": 0.9,
+        "notes": "The file was already registered. The earlier \"pending signature\" finding is still open and should be closed manually, because the addendum is now signed. The dashboard Electrical budget line ($22,400) differs from the contract value ($9,990); I did not change the budget. Please reconcile it."
+      },
+      "status": "done",
+      "result": {
+        "status": "done",
+        "summary": "Processed the executed Electrical Contract Addendum ELEC-01 ($9,990 excl. HST, signed 19-Nov-2026). Added a remark, recorded the document intelligence and linked it to the contractor and the permit card. Raised a finding for the missing base contract and WSIB/insurance. No status changes proposed because a contract is not evidence of work done.",
+        "confidence": 0.9
+      }
+    }
+  ],
+  "pendingApprovals": [],
+  "costUsd": 0.204974,
+  "tokens": {
+    "input": 36581,
+    "output": 5793,
+    "cacheWrite": 23833,
+    "cacheRead": 71499
+  },
+  "dashboard": {
+    "progress": {
+      "stages": 10,
+      "stagesCompleted": 0,
+      "milestones": 31,
+      "milestonesCompleted": 6,
+      "percent": 19
+    },
+    "siteStatus": "in_progress",
+    "stages": [
+      {
+        "stageId": "a178ee5d-c7aa-4837-b7e0-189fba21e49c",
+        "name": "Feasibility & Due Diligence",
+        "status": "not_started"
+      },
+      {
+        "stageId": "148fb8ea-c715-40c7-9ee7-2c259780c4f2",
+        "name": "Design & Permits",
+        "status": "in_progress"
+      },
+      {
+        "stageId": "93c0b7e7-6cfd-4247-a01b-35487978f9d9",
+        "name": "Site Preparation & Excavation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "b8107dd2-5e8e-4cf9-8c8c-f02aa265093d",
+        "name": "Foundation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "7c3acc10-7598-4c70-8a7b-7e4f6a54b63b",
+        "name": "Structural Framing",
+        "status": "not_started"
+      },
+      {
+        "stageId": "2d610aea-b999-4273-9407-24a807c0a070",
+        "name": "Building Envelope",
+        "status": "not_started"
+      },
+      {
+        "stageId": "ec35698a-8cb1-4314-8a96-1e86798c6641",
+        "name": "Rough-In Services",
+        "status": "not_started"
+      },
+      {
+        "stageId": "44487e07-2e6c-45b7-b85c-5fa7c7056fce",
+        "name": "Interior Finishes",
+        "status": "not_started"
+      },
+      {
+        "stageId": "300c66e9-fab8-492c-9ddb-8d84ce9b6a92",
+        "name": "Landscaping & Exterior Works",
+        "status": "not_started"
+      },
+      {
+        "stageId": "7ea9447d-4b0c-43ad-8ae5-9433e8f90f5a",
+        "name": "Handover & Closeout",
+        "status": "not_started"
+      }
+    ],
+    "milestones": [
+      {
+        "milestoneId": "0c523cf9-264f-42d8-b715-2dc509e98c90",
+        "name": "Site survey & boundary confirmed",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "ab96545e-0f90-4eab-9f30-11ee09d2d290",
+        "name": "Zoning & by-law review completed",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "e0dda174-92bc-47ad-b064-760862d6d6d5",
+        "name": "Feasibility budget approved",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "d4b669cc-0d8a-4ad6-b852-3d5b748471d2",
+        "name": "Architectural drawings issued",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "287dceb2-aaa5-4b24-a6a5-7e4f03358a99",
+        "name": "Structural & MEP drawings complete",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "1b85f76a-4551-457b-9c21-33f460e217e6",
+        "name": "Building permit issued",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "6c7e0a89-6833-44d0-bcf7-ce9f67ec4672",
+        "name": "Utilities & services located",
+        "status": "in_progress"
+      },
+      {
+        "milestoneId": "2141a41c-a0f9-4879-8e1b-930e839b48eb",
+        "name": "Clearing & demolition complete",
+        "status": "in_progress"
+      },
+      {
+        "milestoneId": "24805f97-3552-4a3c-9fbf-caddfeb2f643",
+        "name": "Excavation & shoring inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c6f1f9fb-950c-4ad2-b3a6-317c09496dc0",
+        "name": "Footings inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "b6be4a74-a4dc-4816-b277-5bac9230e7af",
+        "name": "Foundation walls poured & waterproofed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "02d280ee-f2ac-4579-be9f-3cabf5aefb22",
+        "name": "Backfill & drainage complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "cadf04a0-cad4-4591-ac7f-cc6e7f5d7506",
+        "name": "Floor structure complete",
+        "status": "in_progress"
+      },
+      {
+        "milestoneId": "dce92415-6eaa-4833-8854-65e2194b189b",
+        "name": "Framing erected",
+        "status": "in_progress"
+      },
+      {
+        "milestoneId": "a3f3b501-1186-488e-b1eb-1457574378da",
+        "name": "Framing inspection passed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "544e66cc-49f4-4e0f-927a-297c363bb376",
+        "name": "Roof trusses & sheathing complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "79ac0026-b890-4427-aab8-25f54a3adc72",
+        "name": "Roofing watertight",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "04665110-c0b9-4ee7-a208-f00f57dc4a4a",
+        "name": "Windows & exterior doors installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c553e85e-ed66-4f1e-b40b-7a8e88a7fd30",
+        "name": "Cladding & insulation complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c6b56de5-ed16-4c5f-aa58-efd936121d49",
+        "name": "Electrical rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "0ce7a092-c344-44c6-b18a-86c1c47b991f",
+        "name": "Plumbing rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "d5ffab5c-85df-4638-8753-2706850d339e",
+        "name": "HVAC rough-in complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "eb94ed97-93da-49ad-af04-2f896b0ae1a0",
+        "name": "Drywall & plaster complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "2dc00489-2b34-497a-b4d6-1febe512add5",
+        "name": "Cabinetry & millwork installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "d66dc6fe-847f-44f7-9596-a5ed6c494723",
+        "name": "Flooring & paint complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "cdddea56-da89-45ac-b55a-b54a0a182d07",
+        "name": "Grading & drainage certified",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "dcf8b547-ddfa-4f0e-93a5-872da4ae74ca",
+        "name": "Driveway & hardscaping complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "8565fc1f-f23b-47e7-967d-e60426288901",
+        "name": "Landscaping planted",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "b30aaed6-86b8-4037-935e-fbeb0ca916de",
+        "name": "Occupancy permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "f83705ba-86ed-4ca1-baf1-c81bb174ab25",
+        "name": "Pre-delivery inspection (PDI) complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "ef0c8733-772e-4374-ab5d-7d9bc944e234",
+        "name": "Final accounts & warranty documents issued",
+        "status": "pending"
+      }
+    ],
+    "assetCount": 6,
+    "remarkCount": 16,
+    "latestRemark": {
+      "remarkId": "71f7a50a-c684-473a-8f3f-6a4edc65e585",
+      "text": "Electrical Contract Addendum #1 (ELEC-01), signed by TT9 Inc. and Wahida Electrical & Plumbing Inc. on 19-Nov-2026, raises the electrical subcontract from $7,500 to $9,990 excl. HST ($11,288.70 incl.) for Revision 1 scope. It is a contract, not evidence of work done.",
+      "authorName": "CPPI Agent (AI)",
+      "createdAt": "2026-11-20T04:04:16Z"
+    }
+  }
+}
