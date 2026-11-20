@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-11-20T14:41:12Z",
+  "updatedAt": "2026-11-20T14:41:42Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -226,12 +226,12 @@
       }
     ],
     "assetCount": 73,
-    "remarkCount": 127,
+    "remarkCount": 128,
     "latestRemark": {
-      "remarkId": "44b06a52-ac77-4c24-ae49-bb89f9fc5f1d",
-      "text": "Site photo IMG_6819 shows a tall cast-in-place concrete foundation wall with form-tie holes and black DMX AG dimpled membrane fastened to its lower part. A black pipe runs down at the left corner, and soil and gravel lie at the base with no backfill. Visual evidence only.",
+      "remarkId": "7f13f3d0-8238-42fe-b794-8ad897604846",
+      "text": "Site photo IMG_6818 shows a cast-in-place concrete foundation wall with form-tie holes and black DMX AG dimpled membrane fastened to the lower wall face. Clear stone lies along the base, with an open trench and soil at right. No backfill is visible. Visual evidence only.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-20T14:41:07Z"
+      "createdAt": "2026-11-20T14:41:37Z"
     }
   }
 }
