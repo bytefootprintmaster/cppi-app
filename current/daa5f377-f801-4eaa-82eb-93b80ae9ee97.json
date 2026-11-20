@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-11-20T14:40:41Z",
+  "updatedAt": "2026-11-20T14:41:12Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -226,12 +226,12 @@
       }
     ],
     "assetCount": 73,
-    "remarkCount": 126,
+    "remarkCount": 127,
     "latestRemark": {
-      "remarkId": "2666e449-672a-4555-82ed-4a6093d46616",
-      "text": "Site photo IMG_6817 shows stripped cast-in-place concrete foundation walls with a pilaster at the corner and black DMX AG dimpled membrane on the lower wall face. Clear stone lies along the base and no backfill is visible. Visual evidence only.",
+      "remarkId": "44b06a52-ac77-4c24-ae49-bb89f9fc5f1d",
+      "text": "Site photo IMG_6819 shows a tall cast-in-place concrete foundation wall with form-tie holes and black DMX AG dimpled membrane fastened to its lower part. A black pipe runs down at the left corner, and soil and gravel lie at the base with no backfill. Visual evidence only.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-20T14:40:36Z"
+      "createdAt": "2026-11-20T14:41:07Z"
     }
   }
 }
