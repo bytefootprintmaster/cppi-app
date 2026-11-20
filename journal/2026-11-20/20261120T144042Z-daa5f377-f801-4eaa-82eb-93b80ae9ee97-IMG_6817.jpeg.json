@@ -1,0 +1,434 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "recordedAt": "2026-11-20T14:40:41Z",
+  "jobId": "65cd7aaede29",
+  "trigger": "s3",
+  "task": "progress_update_from_file",
+  "agent": "progress",
+  "model": "claude-sonnet-5-5",
+  "source": {
+    "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+    "s3Key": "sites/daa5f377-f801-4eaa-82eb-93b80ae9ee97/image/ab59ddd2-d20e-48da-bad5-328a0b06e776-IMG_6817.jpeg",
+    "fileName": "IMG_6817.jpeg",
+    "kind": "image",
+    "etag": "1de1dec9b143ffc8cb99be4722e923eb",
+    "size": 3436078
+  },
+  "summary": "Recorded foundation photo IMG_6817 (already registered) with remark and intelligence; proposed 'Foundation walls poured & waterproofed' → in_progress, pending approval.",
+  "confidence": 0.85,
+  "steps": 4,
+  "actions": [
+    {
+      "tool": "get_project_state",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97"
+      },
+      "status": "ok"
+    },
+    {
+      "tool": "register_asset",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "name": "IMG_6817.jpeg",
+        "s3Key": "sites/daa5f377-f801-4eaa-82eb-93b80ae9ee97/image/ab59ddd2-d20e-48da-bad5-328a0b06e776-IMG_6817.jpeg",
+        "type": "image",
+        "category": "progress",
+        "contentType": "image/jpeg",
+        "size": 3436078,
+        "stageId": "08ded4a9-c0f5-4f46-9e8d-70c7c6209fda"
+      },
+      "status": "already_registered",
+      "result": {
+        "status": "already_registered",
+        "assetId": "bd13c4cd-d6e0-43c0-b7ff-af5b22fab84c"
+      }
+    },
+    {
+      "tool": "add_progress_remark",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "text": "Site photo IMG_6817 shows stripped cast-in-place concrete foundation walls with a pilaster at the corner and black DMX AG dimpled membrane on the lower wall face. Clear stone lies along the base and no backfill is visible. Visual evidence only.",
+        "stageId": "08ded4a9-c0f5-4f46-9e8d-70c7c6209fda",
+        "category": "progress",
+        "summary": "Photo of poured foundation walls with drainage membrane applied, no backfill yet.",
+        "extracted": [
+          {
+            "label": "Visible work",
+            "value": "Poured concrete foundation walls (formwork stripped, tie holes visible) with pilasters/corner",
+            "verification": "ai_interpretation"
+          },
+          {
+            "label": "Waterproofing/drainage",
+            "value": "Black dimpled membrane labelled 'DMX AG Foundation Wrap' fastened along lower wall; extent across all walls not confirmed",
+            "verification": "extracted"
+          },
+          {
+            "label": "Base of wall",
+            "value": "Clear stone placed along base at left; trench open, no backfill visible",
+            "verification": "ai_interpretation"
+          },
+          {
+            "label": "Site context",
+            "value": "Temporary fencing, red portable toilet, neighbouring houses; no date or signage legible",
+            "verification": "extracted"
+          }
+        ],
+        "relevance": "Supports the Foundation stage (walls poured, drainage membrane in progress), ahead of the 'Backfill & drainage complete' milestone.",
+        "evidenceClasses": [
+          "construction_progress"
+        ],
+        "verificationStatus": "ai_interpretation",
+        "limitations": "A photo does not prove concrete strength, structural adequacy, correct membrane installation, weeping tile or inspection sign-off. No date visible; extent of waterproofing across all walls cannot be confirmed.",
+        "recommendedActions": [
+          "Obtain foundation wall / waterproofing inspection record before backfill",
+          "Confirm drainage (weeping tile) installation and inspection before backfilling"
+        ],
+        "relatedDocuments": [
+          "IMG_6816.jpeg",
+          "IMG_6818.jpeg",
+          "IMG_6820.jpeg",
+          "IMG_6821.jpeg",
+          "IMG_6822.jpeg",
+          "IMG_6823.jpeg"
+        ],
+        "sourceDocument": "IMG_6817.jpeg",
+        "confidence": 0.85
+      },
+      "status": "added",
+      "result": {
+        "status": "added",
+        "remarkId": "2666e449-672a-4555-82ed-4a6093d46616",
+        "evidenceClasses": [
+          "construction_progress"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "tool": "record_document_intelligence",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "assetId": "bd13c4cd-d6e0-43c0-b7ff-af5b22fab84c",
+        "docType": "Site progress photograph",
+        "project": "25 & 27 Mandrake",
+        "property": "25 Mandrake St, Ajax",
+        "evidenceClasses": [
+          "construction_progress"
+        ],
+        "summary": "Photo of poured concrete foundation walls with DMX AG dimpled membrane and clear stone at base; no backfill.",
+        "facts": [
+          {
+            "label": "Membrane brand",
+            "value": "DMX AG Foundation Wrap",
+            "verification": "extracted"
+          },
+          {
+            "label": "Backfill",
+            "value": "Not visible",
+            "verification": "ai_interpretation"
+          },
+          {
+            "label": "Walls",
+            "value": "Cast-in-place concrete, forms stripped",
+            "verification": "ai_interpretation"
+          }
+        ],
+        "purpose": "Contractor progress record of foundation works.",
+        "relevance": "Evidence the Foundation stage is underway; walls appear poured and membrane applied.",
+        "limitations": "Visual only; does not prove compliance, concealed work, structural adequacy or completion. No date in image.",
+        "missingInformation": [
+          "Photo date",
+          "Foundation wall inspection record",
+          "Weeping tile / drainage evidence"
+        ],
+        "recommendedActions": [
+          "Obtain inspection before backfill"
+        ],
+        "verificationStatus": "ai_interpretation",
+        "confidence": 0.85
+      },
+      "status": "recorded",
+      "result": {
+        "status": "recorded",
+        "assetId": "bd13c4cd-d6e0-43c0-b7ff-af5b22fab84c",
+        "evidenceClasses": [
+          "construction_progress"
+        ],
+        "revisions": 0,
+        "notes": []
+      }
+    },
+    {
+      "tool": "propose_milestone_status",
+      "input": {
+        "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
+        "milestoneId": "9a846ed5-a529-4f09-9221-5a2ac30f4d48",
+        "status": "in_progress",
+        "reason": "Photo IMG_6817 shows foundation walls poured with DMX AG membrane applied to lower wall; completeness of waterproofing and any inspection not evidenced, so not completed."
+      },
+      "status": "pending_approval",
+      "result": {
+        "status": "pending_approval",
+        "action_id": "0e6d9236e3ab",
+        "preview": "Mark milestone *Foundation walls poured & waterproofed* on *25 & 27 Mandrake* as *in_progress*\nReason: Photo IMG_6817 shows foundation walls poured with DMX AG membrane applied to lower wall; completeness of waterproofing and any inspection not evidenced, so not completed.",
+        "note": "Queued for human approval. It has NOT been applied."
+      }
+    },
+    {
+      "tool": "finish",
+      "input": {
+        "summary": "Recorded foundation photo IMG_6817 (already registered) with remark and intelligence; proposed 'Foundation walls poured & waterproofed' → in_progress, pending approval.",
+        "confidence": 0.85,
+        "notes": "Photo is undated and visual only. No foundation inspection or weeping tile evidence on file before backfill."
+      },
+      "status": "done",
+      "result": {
+        "status": "done",
+        "summary": "Recorded foundation photo IMG_6817 (already registered) with remark and intelligence; proposed 'Foundation walls poured & waterproofed' → in_progress, pending approval.",
+        "confidence": 0.85
+      }
+    }
+  ],
+  "pendingApprovals": [
+    "0e6d9236e3ab"
+  ],
+  "costUsd": 0.115658,
+  "tokens": {
+    "input": 29982,
+    "output": 2806,
+    "cacheWrite": 5086,
+    "cacheRead": 74594
+  },
+  "dashboard": {
+    "progress": {
+      "stages": 10,
+      "stagesCompleted": 1,
+      "milestones": 32,
+      "milestonesCompleted": 11,
+      "percent": 34
+    },
+    "siteStatus": "in_progress",
+    "stages": [
+      {
+        "stageId": "43d4e0d2-cc81-4912-a186-3ae3a89cd9a2",
+        "name": "Feasibility & Due Diligence",
+        "status": "completed"
+      },
+      {
+        "stageId": "8e037d3e-3511-4c7e-86d1-111e11c26597",
+        "name": "Design & Permits",
+        "status": "not_started"
+      },
+      {
+        "stageId": "3739c5da-64f6-48a4-886f-7bd24138526d",
+        "name": "Site Preparation & Excavation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "08ded4a9-c0f5-4f46-9e8d-70c7c6209fda",
+        "name": "Foundation",
+        "status": "in_progress"
+      },
+      {
+        "stageId": "245c2de5-98b8-43cb-b4af-89f17d55f4bd",
+        "name": "Structural Framing",
+        "status": "not_started"
+      },
+      {
+        "stageId": "6fa286ae-566d-4da2-927e-20af34b228c1",
+        "name": "Building Envelope",
+        "status": "not_started"
+      },
+      {
+        "stageId": "1f414a15-de86-49d7-af51-39a9f5ab5ac6",
+        "name": "Rough-In Services",
+        "status": "not_started"
+      },
+      {
+        "stageId": "74a52551-4007-4d44-aeb3-9cad6ac26f43",
+        "name": "Interior Finishes",
+        "status": "not_started"
+      },
+      {
+        "stageId": "99083336-f837-4297-9b92-1c0bfa2ca966",
+        "name": "Landscaping & Exterior Works",
+        "status": "not_started"
+      },
+      {
+        "stageId": "2424b179-6eb8-4095-8a17-5a46de64555f",
+        "name": "Handover & Closeout",
+        "status": "not_started"
+      }
+    ],
+    "milestones": [
+      {
+        "milestoneId": "83fa64f5-b1ce-4bbb-a81f-15dce5e871e2",
+        "name": "Site survey & boundary confirmed",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "9874d4ae-c81a-40f5-b916-cab949a9a0ea",
+        "name": "Zoning & by-law review completed",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "d77c7fbe-62ab-45bf-84fc-a1477109157f",
+        "name": "Feasibility budget approved",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "a62b8d24-c2f9-47a9-bb2d-98d5309a2d39",
+        "name": "Architectural drawings issued",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "7b7014dc-d118-4140-b460-d533d9c8fbf2",
+        "name": "Structural & MEP drawings complete",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "c4d8aac7-142e-48f7-bf53-24e6b3cee321",
+        "name": "Building permit issued",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "db7dcb04-9bcc-4754-b868-f40815e04c8d",
+        "name": "Utilities & services located",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "6601fc85-dce7-4b1b-91e6-6414c23b7a57",
+        "name": "Clearing & demolition complete",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "374ebe09-f209-41a1-b0b1-e74b7dcdec69",
+        "name": "Excavation & shoring inspected",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "d4e01db8-7c90-491d-8421-20839f85bc20",
+        "name": "Footings inspected",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "9a846ed5-a529-4f09-9221-5a2ac30f4d48",
+        "name": "Foundation walls poured & waterproofed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "04c36fa6-0623-4769-bf97-4bd67362d468",
+        "name": "Backfill & drainage complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "85f717e3-4e87-4382-a10b-9f6eecb38473",
+        "name": "Floor structure complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "1402eab7-cff8-4d3e-a1b3-ab5b64ccff42",
+        "name": "Framing erected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "b90105d8-4d61-4bea-a52b-1acba54b2fc2",
+        "name": "Framing inspection passed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "1cc6cc34-2f3f-44e4-a382-1fad92cf4a61",
+        "name": "Roof trusses & sheathing complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "144849e1-3aac-4a3a-b4b3-c77b2742dfbd",
+        "name": "Roofing watertight",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "3ee0d7ef-842e-46d6-9db5-fa77df484a74",
+        "name": "Windows & exterior doors installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "78a2cba7-3b6c-4be8-8c93-7ae07f21c39f",
+        "name": "Cladding & insulation complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9f91afc3-6474-40e8-9a38-63d6fa8e9420",
+        "name": "Electrical rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "066825dd-e916-4600-8e02-cfd21dd62c15",
+        "name": "Plumbing rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "e73f9394-6db6-4700-885c-e594ba02c73f",
+        "name": "HVAC rough-in complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "715d3b61-a6ee-43e5-8c0f-3619a65ede21",
+        "name": "Drywall & plaster complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "50a2d07b-82ef-4ea5-94a0-ef04c1b1b11e",
+        "name": "Cabinetry & millwork installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "47020274-79ca-45da-ad2e-046573160612",
+        "name": "Flooring & paint complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "a2f28c1f-edb0-44d4-95e9-eb224365c1ab",
+        "name": "Grading & drainage certified",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "e2f05da4-b5c9-4d4f-ab05-4e39eaf5dcb7",
+        "name": "Driveway & hardscaping complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c878ab83-bcec-45cf-bdd4-282ae58fae43",
+        "name": "Landscaping planted",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "cffcf10b-77fb-45bc-a91c-0a3fb1afb02e",
+        "name": "Occupancy permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "457d433f-40a6-4d99-a52d-0cf83f1c9511",
+        "name": "Pre-delivery inspection (PDI) complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9d34eaab-9dd4-4e0e-b8ca-05bfbc95b3cc",
+        "name": "Final accounts & warranty documents issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "5559b462-f2fe-4b38-b2af-8549a324104a",
+        "name": "Feasibility",
+        "status": "completed"
+      }
+    ],
+    "assetCount": 73,
+    "remarkCount": 126,
+    "latestRemark": {
+      "remarkId": "2666e449-672a-4555-82ed-4a6093d46616",
+      "text": "Site photo IMG_6817 shows stripped cast-in-place concrete foundation walls with a pilaster at the corner and black DMX AG dimpled membrane on the lower wall face. Clear stone lies along the base and no backfill is visible. Visual evidence only.",
+      "authorName": "CPPI Agent (AI)",
+      "createdAt": "2026-11-20T14:40:36Z"
+    }
+  }
+}
