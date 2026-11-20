@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-11-18T17:41:37Z",
+  "updatedAt": "2026-11-20T14:38:26Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -225,13 +225,13 @@
         "status": "completed"
       }
     ],
-    "assetCount": 65,
-    "remarkCount": 121,
+    "assetCount": 73,
+    "remarkCount": 122,
     "latestRemark": {
-      "remarkId": "cd58dcf7-5b6d-460d-862f-d291d43ff2bc",
-      "text": "Second copy of deposited reference plan 40R-33392 (Pearson & Pearson, deposited 19-Aug-2026) uploaded as 40R33392.pdf. It duplicates the plan already on file, so no new evidence and no status change. Survey evidence only.",
+      "remarkId": "90d13c2c-14b8-4914-9c68-00a125f68216",
+      "text": "Site photo IMG_6822 shows cast-in-place concrete foundation walls with rebar projecting from the top, a black DMX AG dimpled foundation wrap fitted to part of the wall face, and clear stone at the base of the trench. Backfill has not started. Visual evidence only.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-18T17:41:08Z"
+      "createdAt": "2026-11-20T14:38:21Z"
     }
   }
 }
