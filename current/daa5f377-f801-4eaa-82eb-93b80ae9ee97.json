@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "daa5f377-f801-4eaa-82eb-93b80ae9ee97",
-  "updatedAt": "2026-11-20T14:38:26Z",
+  "updatedAt": "2026-11-20T14:38:54Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -226,12 +226,12 @@
       }
     ],
     "assetCount": 73,
-    "remarkCount": 122,
+    "remarkCount": 123,
     "latestRemark": {
-      "remarkId": "90d13c2c-14b8-4914-9c68-00a125f68216",
-      "text": "Site photo IMG_6822 shows cast-in-place concrete foundation walls with rebar projecting from the top, a black DMX AG dimpled foundation wrap fitted to part of the wall face, and clear stone at the base of the trench. Backfill has not started. Visual evidence only.",
+      "remarkId": "7d149212-fe19-4f5b-9136-6e50284fa124",
+      "text": "Site photo IMG_6823 shows cast-in-place concrete foundation walls with rebar dowels at the top and black DMX AG dimpled membrane on the lower wall face. Gravel is at the base, no backfill is visible, and a person stands at right. Visual evidence only.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-20T14:38:21Z"
+      "createdAt": "2026-11-20T14:38:49Z"
     }
   }
 }
