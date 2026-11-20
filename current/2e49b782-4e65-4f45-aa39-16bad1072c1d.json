@@ -1,14 +1,14 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
-  "updatedAt": "2026-11-06T02:18:41Z",
+  "updatedAt": "2026-11-20T04:04:22Z",
   "dashboard": {
     "progress": {
       "stages": 10,
       "stagesCompleted": 0,
       "milestones": 31,
-      "milestonesCompleted": 2,
-      "percent": 6
+      "milestonesCompleted": 6,
+      "percent": 19
     },
     "siteStatus": "in_progress",
     "stages": [
@@ -67,17 +67,17 @@
       {
         "milestoneId": "0c523cf9-264f-42d8-b715-2dc509e98c90",
         "name": "Site survey & boundary confirmed",
-        "status": "pending"
+        "status": "completed"
       },
       {
         "milestoneId": "ab96545e-0f90-4eab-9f30-11ee09d2d290",
         "name": "Zoning & by-law review completed",
-        "status": "pending"
+        "status": "completed"
       },
       {
         "milestoneId": "e0dda174-92bc-47ad-b064-760862d6d6d5",
         "name": "Feasibility budget approved",
-        "status": "pending"
+        "status": "completed"
       },
       {
         "milestoneId": "d4b669cc-0d8a-4ad6-b852-3d5b748471d2",
@@ -87,7 +87,7 @@
       {
         "milestoneId": "287dceb2-aaa5-4b24-a6a5-7e4f03358a99",
         "name": "Structural & MEP drawings complete",
-        "status": "pending"
+        "status": "completed"
       },
       {
         "milestoneId": "1b85f76a-4551-457b-9c21-33f460e217e6",
@@ -97,12 +97,12 @@
       {
         "milestoneId": "6c7e0a89-6833-44d0-bcf7-ce9f67ec4672",
         "name": "Utilities & services located",
-        "status": "pending"
+        "status": "in_progress"
       },
       {
         "milestoneId": "2141a41c-a0f9-4879-8e1b-930e839b48eb",
         "name": "Clearing & demolition complete",
-        "status": "pending"
+        "status": "in_progress"
       },
       {
         "milestoneId": "24805f97-3552-4a3c-9fbf-caddfeb2f643",
@@ -127,12 +127,12 @@
       {
         "milestoneId": "cadf04a0-cad4-4591-ac7f-cc6e7f5d7506",
         "name": "Floor structure complete",
-        "status": "pending"
+        "status": "in_progress"
       },
       {
         "milestoneId": "dce92415-6eaa-4833-8854-65e2194b189b",
         "name": "Framing erected",
-        "status": "pending"
+        "status": "in_progress"
       },
       {
         "milestoneId": "a3f3b501-1186-488e-b1eb-1457574378da",
@@ -220,13 +220,13 @@
         "status": "pending"
       }
     ],
-    "assetCount": 5,
-    "remarkCount": 11,
+    "assetCount": 6,
+    "remarkCount": 16,
     "latestRemark": {
-      "remarkId": "07834760-4779-4103-9024-72d6f32a55a2",
-      "text": "Budget-288_Salisbury.xlsx: full project budget with 19 cost lines (1 land, 5 soft, 13 hard); the sheet states a total of $1,001,217.78 HST-exclusive. Spent to date is land, a permit drawing revision, insurance, grass cutting and two project management invoices. Budget lines on the dashboard appear duplicated and need review.",
+      "remarkId": "71f7a50a-c684-473a-8f3f-6a4edc65e585",
+      "text": "Electrical Contract Addendum #1 (ELEC-01), signed by TT9 Inc. and Wahida Electrical & Plumbing Inc. on 19-Nov-2026, raises the electrical subcontract from $7,500 to $9,990 excl. HST ($11,288.70 incl.) for Revision 1 scope. It is a contract, not evidence of work done.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-06T02:18:41Z"
+      "createdAt": "2026-11-20T04:04:16Z"
     }
   }
 }
