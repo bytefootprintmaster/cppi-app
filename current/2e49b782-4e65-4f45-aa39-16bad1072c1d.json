@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
-  "updatedAt": "2026-11-22T16:03:11Z",
+  "updatedAt": "2026-11-22T16:03:40Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 21,
-    "remarkCount": 18,
+    "remarkCount": 19,
     "latestRemark": {
-      "remarkId": "c7c4ab8c-475c-4158-ae84-689d80b7d722",
-      "text": "Photo stamped 21-Nov-2026 5:11 pm, captioned \"unit #1 entrance\": new interior stud partition framing and a framed enclosure beside the stair, with plastic sheeting on the sloped ceiling. The existing stair and floors are covered in dust and debris, so interior work is underway.",
+      "remarkId": "c2a9b7d6-9def-4361-93b7-ebf70cceecbf",
+      "text": "Photo stamped 21-Nov-2026 6:16 pm, captioned \"#1 2nd bedroom\": new stud wall framing with a framed door opening and header, on bare plywood subfloor. A fridge, range and microwave are in the background, so this is a partly occupied or equipped space.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T16:03:06Z"
+      "createdAt": "2026-11-22T16:03:34Z"
     }
   }
 }
