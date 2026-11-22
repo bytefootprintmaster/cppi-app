@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
-  "updatedAt": "2026-11-22T16:10:57Z",
+  "updatedAt": "2026-11-22T16:11:30Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 28,
-    "remarkCount": 37,
+    "remarkCount": 39,
     "latestRemark": {
-      "remarkId": "71827fc2-887c-4350-b63a-1527472ad121",
-      "text": "Photo (no date stamp or caption): grey electrical panel on an interior wall with many unterminated cables bundled above and hanging loose, a bare-wire outlet box, exposed plywood and drywall patches, and a hole in the wall. Existing wiring appears to be in demolition or rework; no completed rough-in is visible.",
+      "remarkId": "fdeaa43e-8e0f-4755-947c-067e2e24228e",
+      "text": "Photo (no date stamp or caption): a finished, lived-in kitchen with maple cabinets, tile backsplash, stainless dishwasher, fridge, range, vinyl flooring and small appliances on the counters. It looks like an existing, occupied or pre-renovation condition, not new work; no construction activity is visible.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T16:10:53Z"
+      "createdAt": "2026-11-22T16:11:26Z"
     }
   }
 }
