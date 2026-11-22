@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
-  "updatedAt": "2026-11-22T16:10:01Z",
+  "updatedAt": "2026-11-22T16:10:29Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 28,
-    "remarkCount": 33,
+    "remarkCount": 35,
     "latestRemark": {
-      "remarkId": "ebe064a3-e521-4832-8c80-db741bca96cb",
-      "text": "Photo (no date stamp or caption): a street-side lawn beside a concrete sidewalk with a strip of bare, raked soil beneath a boulevard tree, a green utility cabinet, and parked vehicles on the road. No construction work, equipment or materials are visible.",
+      "remarkId": "1db29528-f4a8-4faf-a035-d14ec853af8c",
+      "text": "Photo (no date stamp or caption): exterior brick wall with a grey electric meter base and PVC riser conduit running down to the foundation, a hose bib, a small junction box and loose cables, and freshly turned soil below. Service work appears in progress; nothing shows it is complete.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T16:09:56Z"
+      "createdAt": "2026-11-22T16:10:24Z"
     }
   }
 }
