@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
-  "updatedAt": "2026-11-22T16:04:10Z",
+  "updatedAt": "2026-11-22T16:04:33Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 21,
-    "remarkCount": 20,
+    "remarkCount": 21,
     "latestRemark": {
-      "remarkId": "96a732c9-8155-46fe-bc31-970acf7769e7",
-      "text": "Photo IMG_1189 (no date stamp or caption): a finished, lived-in bathroom with a stone-look vanity and wood cabinet, mirror, skylight, tub/shower surround and wainscot. Toiletries and towels are in use, so it looks like an existing, occupied bathroom, not new work.",
+      "remarkId": "61516aeb-efbc-4ce3-b0d9-14a1bb63cbe6",
+      "text": "Photo IMG_1186 (no date stamp or caption): a finished entry level with painted walls, hardwood hallway floor, trim, interior doors, a leaded-glass front door with sidelights, and a stair with wood-capped metal-baluster railing. It looks like existing finished space, not new work.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T16:04:06Z"
+      "createdAt": "2026-11-22T16:04:29Z"
     }
   }
 }
