@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "53030545-3575-4ce1-9226-2790362bea48",
-  "updatedAt": "2026-11-22T01:05:01Z",
+  "updatedAt": "2026-11-22T01:05:39Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 7,
-    "remarkCount": 7,
+    "remarkCount": 8,
     "latestRemark": {
-      "remarkId": "4ee55dca-86fe-4ad7-91ec-9879e47c6b69",
-      "text": "Photo Garage_3.jpeg shows a finished garage interior: a dark SUV parked beside a painted wall, a sectional garage door with opener and track hardware, overhead shelving and a concrete floor. No visible construction work, date or signage; it does not show progress on any stage.",
+      "remarkId": "6511511f-021e-4f1f-97d1-48ba7465aa5d",
+      "text": "Town of Milton final letter dated April 20, 2023: no appeals were received, so the Committee of Adjustment minor variance decision for 557 Hartley Blvd is final and binding, subject to conditions. The letter cites file A23-023/M, but the filename says A23-024.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T01:04:57Z"
+      "createdAt": "2026-11-22T01:05:32Z"
     }
   }
 }
