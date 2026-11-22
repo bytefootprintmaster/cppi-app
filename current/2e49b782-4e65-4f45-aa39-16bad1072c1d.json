@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
-  "updatedAt": "2026-11-22T16:06:26Z",
+  "updatedAt": "2026-11-22T16:06:52Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -220,13 +220,13 @@
         "status": "pending"
       }
     ],
-    "assetCount": 26,
-    "remarkCount": 25,
+    "assetCount": 27,
+    "remarkCount": 26,
     "latestRemark": {
-      "remarkId": "54194dba-f5b5-4381-bed1-2c74ddc5a0d1",
-      "text": "Photo (no date stamp or caption): an empty white post-and-arm sign frame with no sign panel, standing on a grassy front boulevard beside a tree, with a stamped-concrete step edge in the foreground. No construction work is visible.",
+      "remarkId": "000705d4-dcf3-4458-a045-b81c41e1af34",
+      "text": "Photo stamped 21-Nov-2026 6:12 pm, captioned \"unit 1 laundry\": new stud-wall framing forming a small framed room with a headered opening, with pink batt insulation behind poly on an existing exterior wall. Interior partition framing is underway.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T16:06:21Z"
+      "createdAt": "2026-11-22T16:06:48Z"
     }
   }
 }
