@@ -201,6 +201,17 @@ export const IconSearch = makeIcon(
   </>
 )
 
+/** Scales of justice — the Regulations library. */
+export const IconScale = makeIcon(
+  <>
+    <path d="M12 4.5v15" />
+    <path d="M8.5 19.5h7" />
+    <path d="M4 7.5h16" />
+    <path d="m4 7.5-2.4 5.6a2.4 2.4 0 0 0 4.8 0Z" />
+    <path d="m20 7.5 2.4 5.6a2.4 2.4 0 0 1-4.8 0Z" />
+  </>
+)
+
 export const IconCopy = makeIcon(
   <>
     <rect x="9" y="9" width="12" height="12" rx="2.5" />

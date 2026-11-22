@@ -12,6 +12,7 @@ import { siteRouter } from './routes/sites'
 import { searchRouter } from './routes/search'
 import { dashboardRouter } from './routes/dashboard'
 import { chatRouter } from './routes/chat'
+import { regulationsRouter } from './routes/regulations'
 
 const app = express()
 app.disable('x-powered-by')
@@ -29,6 +30,7 @@ app.use('/api/invites', inviteRouter)
 app.use('/api/sites', siteRouter)
 app.use('/api/search', searchRouter)
 app.use('/api/dashboard', dashboardRouter)
+app.use('/api/regulations', regulationsRouter)
 app.use('/api/chat', chatRouter)
 
 app.use('/api', (_req, res) => {

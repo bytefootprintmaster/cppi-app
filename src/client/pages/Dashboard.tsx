@@ -5,10 +5,22 @@ import { useApi } from '../lib/useApi'
 import { useAuth } from '../lib/auth'
 import { formatDate, formatMoney, relativeTime } from '../lib/format'
 import { PageBody, PageHeader } from '../components/Layout'
-import { Button, Card, CardHeader, CardMenu, Empty, ErrorNote, Loading, Progress, SiteStatusBadge } from '../components/ui'
+import {
+  Button,
+  Card,
+  CardHeader,
+  CardMenu,
+  Empty,
+  ErrorNote,
+  Loading,
+  Modal,
+  Progress,
+  SiteStatusBadge,
+  TabPanel,
+  Tabs
+} from '../components/ui'
 import { MapView, type MapSite } from '../components/MapView'
 import {
-  IconAlert,
   IconBuilding,
   IconChevronRight,
   IconMapPin,
@@ -64,6 +76,39 @@ interface KpiMeta {
   label: string
   value: (t: Totals) => string | number
   foot: (t: Totals) => string
+}
+
+/** A project's worst problem, and how urgent it is. Lower rank sorts first. */
+interface Attention {
+  rank: number
+  reason: string
+}
+
+const DAY = 86_400_000
+
+/**
+ * Why a project needs attention, or null when it is fine. Ordered by how much it
+ * should worry someone: a stopped job, then a milestone that has slipped, then a
+ * project that has simply gone quiet.
+ */
+function attentionFor(row: SiteSummary): Attention | null {
+  if (row.site.status === 'on_hold') return { rank: 0, reason: 'On hold' }
+  if (row.site.status === 'completed') return null
+
+  const due = row.nextMilestone?.dueDate
+  if (due) {
+    const days = Math.floor((Date.now() - new Date(due).getTime()) / DAY)
+    if (days > 0) {
+      return { rank: 1, reason: `${row.nextMilestone?.name} is ${days} day${days === 1 ? '' : 's'} overdue` }
+    }
+  }
+
+  if (row.lastActivity) {
+    const idle = Math.floor((Date.now() - new Date(row.lastActivity).getTime()) / DAY)
+    if (idle >= 30) return { rank: 2, reason: `No activity for ${idle} days` }
+  }
+
+  return null
 }
 
 const KPI_META: Record<string, KpiMeta> = {
@@ -218,6 +263,14 @@ export function DashboardPage() {
       budgeted: row.budget.budgeted
     }))
 
+  // The attention KPI only counted "on hold or unfinished", so a project that has
+  // quietly blown a milestone date looked healthy. This ranks the real problems,
+  // worst first, and names them — a bare number was a dead end.
+  const attention = rows
+    .map((row) => ({ row, flag: attentionFor(row) }))
+    .filter((entry): entry is { row: SiteSummary; flag: Attention } => entry.flag !== null)
+    .sort((a, b) => a.flag.rank - b.flag.rank)
+
   return (
     <>
       <PageHeader
@@ -262,18 +315,18 @@ export function DashboardPage() {
           })}
         </div>
 
-        <div className="tabs" style={{ marginBottom: 16 }}>
-          <button
-            className={`tab${view === 'tracker' ? ' active' : ''}`}
-            onClick={() => setView('tracker')}
-          >
-            Tracker
-          </button>
-          <button className={`tab${view === 'map' ? ' active' : ''}`} onClick={() => setView('map')}>
-            Map
-          </button>
-        </div>
+        <Tabs
+          id="dashboard-view"
+          tabs={[
+            { key: 'tracker', label: 'Tracker' },
+            { key: 'map', label: 'Map' }
+          ]}
+          value={view}
+          onChange={setView}
+          className="dash-tabs"
+        />
 
+        <TabPanel id="dashboard-view" activeKey={view}>
         {view === 'map' ? (
           <Card>
             <CardHeader
@@ -332,6 +385,10 @@ export function DashboardPage() {
                     <span>
                       <i className="map-legend-dot map-legend-ward" />
                       Ward boundary
+                    </span>
+                    <span>
+                      <i className="map-legend-dot map-legend-neigh" />
+                      Neighbourhood
                     </span>
                     <span className="muted">Pin size reflects budget · clusters show nearby projects</span>
                   </div>
@@ -505,53 +562,39 @@ export function DashboardPage() {
           )}
         </Card>
         )}
+        </TabPanel>
 
-        {rows.length > 0 && totals.attention > 0 ? (
-          <div className="alert alert-info" style={{ marginTop: 18, display: 'flex', gap: 10, alignItems: 'center' }}>
-            <IconAlert size={16} />
-            <span>
-              {totals.attention} project{totals.attention === 1 ? '' : 's'} need attention — on hold or not yet
-              complete.
-            </span>
-          </div>
+        {attention.length > 0 ? (
+          <Card className="attention-card">
+            <CardHeader
+              title="Needs attention"
+              sub={`${attention.length} project${attention.length === 1 ? '' : 's'} flagged — worst first`}
+            />
+            <ul className="attention-list">
+              {attention.map(({ row, flag }) => (
+                <li key={row.site.siteId}>
+                  <Link className="attention-row" to={`/sites/${row.site.siteId}`}>
+                    <span className={`attention-dot attention-dot-${flag.rank}`} aria-hidden="true" />
+                    <span className="attention-main">
+                      <span className="attention-name">{row.site.name}</span>
+                      <span className="small muted">{flag.reason}</span>
+                    </span>
+                    <SiteStatusBadge status={row.site.status} />
+                    <IconChevronRight size={16} />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </Card>
         ) : null}
       </PageBody>
 
       {pickerOpen ? (
-        <div className="modal-backdrop" onClick={() => setPickerOpen(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Dashboard KPIs</h2>
-              <Button variant="ghost" size="sm" onClick={() => setPickerOpen(false)} aria-label="Close">
-                ✕
-              </Button>
-            </div>
-            <div className="modal-body">
-              <p className="small muted" style={{ marginBottom: 14 }}>
-                Pick the metrics that should headline your dashboard. {draft.length} selected.
-              </p>
-              {saveError ? <ErrorNote message={saveError} /> : null}
-              <div className="kpi-picker">
-                {availableKpis.map((id) => {
-                  const meta = KPI_META[id]
-                  if (!meta) return null
-                  const on = draft.includes(id)
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      className={`chip${on ? ' on' : ''}`}
-                      onClick={() =>
-                        setDraft((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
-                      }
-                    >
-                      {meta.label}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-            <div className="modal-footer">
+        <Modal
+          title="Dashboard KPIs"
+          onClose={() => setPickerOpen(false)}
+          footer={
+            <>
               <Button variant="ghost" onClick={() => setDraft(availableKpis)}>
                 Select all
               </Button>
@@ -559,9 +602,34 @@ export function DashboardPage() {
                 <IconTarget size={16} />
                 Save dashboard
               </Button>
-            </div>
+            </>
+          }
+        >
+          <p className="small muted" style={{ marginBottom: 14 }}>
+            Pick the metrics that should headline your dashboard. {draft.length} selected.
+          </p>
+          {saveError ? <ErrorNote message={saveError} /> : null}
+          <div className="kpi-picker">
+            {availableKpis.map((id) => {
+              const meta = KPI_META[id]
+              if (!meta) return null
+              const on = draft.includes(id)
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  aria-pressed={on}
+                  className={`chip${on ? ' on' : ''}`}
+                  onClick={() =>
+                    setDraft((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+                  }
+                >
+                  {meta.label}
+                </button>
+              )
+            })}
           </div>
-        </div>
+        </Modal>
       ) : null}
 
       {rows.length === 0 && user?.role === 'admin' ? (

@@ -3,7 +3,7 @@ import { api } from '../lib/api'
 import { useApi } from '../lib/useApi'
 import { formatDate, relativeTime } from '../lib/format'
 import { PageBody, PageHeader } from '../components/Layout'
-import { Badge, Button, Card, CardHeader, CardMenu, Empty, ErrorNote, Field, Loading, Modal, RoleBadge, type MenuItem } from '../components/ui'
+import { Badge, Button, Card, CardHeader, CardMenu, Empty, ErrorNote, Field, Loading, Modal, RoleBadge, useConfirm, useDiscardGuard, useToast, type MenuItem } from '../components/ui'
 import { IconCopy, IconMail, IconPlus, IconTrash } from '../components/icons'
 import type { InviteRecord, Role, RoleRecord, SiteRecord } from '../../server/types'
 
@@ -21,8 +21,9 @@ export function AdminInvitesPage() {
   const { data: roleData } = useApi<{ roles: RoleRecord[] }>('/admin/roles')
   const [creating, setCreating] = useState(false)
   const [busyToken, setBusyToken] = useState<string | null>(null)
-  const [copied, setCopied] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
+  const confirm = useConfirm()
+  const toast = useToast()
 
   useEffect(() => {
     document.title = 'Invitations · CPPI'
@@ -31,20 +32,25 @@ export function AdminInvitesPage() {
   async function copyLink(invite: InviteWithUrl) {
     try {
       await navigator.clipboard.writeText(invite.url)
-      setCopied(invite.token)
-      window.setTimeout(() => setCopied(null), 2000)
+      toast.success('Invitation link copied to the clipboard.')
     } catch {
       setActionError('Could not access the clipboard. Copy the link manually.')
     }
   }
 
   async function revoke(invite: InviteWithUrl) {
-    if (!window.confirm('Revoke this invitation? The link will stop working.')) return
+    const ok = await confirm({
+      title: 'Revoke invitation',
+      message: 'The link will stop working immediately. Anyone who already accepted keeps their access.',
+      confirmLabel: 'Revoke link'
+    })
+    if (!ok) return
     setBusyToken(invite.token)
     setActionError(null)
     try {
       await api(`/admin/invites/${invite.token}`, { method: 'DELETE' })
       await reload()
+      toast.success('Invitation revoked.')
     } catch (err) {
       setActionError(err instanceof Error ? err.message : 'Could not revoke the invitation')
     } finally {
@@ -60,7 +66,7 @@ export function AdminInvitesPage() {
   function inviteMenuItems(invite: InviteWithUrl): MenuItem[] {
     const items: MenuItem[] = [
       {
-        label: copied === invite.token ? 'Copied' : 'Copy link',
+        label: busyToken === invite.token ? 'Revoking…' : 'Copy link',
         icon: <IconCopy size={14} />,
         onClick: () => void copyLink(invite)
       }
@@ -227,6 +233,17 @@ function CreateInviteModal({
   const [siteIds, setSiteIds] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const toast = useToast()
+
+  // The defaults above are the baseline; anything else means work in progress.
+  const dirty =
+    role !== 'viewer' || email !== '' || note !== '' || expiresInDays !== '14' || siteIds.length > 0
+  const guardClose = useDiscardGuard(dirty, onClose)
+
+  function requestClose() {
+    if (busy) return
+    void guardClose()
+  }
 
   function toggleSite(id: string) {
     setSiteIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
@@ -247,6 +264,7 @@ function CreateInviteModal({
           expiresInDays: Number(expiresInDays) || 14
         }
       })
+      toast.success('Invitation created — copy the link from the list.')
       onSaved()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not create the invitation')
@@ -259,10 +277,10 @@ function CreateInviteModal({
     <Modal
       wide
       title="New invitation"
-      onClose={onClose}
+      onClose={requestClose}
       footer={
         <>
-          <Button variant="ghost" onClick={onClose} disabled={busy}>
+          <Button variant="ghost" onClick={requestClose} disabled={busy}>
             Cancel
           </Button>
           <Button form="invite-form" type="submit" loading={busy}>

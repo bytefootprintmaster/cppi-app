@@ -13,14 +13,11 @@ import {
   IconFile,
   IconImage,
   IconMic,
-  IconPaperclip,
   IconPlus,
   IconSearch,
   IconSend,
   IconSparkle,
   IconTag,
-  IconThumbDown,
-  IconThumbUp,
   IconTrash,
   IconUpload,
   IconX
@@ -438,6 +435,9 @@ export function ChatPage() {
   const [chatAttachments, setChatAttachments] = useState<ChatAttachment[]>([])
   const [uploadingFiles, setUploadingFiles] = useState(false)
   const [sending, setSending] = useState(false)
+  // A turn can take a while, so the request is abortable — Stop cancels the fetch
+  // and the half-finished reply is dropped rather than left spinning forever.
+  const sendAbortRef = useRef<AbortController | null>(null)
   const [overlay, setOverlay] = useState<OverlayTurn[]>([])
   const [error, setError] = useState<string | null>(null)
   const [busyAction, setBusyAction] = useState<string | null>(null)
@@ -627,6 +627,8 @@ export function ChatPage() {
     }
     const messageText = text || 'Please review the attached project files.'
     const turnAttachments = chatAttachments
+    const controller = new AbortController()
+    sendAbortRef.current = controller
     setSending(true)
     setError(null)
     setDraft('')
@@ -642,12 +644,18 @@ export function ChatPage() {
           message: messageText,
           siteId: siteId || undefined,
           attachments: turnAttachments.map((attachment) => attachment.assetId)
-        }
+        },
+        signal: controller.signal
       })
       setChatAttachments([])
       await loadThread()
       setOverlay([])
     } catch (err) {
+      // A cancellation is a deliberate act, not a failure — nothing to report.
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        setOverlay([])
+        return
+      }
       const detail = err instanceof Error ? err.message : 'Something went wrong'
       setError(detail)
       // Keep the user's words on screen and explain the failure in a reply bubble.
@@ -656,8 +664,14 @@ export function ChatPage() {
         { role: 'assistant', text: detail }
       ])
     } finally {
+      sendAbortRef.current = null
       setSending(false)
     }
+  }
+
+  /** Cancel the reply currently in flight. */
+  function stop() {
+    sendAbortRef.current?.abort()
   }
 
   async function decide(actionId: string, decision: 'approve' | 'reject') {
@@ -806,22 +820,6 @@ export function ChatPage() {
             </span>
             {message.role === 'assistant' ? (
               <div className="chat-actions">
-                <button
-                  type="button"
-                  className="chat-action-btn"
-                  aria-label="Mark as helpful"
-                  title="Helpful"
-                >
-                  <IconThumbUp size={15} />
-                </button>
-                <button
-                  type="button"
-                  className="chat-action-btn"
-                  aria-label="Mark as not helpful"
-                  title="Not helpful"
-                >
-                  <IconThumbDown size={15} />
-                </button>
                 {message.text.trim() ? (
                   <button
                     type="button"
@@ -876,11 +874,13 @@ export function ChatPage() {
           ) : null
         }
       />
-      <PageBody>
+      {/* `content-fill` pins the shell to the viewport so the transcript is the
+          only thing that scrolls — the page itself never does. */}
+      <PageBody className="content-fill">
         <ErrorNote message={error} />
 
         {serviceMessage ? (
-          <div className="alert alert-info chat-service-notice" role="status" style={{ marginBottom: 14 }}>
+          <div className="alert alert-info chat-service-notice" role="status">
             <strong>Assistant unavailable.</strong> {serviceMessage}
           </div>
         ) : null}
@@ -895,6 +895,7 @@ export function ChatPage() {
                   type="search"
                   value={query}
                   placeholder="Search this conversation…"
+                  aria-label="Search this conversation"
                   onChange={(event) => setQuery(event.target.value)}
                 />
                 {searching ? (
@@ -912,7 +913,14 @@ export function ChatPage() {
           ) : null}
 
           <div className="chat-scroll-wrap">
-            <div className="chat-scroll" ref={scrollRef} onScroll={onScroll}>
+            <div
+              className="chat-scroll"
+              ref={scrollRef}
+              onScroll={onScroll}
+              role="log"
+              aria-live="polite"
+              aria-label="Conversation"
+            >
               {loadingThread && !conversationStarted ? (
                 <Loading label="Loading the conversation…" />
               ) : !conversationStarted ? (
@@ -1034,6 +1042,7 @@ export function ChatPage() {
                   type="file"
                   multiple
                   accept="image/*,.pdf,.docx,.xlsx,.csv,.txt,.md,.json"
+                  aria-label="Attach files to this message"
                   onChange={(event) => chooseFiles(event.target.files)}
                   disabled={uploadingFiles || sending}
                 />
@@ -1054,6 +1063,7 @@ export function ChatPage() {
                     value={tagDraft}
                     onChange={(event) => setTagDraft(event.target.value)}
                     placeholder="Tags for selected files (comma separated)"
+                    aria-label="Tags for the selected files"
                     disabled={uploadingFiles || sending}
                   />
                 </label>
@@ -1076,6 +1086,7 @@ export function ChatPage() {
                 type="file"
                 multiple
                 accept="image/*,.pdf,.docx,.xlsx,.csv,.txt,.md,.json"
+                aria-label="Choose project files to upload"
                 onChange={(event) => chooseFiles(event.target.files)}
                 disabled={uploadingFiles || sending}
               />
@@ -1128,6 +1139,7 @@ export function ChatPage() {
                   className="chat-input"
                   rows={1}
                   placeholder="Ask anything…"
+                  aria-label="Message the assistant"
                   value={draft}
                   disabled={sending}
                   onChange={(event) => setDraft(event.target.value)}
@@ -1148,15 +1160,6 @@ export function ChatPage() {
                     onClick={() => fileInputRef.current?.click()}
                   >
                     <IconPlus size={17} />
-                  </button>
-                  <button
-                    type="button"
-                    className="chat-tool-btn"
-                    aria-label="Add a link"
-                    title="Add a link"
-                    disabled
-                  >
-                    <IconPaperclip size={17} />
                   </button>
                   <button
                     type="button"
@@ -1211,14 +1214,26 @@ export function ChatPage() {
                   </select>
                 </div>
               </div>
-              <button
-                type="submit"
-                className="chat-send-btn"
-                disabled={(!draft.trim() && !chatAttachments.length) || !assistantReady || uploadingFiles || sending}
-                aria-label="Send message"
-              >
-                {sending ? <span className="spinner" /> : <IconSend size={18} />}
-              </button>
+              {sending ? (
+                <button
+                  type="button"
+                  className="chat-send-btn chat-stop-btn"
+                  onClick={stop}
+                  aria-label="Stop the reply"
+                  title="Stop the reply"
+                >
+                  <IconX size={18} />
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  className="chat-send-btn"
+                  disabled={(!draft.trim() && !chatAttachments.length) || !assistantReady || uploadingFiles}
+                  aria-label="Send message"
+                >
+                  <IconSend size={18} />
+                </button>
+              )}
             </div>
             {voice.listening ? (
               <div className="chat-voice-status" role="status">

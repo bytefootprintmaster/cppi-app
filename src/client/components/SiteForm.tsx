@@ -1,7 +1,8 @@
-import { useState, type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
 import { api } from '../lib/api'
+import { useApi } from '../lib/useApi'
 import type { SiteRecord, SiteStatus } from '../../server/types'
-import { Button, Field, Modal } from './ui'
+import { Button, Field, Modal, useDiscardGuard } from './ui'
 
 const STATUS_OPTIONS: Array<{ value: SiteStatus; label: string }> = [
   { value: 'planning', label: 'Planning' },
@@ -17,11 +18,12 @@ interface Props {
   onSaved: () => void
 }
 
-export function SiteFormModal({ site, onClose, onSaved }: Props) {
-  const editing = Boolean(site)
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [form, setForm] = useState({
+/** Which field a validation failure belongs to, so it can be marked inline. */
+type InvalidField = 'name' | 'coords' | 'location'
+
+/** The form's starting values — also the baseline the unsaved-changes check compares against. */
+function blankForm(site?: SiteRecord | null) {
+  return {
     name: site?.name ?? '',
     code: site?.code ?? '',
     status: (site?.status ?? 'planning') as SiteStatus,
@@ -34,31 +36,77 @@ export function SiteFormModal({ site, onClose, onSaved }: Props) {
     region: site?.region ?? '',
     postalCode: site?.postalCode ?? '',
     country: site?.country ?? '',
+    // Pins which town's by-laws and forms this project follows. Blank = derive
+    // the jurisdiction from the city on save.
+    regulationsPlace: site?.regulationsPlace ?? '',
     // Coordinates may be typed by hand to place the pin exactly.
     lat: site?.lat !== undefined ? String(site.lat) : '',
     lng: site?.lng !== undefined ? String(site.lng) : ''
-  })
+  }
+}
+
+export function SiteFormModal({ site, onClose, onSaved }: Props) {
+  const editing = Boolean(site)
+  const initial = useMemo(() => blankForm(site), [site])
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [invalidField, setInvalidField] = useState<InvalidField | null>(null)
+  const [form, setForm] = useState(initial)
+
+  // Closing a half-filled form is the easiest way to lose work in the whole app,
+  // so every exit route — Escape, backdrop, X and Cancel — goes through here.
+  const dirty = useMemo(
+    () => (Object.keys(initial) as Array<keyof typeof initial>).some((key) => form[key] !== initial[key]),
+    [form, initial]
+  )
+  const guardClose = useDiscardGuard(dirty, onClose)
+
+  function requestClose() {
+    if (busy) return
+    void guardClose()
+  }
+
+  // The jurisdictions that have a corpus, for the picker below.
+  const places = useApi<{ places: Array<{ place: string; placeName: string }> }>('/regulations')
+  const placeOptions = useMemo(() => {
+    const list = places.data?.places ?? []
+    // A pinned jurisdiction that is no longer in the list must still show, or
+    // editing an unrelated field would silently drop the override.
+    if (form.regulationsPlace && !list.some((p) => p.place === form.regulationsPlace)) {
+      return [...list, { place: form.regulationsPlace, placeName: form.regulationsPlace }]
+    }
+    return list
+  }, [places.data, form.regulationsPlace])
 
   function set<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
+    // Clear a stale validation message as soon as the user starts fixing it.
+    if (error) {
+      setError(null)
+      setInvalidField(null)
+    }
   }
 
   async function submit(event: FormEvent) {
     event.preventDefault()
     if (!form.name.trim()) {
       setError('Project name is required')
+      setInvalidField('name')
       return
     }
     if (Boolean(form.lat.trim()) !== Boolean(form.lng.trim())) {
       setError('Enter both latitude and longitude, or leave both blank')
+      setInvalidField('coords')
       return
     }
     if (!form.address.trim() && !form.city.trim()) {
       setError('Enter a street address, or at least a city so the map can place the pin')
+      setInvalidField('location')
       return
     }
     setBusy(true)
     setError(null)
+    setInvalidField(null)
 
     const body = {
       name: form.name.trim(),
@@ -72,6 +120,7 @@ export function SiteFormModal({ site, onClose, onSaved }: Props) {
       region: form.region.trim(),
       postalCode: form.postalCode.trim(),
       country: form.country.trim(),
+      regulationsPlace: form.regulationsPlace,
       lat: form.lat.trim() ? Number(form.lat) : undefined,
       lng: form.lng.trim() ? Number(form.lng) : undefined
     }
@@ -94,10 +143,10 @@ export function SiteFormModal({ site, onClose, onSaved }: Props) {
     <Modal
       wide
       title={editing ? 'Edit project' : 'New project'}
-      onClose={onClose}
+      onClose={requestClose}
       footer={
         <>
-          <Button variant="ghost" onClick={onClose} disabled={busy}>
+          <Button variant="ghost" onClick={requestClose} disabled={busy}>
             Cancel
           </Button>
           <Button form="site-form" type="submit" loading={busy}>
@@ -107,7 +156,11 @@ export function SiteFormModal({ site, onClose, onSaved }: Props) {
       }
     >
       <form id="site-form" onSubmit={submit}>
-        {error ? <div className="alert alert-error" style={{ marginBottom: 14 }}>{error}</div> : null}
+        {error ? (
+          <div id="site-form-error" className="alert alert-error" role="alert" style={{ marginBottom: 14 }}>
+            {error}
+          </div>
+        ) : null}
 
         <Field label="Project name">
           <input
@@ -115,6 +168,9 @@ export function SiteFormModal({ site, onClose, onSaved }: Props) {
             value={form.name}
             onChange={(e) => set('name', e.target.value)}
             placeholder="e.g. Riverside Apartments — Phase 2"
+            aria-required="true"
+            aria-invalid={invalidField === 'name' || undefined}
+            aria-describedby={invalidField === 'name' ? 'site-form-error' : undefined}
           />
         </Field>
 
@@ -144,12 +200,21 @@ export function SiteFormModal({ site, onClose, onSaved }: Props) {
             value={form.address}
             onChange={(e) => set('address', e.target.value)}
             placeholder="e.g. 27 Mandrake Street"
+            aria-invalid={invalidField === 'location' || undefined}
+            aria-describedby={invalidField === 'location' ? 'site-form-error' : undefined}
           />
         </Field>
 
         <div className="grid grid-2">
           <Field label="City">
-            <input className="input" value={form.city} onChange={(e) => set('city', e.target.value)} placeholder="e.g. Toronto" />
+            <input
+              className="input"
+              value={form.city}
+              onChange={(e) => set('city', e.target.value)}
+              placeholder="e.g. Toronto"
+              aria-invalid={invalidField === 'location' || undefined}
+              aria-describedby={invalidField === 'location' ? 'site-form-error' : undefined}
+            />
           </Field>
           <Field label="Province / State">
             <input className="input" value={form.region} onChange={(e) => set('region', e.target.value)} placeholder="e.g. ON" />
@@ -170,6 +235,28 @@ export function SiteFormModal({ site, onClose, onSaved }: Props) {
           </Field>
         </div>
 
+        <Field
+          label="Regulations jurisdiction"
+          hint={
+            places.data && places.data.places.length === 0
+              ? 'No jurisdictions have been ingested yet.'
+              : 'Matched from the city automatically. Pick one to pin the by-laws, forms and fees this project must follow.'
+          }
+        >
+          <select
+            className="select"
+            value={form.regulationsPlace}
+            onChange={(e) => set('regulationsPlace', e.target.value)}
+          >
+            <option value="">Match automatically from the city</option>
+            {placeOptions.map((place) => (
+              <option key={place.place} value={place.place}>
+                {place.placeName}
+              </option>
+            ))}
+          </select>
+        </Field>
+
         <div className="grid grid-2">
           <Field label="Latitude" hint="Optional — leave blank to geocode from the address">
             <input
@@ -179,6 +266,8 @@ export function SiteFormModal({ site, onClose, onSaved }: Props) {
               value={form.lat}
               onChange={(e) => set('lat', e.target.value)}
               placeholder="e.g. 43.6426"
+              aria-invalid={invalidField === 'coords' || undefined}
+              aria-describedby={invalidField === 'coords' ? 'site-form-error' : undefined}
             />
           </Field>
           <Field label="Longitude" hint="Optional — paired with latitude">
@@ -189,6 +278,8 @@ export function SiteFormModal({ site, onClose, onSaved }: Props) {
               value={form.lng}
               onChange={(e) => set('lng', e.target.value)}
               placeholder="e.g. -79.3871"
+              aria-invalid={invalidField === 'coords' || undefined}
+              aria-describedby={invalidField === 'coords' ? 'site-form-error' : undefined}
             />
           </Field>
         </div>

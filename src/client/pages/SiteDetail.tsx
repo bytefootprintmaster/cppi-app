@@ -32,7 +32,11 @@ import {
   Modal,
   Progress,
   SiteStatusBadge,
-  StageStatusBadge
+  StageStatusBadge,
+  TabPanel,
+  Tabs,
+  useConfirm,
+  useToast
 } from '../components/ui'
 import {
   IconAlert,
@@ -176,6 +180,8 @@ export function SiteDetailPage() {
   const [tab, setTab] = useState<Tab>('overview')
   const [editing, setEditing] = useState(false)
   const { data, error, loading, reload } = useApi<SiteDetailResponse>(`/sites/${siteId}`)
+  const confirm = useConfirm()
+  const toast = useToast()
 
   const isAdmin = user?.role === 'admin'
   const canWrite = isAdmin || user?.permissions?.uploadFiles === true
@@ -195,12 +201,18 @@ export function SiteDetailPage() {
 
   async function removeSite() {
     if (!data) return
-    if (!window.confirm(`Delete "${data.site.name}" and all of its files? This cannot be undone.`)) return
+    const ok = await confirm({
+      title: 'Delete project',
+      message: `Delete "${data.site.name}" and all of its files? Photos, documents and remarks cannot be recovered.`,
+      confirmLabel: 'Delete project'
+    })
+    if (!ok) return
     try {
       await api(`/sites/${data.site.siteId}`, { method: 'DELETE' })
+      toast.success(`"${data.site.name}" was deleted.`)
       navigate('/sites')
     } catch (err) {
-      window.alert(err instanceof Error ? err.message : 'Could not delete the project')
+      toast.error(err instanceof Error ? err.message : 'Could not delete the project')
     }
   }
 
@@ -266,8 +278,9 @@ export function SiteDetailPage() {
           ) : null}
         </div>
 
-        <div className="tabs" style={{ marginBottom: 20 }}>
-          {(
+        <Tabs
+          id="site-tabs"
+          tabs={(
             [
               ['overview', 'Overview'],
               ['timeline', 'Timeline'],
@@ -279,54 +292,55 @@ export function SiteDetailPage() {
             ] as Array<[Tab, string]>
           )
             .filter(([key]) => key !== 'budget' || canViewBudget)
-            .map(([key, label]) => (
-              <button key={key} className={`tab${tab === key ? ' active' : ''}`} onClick={() => setTab(key)}>
-                {label}
-              </button>
-            ))}
-        </div>
+            .map(([key, label]) => ({ key, label }))}
+          value={tab}
+          onChange={setTab}
+          className="site-tabs"
+        />
 
-        {tab === 'overview' ? (
-          <OverviewTab
-            site={site}
-            progress={progress}
-            budget={budget}
-            isAdmin={isAdmin}
-            canViewBudget={canViewBudget}
-            onChanged={reload}
-          />
-        ) : null}
-        {tab === 'timeline' ? <TimelineTab siteId={site.siteId} /> : null}
-        {tab === 'framework' ? (
-          <FrameworkTab
-            siteId={site.siteId}
-            stages={stages}
-            milestones={milestones}
-            isAdmin={canEditDetails}
-            onChanged={reload}
-          />
-        ) : null}
-        {tab === 'budget' ? (
-          <BudgetTab
-            siteId={site.siteId}
-            lines={budgetLines}
-            categories={budgetCategories}
-            summary={budget}
-            isAdmin={canEditDetails}
-            onChanged={reload}
-          />
-        ) : null}
-        {tab === 'files' ? (
-          <FilesTab
-            siteId={site.siteId}
-            canWrite={canWrite}
-            canDownload={canDownload}
-            isAdmin={isAdmin}
-            focusAssetId={focusAssetId}
-          />
-        ) : null}
-        {tab === 'findings' ? <FindingsTab siteId={site.siteId} isAdmin={isAdmin} /> : null}
-        {tab === 'remarks' ? <RemarksTab siteId={site.siteId} stages={stages} canWrite={canWrite} /> : null}
+        <TabPanel id="site-tabs" activeKey={tab}>
+          {tab === 'overview' ? (
+            <OverviewTab
+              site={site}
+              progress={progress}
+              budget={budget}
+              isAdmin={isAdmin}
+              canViewBudget={canViewBudget}
+              onChanged={reload}
+            />
+          ) : null}
+          {tab === 'timeline' ? <TimelineTab siteId={site.siteId} /> : null}
+          {tab === 'framework' ? (
+            <FrameworkTab
+              siteId={site.siteId}
+              stages={stages}
+              milestones={milestones}
+              isAdmin={canEditDetails}
+              onChanged={reload}
+            />
+          ) : null}
+          {tab === 'budget' ? (
+            <BudgetTab
+              siteId={site.siteId}
+              lines={budgetLines}
+              categories={budgetCategories}
+              summary={budget}
+              isAdmin={canEditDetails}
+              onChanged={reload}
+            />
+          ) : null}
+          {tab === 'files' ? (
+            <FilesTab
+              siteId={site.siteId}
+              canWrite={canWrite}
+              canDownload={canDownload}
+              isAdmin={isAdmin}
+              focusAssetId={focusAssetId}
+            />
+          ) : null}
+          {tab === 'findings' ? <FindingsTab siteId={site.siteId} isAdmin={isAdmin} /> : null}
+          {tab === 'remarks' ? <RemarksTab siteId={site.siteId} stages={stages} canWrite={canWrite} /> : null}
+        </TabPanel>
       </PageBody>
 
       {editing ? (
@@ -417,20 +431,16 @@ function OverviewTab({
             <div className="grid grid-2" style={{ marginTop: 18 }}>
               <div>
                 <div className="kpi-label">Milestones</div>
-                <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--green-900)' }}>
+                <div className="kpi-value kpi-value-sm">
                   {progress.milestonesCompleted}
-                  <span className="muted" style={{ fontSize: 15 }}>
-                    /{progress.milestones}
-                  </span>
+                  <span className="muted">/{progress.milestones}</span>
                 </div>
               </div>
               <div>
                 <div className="kpi-label">Stages</div>
-                <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--green-900)' }}>
+                <div className="kpi-value kpi-value-sm">
                   {progress.stagesCompleted}
-                  <span className="muted" style={{ fontSize: 15 }}>
-                    /{progress.stages}
-                  </span>
+                  <span className="muted">/{progress.stages}</span>
                 </div>
               </div>
             </div>
@@ -518,6 +528,7 @@ function FrameworkTab({
   )
   const [busyId, setBusyId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const confirm = useConfirm()
 
   async function run(fn: () => Promise<unknown>, id: string) {
     setBusyId(id)
@@ -600,11 +611,18 @@ function FrameworkTab({
                             icon: <IconTrash size={14} />,
                             danger: true,
                             onClick: () => {
-                              if (!window.confirm(`Delete stage "${stage.name}" and its milestones?`)) return
-                              void run(
-                                () => api(`/sites/${siteId}/stages/${stage.stageId}`, { method: 'DELETE' }),
-                                stage.stageId
-                              )
+                              void (async () => {
+                                const ok = await confirm({
+                                  title: 'Delete stage',
+                                  message: `Delete "${stage.name}" and every milestone inside it?`,
+                                  confirmLabel: 'Delete stage'
+                                })
+                                if (!ok) return
+                                await run(
+                                  () => api(`/sites/${siteId}/stages/${stage.stageId}`, { method: 'DELETE' }),
+                                  stage.stageId
+                                )
+                              })()
                             }
                           }
                         ]}
@@ -639,6 +657,7 @@ function FrameworkTab({
                             {isAdmin ? (
                               <select
                                 className="select status-select"
+                                aria-label={`Status for ${m.name}`}
                                 value={m.status}
                                 disabled={busyId === m.milestoneId}
                                 onChange={(e) =>
@@ -676,11 +695,18 @@ function FrameworkTab({
                                   icon: <IconTrash size={14} />,
                                   danger: true,
                                   onClick: () => {
-                                    if (!window.confirm(`Delete milestone "${m.name}"?`)) return
-                                    void run(
-                                      () => api(`/sites/${siteId}/milestones/${m.milestoneId}`, { method: 'DELETE' }),
-                                      m.milestoneId
-                                    )
+                                    void (async () => {
+                                      const ok = await confirm({
+                                        title: 'Delete milestone',
+                                        message: `Delete "${m.name}"? Progress against this stage will be recalculated.`,
+                                        confirmLabel: 'Delete milestone'
+                                      })
+                                      if (!ok) return
+                                      await run(
+                                        () => api(`/sites/${siteId}/milestones/${m.milestoneId}`, { method: 'DELETE' }),
+                                        m.milestoneId
+                                      )
+                                    })()
                                   }
                                 }
                               ]}
@@ -1293,6 +1319,7 @@ function BudgetTab({
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
   const [drag, setDrag] = useState<{ kind: 'line' | 'category'; id: string } | null>(null)
   const [dropKey, setDropKey] = useState<string | null>(null)
+  const confirm = useConfirm()
 
   const needle = query.trim().toLowerCase()
   const filtering = needle !== '' || filter !== 'all'
@@ -1321,7 +1348,12 @@ function BudgetTab({
   const dragLine = drag?.kind === 'line' ? lines.find((line) => line.lineId === drag.id) ?? null : null
 
   async function remove(line: BudgetLineRecord) {
-    if (!window.confirm(`Delete the cost line "${line.name}"?`)) return
+    const ok = await confirm({
+      title: 'Delete cost line',
+      message: `Delete the cost line "${line.name}"? Project totals will be recalculated.`,
+      confirmLabel: 'Delete line'
+    })
+    if (!ok) return
     setBusyId(line.lineId)
     setError(null)
     try {
@@ -1560,6 +1592,7 @@ function BudgetTab({
                   key={option.value}
                   type="button"
                   className={`chip${filter === option.value ? ' on' : ''}`}
+                  aria-pressed={filter === option.value}
                   onClick={() => setFilter(option.value)}
                 >
                   {option.label}
@@ -1748,6 +1781,7 @@ function BudgetTab({
                                       variant="ghost"
                                       size="sm"
                                       title="Add a cost line to this category"
+                                      aria-label={`Add a cost line to ${bucket.name}`}
                                       onClick={() =>
                                         setModal({ line: null, group, categoryId: bucket.categoryId ?? undefined })
                                       }
@@ -2108,6 +2142,7 @@ function BudgetCategoryModal({
   const [editing, setEditing] = useState<{ categoryId: string; name: string; description: string } | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const confirm = useConfirm()
 
   const counts = useMemo(() => {
     const map = new Map<string, number>()
@@ -2164,11 +2199,15 @@ function BudgetCategoryModal({
 
   async function remove(category: BudgetCategoryRecord) {
     const used = counts.get(category.categoryId) ?? 0
-    const question =
-      used > 0
-        ? `"${category.name}" still holds ${used} cost line${used === 1 ? '' : 's'}. Delete the category and leave those lines uncategorised?`
-        : `Delete the category "${category.name}"?`
-    if (!window.confirm(question)) return
+    const ok = await confirm({
+      title: 'Delete category',
+      message:
+        used > 0
+          ? `"${category.name}" still holds ${used} cost line${used === 1 ? '' : 's'}. Deleting it leaves those lines uncategorised — nothing is deleted.`
+          : `Delete the category "${category.name}"?`,
+      confirmLabel: 'Delete category'
+    })
+    if (!ok) return
     setBusy(category.categoryId)
     setError(null)
     try {
@@ -2338,6 +2377,7 @@ function BudgetImportModal({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [done, setDone] = useState<string | null>(null)
+  const confirm = useConfirm()
 
   const parsed = useMemo(() => parseImport(text), [text])
 
@@ -2370,11 +2410,13 @@ function BudgetImportModal({
       setError('Paste or upload some rows first')
       return
     }
-    if (
-      mode === 'replace' &&
-      !window.confirm('Replace mode deletes every existing cost line and category on this project first. Continue?')
-    ) {
-      return
+    if (mode === 'replace') {
+      const ok = await confirm({
+        title: 'Replace the budget',
+        message: 'Replace mode deletes every existing cost line and category on this project before importing. Continue?',
+        confirmLabel: 'Replace budget'
+      })
+      if (!ok) return
     }
     setBusy(true)
     setError(null)
@@ -2895,6 +2937,8 @@ function FilesTab({
   const [bulkTagging, setBulkTagging] = useState(false)
   const [bulkBusy, setBulkBusy] = useState(false)
   const [focusedAssetId, setFocusedAssetId] = useState<string | null>(null)
+  const confirm = useConfirm()
+  const toast = useToast()
 
   // Thumbnails need a signed URL each. Requesting them all at once saturates the
   // browser's connection pool and stalls every other call, so they are fetched by
@@ -2968,12 +3012,18 @@ function FilesTab({
   }
 
   async function removeAsset(asset: AssetRecord) {
-    if (!window.confirm(`Delete "${asset.name}"?`)) return
+    const ok = await confirm({
+      title: 'Delete file',
+      message: `Delete "${asset.name}"? This cannot be undone.`,
+      confirmLabel: 'Delete file'
+    })
+    if (!ok) return
     setBusyId(asset.assetId)
     setActionError(null)
     try {
       await api(`/sites/${siteId}/assets/${asset.assetId}`, { method: 'DELETE' })
       await reload()
+      toast.success(`"${asset.name}" was deleted.`)
     } catch (err) {
       setActionError(err instanceof Error ? err.message : 'Could not delete the file')
     } finally {
@@ -2982,13 +3032,12 @@ function FilesTab({
   }
 
   async function removeFolder(folder: AssetFolderRecord) {
-    if (
-      !window.confirm(
-        `Delete the folder "${folder.name}"? Files inside it move to the project root — no files are deleted.`
-      )
-    ) {
-      return
-    }
+    const ok = await confirm({
+      title: 'Delete folder',
+      message: `Delete the folder "${folder.name}"? Files inside it move to the project root — no files are deleted.`,
+      confirmLabel: 'Delete folder'
+    })
+    if (!ok) return
     setBusyId(folder.folderId)
     setActionError(null)
     try {
@@ -2996,6 +3045,7 @@ function FilesTab({
       setSelected(ALL_FILES)
       setKind('all')
       await Promise.all([reload(), reloadFolders()])
+      toast.success(`Folder "${folder.name}" was deleted.`)
     } catch (err) {
       setActionError(err instanceof Error ? err.message : 'Could not delete the folder')
     } finally {
@@ -3021,13 +3071,12 @@ function FilesTab({
   async function bulkRemove() {
     const ids = [...picked]
     if (ids.length === 0) return
-    if (
-      !window.confirm(
-        `Delete ${ids.length} file${ids.length === 1 ? '' : 's'}? This cannot be undone.`
-      )
-    ) {
-      return
-    }
+    const ok = await confirm({
+      title: `Delete ${ids.length} file${ids.length === 1 ? '' : 's'}`,
+      message: `${ids.length} file${ids.length === 1 ? '' : 's'} will be removed from this project permanently. This cannot be undone.`,
+      confirmLabel: 'Delete files'
+    })
+    if (!ok) return
     setBulkBusy(true)
     setActionError(null)
     const results = await Promise.allSettled(
@@ -3038,6 +3087,7 @@ function FilesTab({
     setBulkBusy(false)
     await reload()
     if (failed) setActionError(`${failed} of ${ids.length} files could not be deleted.`)
+    else toast.success(`${ids.length} file${ids.length === 1 ? '' : 's'} deleted.`)
   }
 
   /** Add the given tags to every selected file, keeping the tags each already has. */
@@ -3246,7 +3296,9 @@ function FilesTab({
               {asset.tags.map((tag) => (
                 <button
                   key={tag}
+                  type="button"
                   className={`chip${tagFilter === tag ? ' on' : ''}`}
+                  aria-pressed={tagFilter === tag}
                   title={`Show files tagged "${tag}"`}
                   onClick={(event) => {
                     event.stopPropagation()
@@ -3292,7 +3344,9 @@ function FilesTab({
 
       <div className="folder-bar">
         <button
+          type="button"
           className={`folder-chip${!activeFolder && kind === 'all' ? ' active' : ''}`}
+          aria-pressed={!activeFolder && kind === 'all'}
           onClick={() => {
             setSelected(ALL_FILES)
             setKind('all')
@@ -3304,7 +3358,9 @@ function FilesTab({
         </button>
         <div className="folder-chip-wrap">
           <button
+            type="button"
             className={`folder-chip${!activeFolder && kind === 'image' ? ' active' : ''}`}
+            aria-pressed={!activeFolder && kind === 'image'}
             onClick={() => {
               setSelected(ALL_FILES)
               setKind('image')
@@ -3337,7 +3393,9 @@ function FilesTab({
         {visibleFolders.map((folder) => (
           <button
             key={folder.folderId}
+            type="button"
             className={`folder-chip${activeFolder?.folderId === folder.folderId ? ' active' : ''}`}
+            aria-pressed={activeFolder?.folderId === folder.folderId}
             onClick={() => {
               setSelected(folder.folderId)
               setKind('all')
@@ -3495,7 +3553,9 @@ function FilesTab({
                 {(['all', 'image', 'document'] as FileKind[]).map((k) => (
                   <button
                     key={k}
+                    type="button"
                     className={`chip${kind === k ? ' on' : ''}`}
+                    aria-pressed={kind === k}
                     onClick={() => setKind(k)}
                   >
                     {FILE_KIND_LABEL[k]}
@@ -3509,7 +3569,9 @@ function FilesTab({
               {allTags.length > 0 ? (
                 <div className="tag-bar">
                   <button
+                    type="button"
                     className={`chip${tagFilter === null ? ' on' : ''}`}
+                    aria-pressed={tagFilter === null}
                     onClick={() => setTagFilter(null)}
                   >
                     All tags
@@ -3517,7 +3579,9 @@ function FilesTab({
                   {allTags.map((tag) => (
                     <button
                       key={tag}
+                      type="button"
                       className={`chip${tagFilter === tag ? ' on' : ''}`}
+                      aria-pressed={tagFilter === tag}
                       onClick={() => setTagFilter(tagFilter === tag ? null : tag)}
                     >
                       {tag}
@@ -3846,7 +3910,9 @@ function TimelineTab({ siteId }: { siteId: string }) {
               {TIMELINE_FILTERS.map((entry) => (
                 <button
                   key={entry.key}
+                  type="button"
                   className={`chip${filter === entry.key ? ' on' : ''}`}
+                  aria-pressed={filter === entry.key}
                   onClick={() => setFilter(entry.key)}
                 >
                   {entry.label}
@@ -3938,7 +4004,13 @@ function RemarkItem({
             </div>
           </div>
           {canDelete ? (
-            <Button variant="ghost" size="sm" onClick={onRemove}>
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label={remark.authorName ? `Delete ${remark.authorName}'s remark` : 'Delete remark'}
+              title="Delete remark"
+              onClick={onRemove}
+            >
               <IconTrash size={14} />
             </Button>
           ) : null}
@@ -4074,6 +4146,8 @@ function RemarksTab({
   const [stageId, setStageId] = useState('')
   const [busy, setBusy] = useState(false)
   const [postError, setPostError] = useState<string | null>(null)
+  const confirm = useConfirm()
+  const toast = useToast()
 
   async function post(event: FormEvent) {
     event.preventDefault()
@@ -4087,6 +4161,7 @@ function RemarksTab({
       })
       setText('')
       await reload()
+      toast.success('Remark posted.')
     } catch (err) {
       setPostError(err instanceof Error ? err.message : 'Could not post the remark')
     } finally {
@@ -4095,10 +4170,16 @@ function RemarksTab({
   }
 
   async function remove(remark: RemarkRecord) {
-    if (!window.confirm('Delete this remark?')) return
+    const ok = await confirm({
+      title: 'Delete remark',
+      message: `Delete ${remark.authorName ? `${remark.authorName}'s` : 'this'} remark? This cannot be undone.`,
+      confirmLabel: 'Delete remark'
+    })
+    if (!ok) return
     try {
       await api(`/sites/${siteId}/remarks/${remark.remarkId}`, { method: 'DELETE' })
       await reload()
+      toast.success('Remark deleted.')
     } catch (err) {
       setPostError(err instanceof Error ? err.message : 'Could not delete the remark')
     }

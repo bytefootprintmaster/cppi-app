@@ -71,7 +71,19 @@ const TABLE_DEFS = [
   // Assistant chat. chat_threads: one row per saved conversation (listed per user).
   // chat_messages: the turns inside a thread, oldest first.
   { name: `${prefix}chat_threads`, hash: 'threadId', gsis: [{ name: 'user-index', hash: 'userId' }] },
-  { name: `${prefix}chat_messages`, hash: 'threadId', range: 'messageId' }
+  { name: `${prefix}chat_messages`, hash: 'threadId', range: 'messageId' },
+  // Municipal regulations corpus, scraped by regulatory-scraper and written by the
+  // agent's scripts/ingest_regulations.py. Mirrors the file index but is keyed by
+  // `place` (a town/city slug) instead of siteId, because a bylaw belongs to a
+  // jurisdiction rather than to a project.
+  // regulations: one row per page/PDF (metadata + extracted text + source URL).
+  // regulation_terms: the inverted index, one row per (word, document) pair.
+  // regulation_chunks: the document cut into page-sized windows, for quoting.
+  // regulations_meta: one row per jurisdiction, so the portal can list places.
+  { name: `${prefix}regulations`, hash: 'place', range: 'docId' },
+  { name: `${prefix}regulation_terms`, hash: 'term', range: 'ref' },
+  { name: `${prefix}regulation_chunks`, hash: 'docRef', range: 'chunkId' },
+  { name: `${prefix}regulations_meta`, hash: 'place' }
 ]
 
 async function ensureTables() {

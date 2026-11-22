@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { api } from '../lib/api'
 import { useApi } from '../lib/useApi'
 import { useAuth } from '../lib/auth'
 import { formatDate, relativeTime } from '../lib/format'
 import { PageBody, PageHeader } from '../components/Layout'
-import { Avatar, Badge, Button, Card, CardHeader, CardMenu, Empty, ErrorNote, Field, Loading, Modal, PasswordInput, RoleBadge, type MenuItem } from '../components/ui'
+import { Avatar, Badge, Button, Card, CardHeader, CardMenu, Empty, ErrorNote, Field, Loading, Modal, PasswordInput, RoleBadge, useConfirm, useDiscardGuard, useToast, type MenuItem } from '../components/ui'
 import { IconCheck, IconEdit, IconPlus, IconSearch, IconTrash, IconUsers, IconX } from '../components/icons'
 import type {
   PermissionKey,
@@ -42,6 +42,8 @@ export function AdminUsersPage() {
   const [creatingUser, setCreatingUser] = useState(false)
   const [editingRole, setEditingRole] = useState<RoleRecord | null>(null)
   const [creatingRole, setCreatingRole] = useState(false)
+  const confirm = useConfirm()
+  const toast = useToast()
 
   useEffect(() => {
     document.title = 'Users · CPPI'
@@ -53,7 +55,7 @@ export function AdminUsersPage() {
     try {
       await api(`/admin/users/${target.userId}`, { method: 'PATCH', body })
       await reload()
-      if (successMessage) window.setTimeout(() => window.alert(successMessage), 0)
+      if (successMessage) toast.success(successMessage)
     } catch (err) {
       setActionError(err instanceof Error ? err.message : 'Could not update the user')
     } finally {
@@ -62,12 +64,18 @@ export function AdminUsersPage() {
   }
 
   async function remove(target: UserRecord) {
-    if (!window.confirm(`Remove ${target.name} from CPPI? They will lose access immediately.`)) return
+    const ok = await confirm({
+      title: 'Remove user',
+      message: `${target.name} will lose access to CPPI immediately. Their uploads and remarks stay in place.`,
+      confirmLabel: 'Remove user'
+    })
+    if (!ok) return
     setBusyId(target.userId)
     setActionError(null)
     try {
       await api(`/admin/users/${target.userId}`, { method: 'DELETE' })
       await reload()
+      toast.success(`${target.name} was removed.`)
     } catch (err) {
       setActionError(err instanceof Error ? err.message : 'Could not remove the user')
     } finally {
@@ -76,11 +84,17 @@ export function AdminUsersPage() {
   }
 
   async function deleteRole(target: RoleRecord) {
-    if (!window.confirm(`Delete the "${target.name}" role? Users must be reassigned first.`)) return
+    const ok = await confirm({
+      title: 'Delete role',
+      message: `Delete the "${target.name}" role? Anyone still assigned to it must be moved to another role first.`,
+      confirmLabel: 'Delete role'
+    })
+    if (!ok) return
     setActionError(null)
     try {
       await api(`/admin/roles/${target.roleId}`, { method: 'DELETE' })
       await reloadRoles()
+      toast.success(`Role "${target.name}" was deleted.`)
     } catch (err) {
       setActionError(err instanceof Error ? err.message : 'Could not delete the role')
     }
@@ -98,13 +112,20 @@ export function AdminUsersPage() {
     return u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
   })
 
+  // The footer used to print the *first* row's last-login date, which said
+  // nothing about the team. This is the most recent sign-in of anyone.
+  const lastLogin = users.reduce<string | undefined>(
+    (latest, u) => (u.lastLoginAt && (!latest || u.lastLoginAt > latest) ? u.lastLoginAt : latest),
+    undefined
+  )
+
   function userMenuItems(target: UserRecord): MenuItem[] {
     const items: MenuItem[] = [
       { label: 'Edit user', icon: <IconEdit size={14} />, onClick: () => setEditingUser(target) },
       { label: 'Project access', icon: <IconUsers size={14} />, onClick: () => setEditingAccess(target) },
       target.status === 'active'
-        ? { label: 'Disable', icon: <IconX size={14} />, onClick: () => void patch(target, { status: 'disabled' }) }
-        : { label: 'Enable', icon: <IconCheck size={14} />, onClick: () => void patch(target, { status: 'active' }) }
+        ? { label: 'Disable', icon: <IconX size={14} />, onClick: () => void patch(target, { status: 'disabled' }, `${target.name} was disabled.`) }
+        : { label: 'Enable', icon: <IconCheck size={14} />, onClick: () => void patch(target, { status: 'active' }, `${target.name} was enabled.`) }
     ]
     if (target.userId !== me?.userId) {
       items.push({ label: 'Remove', icon: <IconTrash size={14} />, danger: true, onClick: () => void remove(target) })
@@ -134,6 +155,7 @@ export function AdminUsersPage() {
             <input
               className="input search-input"
               placeholder="Search name or email"
+              aria-label="Search users by name or email"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
@@ -186,7 +208,7 @@ export function AdminUsersPage() {
                             roles={roles}
                             disabled={busyId === u.userId || u.role === 'admin'}
                             locked={u.role === 'admin'}
-                            onChange={(next) => void patch(u, { role: next })}
+                            onChange={(next) => void patch(u, { role: next }, `${u.name} is now ${roleLabel(next)}.`)}
                           />
                           {u.role === 'admin' ? (
                             <div className="small muted" style={{ marginTop: 4 }}>
@@ -249,7 +271,7 @@ export function AdminUsersPage() {
                               value={u.role}
                               roles={roles}
                               disabled={busyId === u.userId}
-                              onChange={(next) => void patch(u, { role: next })}
+                              onChange={(next) => void patch(u, { role: next }, `${u.name} is now ${roleLabel(next)}.`)}
                             />
                           )}
                         </div>
@@ -329,7 +351,8 @@ export function AdminUsersPage() {
         </p>
 
         <p className="small muted">
-          Accounts can come from Google sign-in or provisioned password login; last login {formatDate(users[0]?.lastLoginAt)}.
+          Accounts can come from Google sign-in or provisioned password login; most recent sign-in{' '}
+          {lastLogin ? `${relativeTime(lastLogin)} (${formatDate(lastLogin)})` : '—'}.
         </p>
       </PageBody>
 
@@ -401,12 +424,14 @@ function RoleSelect({
   roles,
   disabled,
   locked,
+  label = 'Role',
   onChange
 }: {
   value: Role
   roles: RoleRecord[]
   disabled?: boolean
   locked?: boolean
+  label?: string
   onChange: (role: string) => void
 }) {
   return (
@@ -415,6 +440,7 @@ function RoleSelect({
       style={{ width: 160 }}
       value={value}
       disabled={disabled || locked}
+      aria-label={label}
       title={locked ? 'Admin roles are locked' : undefined}
       onChange={(e) => onChange(e.target.value)}
     >
@@ -447,7 +473,12 @@ function PermissionRow({
         <div style={{ fontWeight: 600, fontSize: 13.5 }}>{label}</div>
         <div className="small muted">{hint}</div>
       </div>
-      <select className="select perm-select" value={value} onChange={(e) => onChange(e.target.value as OverrideChoice)}>
+      <select
+        className="select perm-select"
+        aria-label={`${label} permission`}
+        value={value}
+        onChange={(e) => onChange(e.target.value as OverrideChoice)}
+      >
         <option value="inherit">Role default ({roleDefault ? 'allow' : 'deny'})</option>
         <option value="allow">Allow</option>
         <option value="deny">Deny</option>
@@ -485,6 +516,41 @@ function UserModal({
   const [maxFileMb, setMaxFileMb] = useState(user?.limits?.maxFileMb ? String(user.limits.maxFileMb) : '')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const toast = useToast()
+
+  // Snapshot of the values as they were opened, so closing a half-filled form
+  // can tell the admin what they are about to throw away.
+  const initial = useRef({
+    name: user?.name ?? '',
+    email: user?.email ?? '',
+    role: (user?.role ?? 'viewer') as Role,
+    siteIds: user?.siteIds ?? [],
+    choices: {
+      uploadFiles: toChoice(user?.permissions?.uploadFiles),
+      downloadFiles: toChoice(user?.permissions?.downloadFiles),
+      viewBudget: toChoice(user?.permissions?.viewBudget),
+      editDetails: toChoice(user?.permissions?.editDetails)
+    },
+    dailyUploads: user?.limits?.dailyUploads ? String(user.limits.dailyUploads) : '',
+    maxFileMb: user?.limits?.maxFileMb ? String(user.limits.maxFileMb) : ''
+  }).current
+
+  const dirty =
+    name !== initial.name ||
+    email !== initial.email ||
+    role !== initial.role ||
+    password !== '' ||
+    dailyUploads !== initial.dailyUploads ||
+    maxFileMb !== initial.maxFileMb ||
+    [...siteIds].sort().join() !== [...initial.siteIds].sort().join() ||
+    PERMISSION_KEYS.some((key) => choices[key] !== initial.choices[key])
+
+  const guardClose = useDiscardGuard(dirty, onClose)
+
+  function requestClose() {
+    if (busy) return
+    void guardClose()
+  }
 
   const rolePermissions: Permissions = roles.find((r) => r.roleId === role)?.permissions ?? {
     uploadFiles: false,
@@ -526,6 +592,7 @@ function UserModal({
 
       if (isEditing) await api(`/admin/users/${user!.userId}`, { method: 'PATCH', body })
       else await api('/admin/users', { method: 'POST', body })
+      toast.success(isEditing ? `${name || 'User'} was updated.` : `${name || 'User'} was created.`)
       onSaved()
     } catch (err) {
       setError(err instanceof Error ? err.message : `Could not ${isEditing ? 'update' : 'create'} the user`)
@@ -538,10 +605,10 @@ function UserModal({
     <Modal
       wide
       title={isEditing ? `Edit user · ${user!.name}` : 'Add user'}
-      onClose={onClose}
+      onClose={requestClose}
       footer={
         <>
-          <Button variant="ghost" onClick={onClose} disabled={busy}>
+          <Button variant="ghost" onClick={requestClose} disabled={busy}>
             Cancel
           </Button>
           <Button loading={busy} onClick={save}>
@@ -692,6 +759,25 @@ function RoleModal({
   )
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const toast = useToast()
+
+  const initial = useRef({
+    name: role?.name ?? '',
+    permissions: role
+      ? { ...role.permissions, downloadFiles: role.permissions.downloadFiles ?? true }
+      : { uploadFiles: false, downloadFiles: true, viewBudget: false, editDetails: false }
+  }).current
+
+  const dirty =
+    name !== initial.name ||
+    PERMISSION_KEYS.some((key) => permissions[key] !== initial.permissions[key])
+
+  const guardClose = useDiscardGuard(dirty, onClose)
+
+  function requestClose() {
+    if (busy) return
+    void guardClose()
+  }
 
   async function save() {
     setBusy(true)
@@ -700,6 +786,7 @@ function RoleModal({
       const body = { name, permissions }
       if (isEditing) await api(`/admin/roles/${role!.roleId}`, { method: 'PATCH', body })
       else await api('/admin/roles', { method: 'POST', body })
+      toast.success(isEditing ? `Role "${name}" was updated.` : `Role "${name}" was created.`)
       onSaved()
     } catch (err) {
       setError(err instanceof Error ? err.message : `Could not ${isEditing ? 'update' : 'create'} the role`)
@@ -711,10 +798,10 @@ function RoleModal({
   return (
     <Modal
       title={isEditing ? `Edit role · ${role!.name}` : 'New role'}
-      onClose={onClose}
+      onClose={requestClose}
       footer={
         <>
-          <Button variant="ghost" onClick={onClose} disabled={busy}>
+          <Button variant="ghost" onClick={requestClose} disabled={busy}>
             Cancel
           </Button>
           <Button loading={busy} onClick={save}>
@@ -763,6 +850,16 @@ function AccessModal({
   const [siteIds, setSiteIds] = useState<string[]>(user.siteIds ?? [])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const toast = useToast()
+
+  const initialSiteIds = useRef(user.siteIds ?? []).current
+  const dirty = [...siteIds].sort().join() !== [...initialSiteIds].sort().join()
+  const guardClose = useDiscardGuard(dirty, onClose)
+
+  function requestClose() {
+    if (busy) return
+    void guardClose()
+  }
 
   function toggle(id: string) {
     setSiteIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
@@ -773,6 +870,7 @@ function AccessModal({
     setError(null)
     try {
       await api(`/admin/users/${user.userId}`, { method: 'PATCH', body: { siteIds } })
+      toast.success(`Project access updated for ${user.name}.`)
       onSaved()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not update project access')
@@ -784,10 +882,10 @@ function AccessModal({
   return (
     <Modal
       title={`Project access · ${user.name}`}
-      onClose={onClose}
+      onClose={requestClose}
       footer={
         <>
-          <Button variant="ghost" onClick={onClose} disabled={busy}>
+          <Button variant="ghost" onClick={requestClose} disabled={busy}>
             Cancel
           </Button>
           <Button loading={busy} onClick={save}>

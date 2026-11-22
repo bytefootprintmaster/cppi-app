@@ -41,7 +41,16 @@ export const T = {
   kpis: `${env.TABLE_PREFIX}kpis`,
   /** Assistant chat: saved conversation threads and their messages. */
   chatThreads: `${env.TABLE_PREFIX}chat_threads`,
-  chatMessages: `${env.TABLE_PREFIX}chat_messages`
+  chatMessages: `${env.TABLE_PREFIX}chat_messages`,
+  /**
+   * Municipal regulations corpus: bylaws, forms, fee schedules and standards
+   * scraped from a city/town website. Keyed by `place` (a town/city slug), not by
+   * project, because a bylaw belongs to a jurisdiction rather than a site.
+   */
+  regulations: `${env.TABLE_PREFIX}regulations`,
+  regulationTerms: `${env.TABLE_PREFIX}regulation_terms`,
+  regulationChunks: `${env.TABLE_PREFIX}regulation_chunks`,
+  regulationsMeta: `${env.TABLE_PREFIX}regulations_meta`
 } as const
 
 export async function getItem<Item>(
@@ -92,6 +101,10 @@ interface QueryOpts {
   KeyConditionExpression: string
   ExpressionAttributeValues: Record<string, unknown>
   ExpressionAttributeNames?: Record<string, string>
+  /** Return only these attributes, so a list view isn't shipped a document's text. */
+  ProjectionExpression?: string
+  /** Drop rows the key condition matched. Applied after the read, so keep it cheap. */
+  FilterExpression?: string
   IndexName?: string
   ConsistentRead?: boolean
 }

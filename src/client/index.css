@@ -17,7 +17,10 @@
 
   --ink: #0a1f17;
   --ink-soft: #33574a;
-  --muted: #67877a;
+  /* Secondary text. Dark enough to clear WCAG AA (4.5:1) on both the white
+     surface and the mint canvas — the previous #67877a sat at 3.9:1 on white,
+     which failed for every timestamp, hint and caption in the product. */
+  --muted: #547266;
   --line: #e2efe9;
   --line-strong: #cfe4da;
   --surface: #ffffff;
@@ -38,6 +41,12 @@
   --shadow: 0 4px 16px rgba(10, 40, 28, 0.07), 0 1px 3px rgba(10, 40, 28, 0.05);
   --shadow-lg: 0 20px 48px rgba(8, 34, 24, 0.16);
   --ring: 0 0 0 3px rgba(16, 147, 95, 0.18);
+
+  /* The sidebar is dark-on-green, so its text needs its own roles instead of the
+     light-surface tokens above. Two recessive greens had drifted apart by a few
+     points for no reason; this is now the single value for both. */
+  --sidebar-text: #bcd9cb;
+  --sidebar-muted: #7fb59c;
 
   --sidebar-w: 264px;
 }
@@ -160,6 +169,13 @@ p { margin: 0; }
   border-color: var(--green-400);
   box-shadow: var(--ring);
 }
+/* Fields a validation message points at stay marked until the value changes. */
+.input[aria-invalid='true'],
+.select[aria-invalid='true'],
+.textarea[aria-invalid='true'] {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12);
+}
 .input::placeholder,
 .textarea::placeholder { color: #9db3a9; }
 
@@ -186,6 +202,8 @@ p { margin: 0; }
 }
 .password-toggle:hover { background: var(--green-50); color: var(--green-700); }
 .password-toggle:focus-visible { outline: none; box-shadow: var(--ring); color: var(--green-700); }
+
+.password-caps { color: var(--amber); font-weight: 600; }
 
 /* ------------------------- sized field helpers ------------------------- */
 /* Used instead of inline widths so the mobile breakpoints can override them. */
@@ -215,7 +233,28 @@ p { margin: 0; }
   pointer-events: none;
 }
 .search-form-input { padding-left: 38px; }
+.search-form-input.has-clear { padding-right: 40px; }
 .search-form-select { width: 190px; flex-shrink: 0; }
+.search-form-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1;
+  padding: 4px 6px;
+  border-radius: 6px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.search-form-clear:hover { color: var(--ink); background: var(--slate-bg); }
+.search-form-clear:focus-visible { outline: none; box-shadow: var(--ring); }
+
+/* A search/filter strip above a card grid. */
+.list-toolbar { padding: 16px 20px; margin-bottom: 16px; }
 
 .search-results { display: flex; flex-direction: column; }
 .search-result {
@@ -268,6 +307,19 @@ p { margin: 0; }
   font-weight: 600;
 }
 .search-result-terms { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+/* Holds the row's anchor plus the tag buttons, which cannot live inside it. */
+.search-result-body { flex: 1; min-width: 0; }
+.search-result-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 9px;
+  /* Aligns the chips under the text, past the 38px icon and its 14px gap. */
+  padding-left: 52px;
+}
+@media (max-width: 640px) {
+  .search-result-tags { padding-left: 0; }
+}
 
 /* -------------------------------- cards -------------------------------- */
 
@@ -292,6 +344,30 @@ p { margin: 0; }
 /* ------------------------------- layout -------------------------------- */
 
 .app-shell { display: flex; min-height: 100vh; }
+
+/* Off-screen until it takes focus, then it drops in over the top-left corner. */
+.skip-link {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 200;
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  background: var(--green-800);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-160%);
+  transition: transform 0.16s ease;
+}
+.skip-link:focus-visible {
+  transform: translateY(0);
+  outline: 2px solid var(--green-300);
+  outline-offset: 2px;
+}
+/* The skip target is a container, so its focus ring would trace the whole page. */
+.main:focus { outline: none; }
 
 .sidebar {
   width: var(--sidebar-w);
@@ -331,10 +407,12 @@ p { margin: 0; }
 
 .nav { display: flex; flex-direction: column; gap: 3px; }
 .nav-label {
-  font-size: 10.5px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: #5e8d78;
+  /* #5e8d78 was only 3.9:1 against the sidebar gradient, too low for a small
+     uppercase label; this clears 5.5:1 while staying recessive. */
+  color: var(--sidebar-muted);
   padding: 16px 12px 6px;
   font-weight: 700;
 }
@@ -344,7 +422,7 @@ p { margin: 0; }
   gap: 11px;
   padding: 10px 12px;
   border-radius: 10px;
-  color: #bcd9cb;
+  color: var(--sidebar-text);
   font-weight: 500;
   font-size: 14px;
   cursor: pointer;
@@ -376,7 +454,7 @@ p { margin: 0; }
   border-radius: 10px;
 }
 .user-chip .name { color: #fff; font-size: 13.5px; font-weight: 600; }
-.user-chip .role { color: #7fb59c; font-size: 11.5px; }
+.user-chip .role { color: var(--sidebar-muted); font-size: 12px; }
 
 .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 
@@ -412,6 +490,8 @@ p { margin: 0; }
   background: var(--surface);
   color: var(--ink);
   cursor: pointer;
+  /* Buttons fall back to the browser's 13.333px control font unless told otherwise. */
+  font-size: inherit;
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 .topbar-nav-toggle:hover { background: var(--green-50); border-color: var(--green-200); }
@@ -485,6 +565,10 @@ p { margin: 0; }
   font-weight: 700;
 }
 .kpi-value { font-size: 30px; font-weight: 800; letter-spacing: -0.03em; margin-top: 8px; color: var(--green-900); }
+/* Compact readout used inside a card when a full 30px figure would shout —
+   e.g. the milestone/stage counters on a project's overview. */
+.kpi-value-sm { font-size: 22px; margin-top: 4px; }
+.kpi-value-sm .muted { font-size: 15px; }
 .kpi-foot { font-size: 12px; color: var(--muted); margin-top: 4px; }
 
 .kpi-picker {
@@ -503,9 +587,11 @@ p { margin: 0; }
   cursor: pointer;
   font-family: inherit;
 }
+/* White on --green-500 measured 3.92:1 — the selected shelf was the one label in
+   the row a reader most needs to read, so it steps down to --green-600 (6.5:1). */
 .chip.on {
-  background: var(--green-500);
-  border-color: var(--green-500);
+  background: var(--green-600);
+  border-color: var(--green-600);
   color: #fff;
 }
 
@@ -532,7 +618,7 @@ p { margin: 0; }
   gap: 5px;
   padding: 3px 10px;
   border-radius: 999px;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.01em;
   white-space: nowrap;
@@ -819,6 +905,10 @@ tr.drop-target > td {
 }
 .tab:hover { color: var(--ink-soft); }
 .tab.active { color: var(--green-700); border-bottom-color: var(--green-500); }
+.tab:focus-visible { outline: none; box-shadow: var(--ring); border-radius: 8px 8px 0 0; }
+/* The panel takes focus when a tab is chosen so the content is announced. It is
+   not itself an interactive control, so the default ring would only be noise. */
+[role='tabpanel']:focus { outline: none; }
 
 /* --------------------------------- modal -------------------------------- */
 
@@ -843,6 +933,9 @@ tr.drop-target > td {
   overflow: auto;
   animation: pop 0.16s ease;
 }
+/* The dialog takes focus on open so its title is announced. It is a container,
+   not a control, so no ring is drawn around the whole panel. */
+.modal:focus { outline: none; }
 .modal-header {
   display: flex;
   align-items: center;
@@ -877,6 +970,62 @@ tr.drop-target > td {
 }
 .alert-error { background: var(--red-bg); border-color: #f6c9c9; color: var(--red); }
 .alert-info { background: var(--green-50); border-color: var(--green-200); color: var(--green-700); }
+
+/* -------------------------------- toasts -------------------------------- */
+
+.toast-stack {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: min(420px, calc(100vw - 40px));
+  pointer-events: none;
+}
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  font-size: 13.5px;
+  color: var(--ink);
+  animation: toast-in 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+/* A tone is carried by the left edge, not the fill, so the message stays legible
+   in every theme. */
+.toast-success { border-left: 4px solid var(--green-500); }
+.toast-error { border-left: 4px solid var(--red); }
+.toast-info { border-left: 4px solid var(--blue); }
+.toast-text { flex: 1; min-width: 0; }
+.toast-close {
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1;
+  padding: 2px 4px;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 6px;
+}
+.toast-close:hover { color: var(--ink); background: var(--slate-bg); }
+.toast-close:focus-visible { outline: none; box-shadow: var(--ring); }
+
+@keyframes toast-in { from { opacity: 0; transform: translateY(10px); } }
+
+@media (max-width: 640px) {
+  .toast-stack { right: 12px; left: 12px; bottom: 12px; max-width: none; }
+}
+
+.confirm-message { color: var(--ink-soft); line-height: 1.6; }
 
 .spinner {
   width: 18px;
@@ -1324,6 +1473,11 @@ tr.drop-target > td {
 }
 .login-hero h1 { color: #fff; font-size: 36px; line-height: 1.15; max-width: 15ch; }
 .login-hero p { color: #a9d4c2; max-width: 42ch; margin-top: 14px; }
+/* The ::before glow is absolutely positioned, so every direct child of the hero
+   needs its own stacking order to paint above it. */
+.login-hero > * { position: relative; }
+.login-hero-body { margin-top: 40px; }
+.login-hero-foot { color: #86b3a0; }
 .hero-points { display: flex; flex-direction: column; gap: 14px; margin-top: 38px; position: relative; }
 .hero-point { display: flex; gap: 12px; align-items: flex-start; }
 .hero-point .dot {
@@ -1332,6 +1486,10 @@ tr.drop-target > td {
   color: var(--green-300);
   display: grid; place-items: center; flex-shrink: 0; margin-top: 1px;
 }
+/* Copy on the dark gradient uses its own on-dark palette rather than the
+   light-surface tokens, which would be unreadable here. */
+.hero-point strong { color: #fff; }
+.hero-point .small { color: #a9d4c2; }
 .login-panel { display: grid; place-items: center; padding: 40px; background: var(--surface); }
 .login-card { width: 100%; max-width: 380px; }
 .auth-panel-brand { display: none; width: 100%; max-width: 380px; margin-bottom: 20px; }
@@ -1372,6 +1530,7 @@ tr.drop-target > td {
 .install-sub strong { color: var(--ink-soft); font-weight: 700; }
 
 .install-close {
+  position: relative;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
@@ -1385,6 +1544,13 @@ tr.drop-target > td {
   color: var(--muted);
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
+}
+/* The glyph stays 28px so the banner stays slim, but the touch area does not
+   have to shrink with it. */
+.install-close::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
 }
 .install-close:hover { background: var(--green-50); color: var(--green-700); }
 .install-close:focus-visible { outline: none; box-shadow: var(--ring); }
@@ -1580,6 +1746,7 @@ tr.drop-target > td {
   background: transparent;
   color: var(--ink-soft);
   cursor: pointer;
+  font-size: inherit;
 }
 .card-menu-btn:hover,
 .card-menu-btn[aria-expanded='true'] {
@@ -1715,6 +1882,44 @@ tr.drop-target > td {
   padding-top: 12px;
   border-top: 1px solid var(--line);
 }
+
+/* The tab strip sits directly above a full-bleed card, so it carries its own
+   spacing instead of the panel doing it. */
+.dash-tabs { margin-bottom: 16px; }
+.site-tabs { margin-bottom: 20px; }
+
+/* "Needs attention": a ranked shortlist of projects that have slipped. Rows are
+   links, not prose, so the number in the KPI card can be acted on in one tap. */
+.attention-card { margin-top: 16px; }
+.attention-list { list-style: none; margin: 0; padding: 0; }
+.attention-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--line);
+  color: inherit;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+.attention-row:last-child { border-bottom: none; }
+.attention-row:hover { background: var(--green-50); text-decoration: none; }
+.attention-row:focus-visible { outline: none; box-shadow: var(--ring); border-radius: var(--radius-sm); }
+/* Severity dot: red for a stopped job, amber for a slipped date, grey for a
+   project that has simply gone quiet. */
+.attention-dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+.attention-dot-0 { background: var(--red); }
+.attention-dot-1 { background: var(--amber); }
+.attention-dot-2 { background: var(--muted); }
+.attention-main { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.attention-name { font-weight: 700; }
+.attention-row > svg { flex-shrink: 0; color: var(--muted); }
 
 /* File card: whole card opens; the 3-dot menu floats over the thumbnail. */
 .file-card { position: relative; }
@@ -1992,7 +2197,9 @@ tr.drop-target > td {
 .chat-turn-assistant .chat-bubble { border-bottom-left-radius: 6px; }
 
 .chat-bubble-user {
-  background: linear-gradient(160deg, var(--green-500), var(--green-700));
+  /* Starts at green-600 rather than green-500: white on the old light end was
+     only 3.9:1, so the top of every user message failed AA. This holds 6.5:1. */
+  background: linear-gradient(160deg, var(--green-600), var(--green-800));
   color: #fff;
   box-shadow: 0 6px 18px rgba(16, 147, 95, 0.25);
 }
@@ -2014,7 +2221,7 @@ tr.drop-target > td {
   gap: 8px;
   width: 100%;
   min-height: 22px;
-  font-size: 11px;
+  font-size: 11.5px;
   color: var(--muted);
   padding: 0 4px;
 }
@@ -2031,11 +2238,13 @@ tr.drop-target > td {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  /* 26px was under every touch-target guideline and fiddly with a mouse; the
+     icon keeps its size, only the hit area grows. */
+  width: 32px;
+  height: 32px;
   padding: 0;
   border: 1px solid transparent;
-  border-radius: 7px;
+  border-radius: 8px;
   background: transparent;
   color: var(--muted);
   font: inherit;
@@ -2050,6 +2259,13 @@ tr.drop-target > td {
   outline: none;
 }
 .chat-action-btn > svg { flex-shrink: 0; }
+
+/* Fingers need a bigger hit area than a cursor does; the row is short, so the
+   buttons grow into the meta line's spare height. */
+@media (pointer: coarse) {
+  .chat-action-btn { width: 40px; height: 40px; }
+  .chat-meta { min-height: 34px; }
+}
 
 /* Jump back to the newest message. */
 .chat-jump {
@@ -2284,8 +2500,10 @@ tr.drop-target > td {
   background: var(--green-500);
   box-shadow: 0 0 0 3px rgba(16, 147, 95, 0.16);
 }
-.chat-status.is-offline { color: #8a9aa0; }
-.chat-status.is-offline::before { background: #b3bfc4; }
+/* #8a9aa0 read as 2.9:1 on the compose bar — under AA and easy to miss for a
+   status the reader needs to notice. Darkened to a slate that clears 5:1. */
+.chat-status.is-offline { color: #5f7076; }
+.chat-status.is-offline::before { background: #94a3a9; }
 
 .chat-upload-tools { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; flex-wrap: wrap; }
 .chat-file-input { display: none; }
@@ -2378,6 +2596,10 @@ tr.drop-target > td {
   display: flex;
   align-items: center;
   gap: 1px;
+  /* Wrapping is the safety net: on a narrow phone the context select drops to a
+     second line rather than crushing the tools. */
+  flex-wrap: wrap;
+  row-gap: 4px;
   margin-top: 1px;
 }
 .chat-context-select {
@@ -2412,8 +2634,12 @@ tr.drop-target > td {
   color: var(--green-700);
   outline: none;
 }
+/* These four were sharing the row with the context select and, none of them
+   refusing to shrink, collapsed to 17x30 on a 360px phone — under the 24px
+   target minimum and awkward to hit with a thumb. They hold their size now. */
 .chat-tool-btn {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
   width: 32px;
@@ -2472,6 +2698,17 @@ tr.drop-target > td {
   box-shadow: none;
 }
 .chat-send-btn .spinner { width: 18px; height: 18px; border-color: rgba(255, 255, 255, 0.4); border-top-color: #fff; }
+
+/* The same button becomes Stop mid-turn: red so it reads as an interrupt rather
+   than another way to send. */
+.chat-stop-btn {
+  background: linear-gradient(150deg, var(--red), #8f1d1d);
+  box-shadow: 0 6px 16px rgba(185, 28, 28, 0.28);
+}
+.chat-stop-btn:hover:not(:disabled) {
+  background: linear-gradient(150deg, var(--red), #7d1818);
+  box-shadow: 0 10px 22px rgba(185, 28, 28, 0.34);
+}
 
 /* Voice dictation — Moonshine transcribes locally while the mic is live. */
 .chat-voice-status {
@@ -2585,7 +2822,11 @@ tr.drop-target > td {
 @media (max-width: 640px) {
   .chat-main { border-radius: 18px; }
   .chat-toolbar { padding: 10px 14px; }
-  .chat-context-select { max-width: 140px; }
+  .chat-context-select { flex: 1 1 104px; min-width: 92px; max-width: 140px; }
+  /* The 36px left padding clears the sparkle beside the first line of text, but
+     the tool row sits below it and does not need the inset. Pulling it back
+     keeps the four tools at full size on a phone instead of squeezing them. */
+  .chat-tool-strip { margin-left: -24px; }
   .chat-upload-tools { align-items: stretch; }
   .chat-tag-field { order: 3; flex-basis: 100%; }
   .chat-suggest { grid-template-columns: minmax(0, 1fr); }
@@ -2597,6 +2838,82 @@ tr.drop-target > td {
   .chat-compose-row { gap: 8px; }
   .chat-send-btn { width: 42px; height: 42px; }
   .chat-tool-btn { width: 30px; height: 30px; }
+}
+
+/* A notice above the card carries its own spacing now that the page does not
+   scroll, so it is not read as part of the transcript. */
+.chat-service-notice { margin-bottom: 14px; }
+
+/* ---------------------- chat: fill the viewport ------------------------- */
+
+/* A conversation is a window, not a document. Pinning the shell to the viewport
+   leaves the transcript as the only scrollable region, so the header, the
+   search bar and the composer stay exactly where the user last saw them — the
+   behaviour every messaging app has trained them to expect. */
+.app-shell:has(.content-fill) {
+  height: 100vh;
+  height: 100dvh;
+  /* `min-height: 100vh` from the shell would win over the dvh height on a phone
+     and put the page back to scrolling behind the browser chrome. */
+  min-height: 0;
+  overflow: hidden;
+}
+.app-shell:has(.content-fill) .main {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* The page body becomes a column: notices first, then the card takes the rest. */
+.content-fill {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  /* There is no page scroll, so the tall bottom gutter only eats chat space. */
+  padding-bottom: 26px;
+}
+
+/* `>` scopes this to the page's own card rather than any card nested in it. */
+.content-fill > .chat-main {
+  flex: 1;
+  min-height: 0;
+}
+/* The card's height is bounded now, so the transcript scrolls inside it instead
+   of growing. Its 320px floor has to go: on a short window it would push the
+   composer out through the card's rounded edge. */
+.content-fill .chat-scroll {
+  min-height: 0;
+  max-height: none;
+}
+/* The search bar and the composer are the two controls that must never be
+   squeezed; the transcript is the part that gives. */
+.content-fill .chat-toolbar,
+.content-fill .chat-compose { flex-shrink: 0; }
+
+@media (max-width: 860px) {
+  .content-fill { padding-bottom: 16px; }
+}
+@media (max-width: 640px) {
+  .content-fill { padding-bottom: 14px; }
+  /* On a phone the header is pure chrome and every pixel of it comes out of the
+     conversation. The empty state and the search placeholder already say what
+     this line says, and at 390px it wraps to three of them. */
+  .main:has(.content-fill) .topbar-sub { display: none; }
+  /* Everywhere else the header stacks on a phone, which costs ~83px. A short
+     title and one action fit on a single line here, so unstack this one. */
+  .main:has(.content-fill) .topbar {
+    flex-direction: row;
+    align-items: center;
+    padding: 10px 14px;
+    gap: 10px;
+  }
+  .main:has(.content-fill) .topbar-lead { flex: 1; min-width: 0; }
+  .main:has(.content-fill) .topbar .row { width: auto; flex: 0 0 auto; }
+  .main:has(.content-fill) .topbar-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 /* ============================================================
@@ -2636,12 +2953,19 @@ tr.drop-target > td {
   border-bottom-color: var(--surface);
 }
 
-/* Ward-overlay toggle, docked opposite MapLibre's own control stack. */
-.map-ward-toggle {
+/* GIS overlay toggles, stacked and docked opposite MapLibre's own control stack. */
+.map-layer-toggles {
   position: absolute;
   top: 10px;
   left: 10px;
   z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.map-layer-toggle {
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -2658,18 +2982,29 @@ tr.drop-target > td {
   cursor: pointer;
   transition: color 0.15s ease, border-color 0.15s ease;
 }
-.map-ward-toggle:hover { color: var(--green-700); border-color: var(--line-strong); }
-.map-ward-toggle:focus-visible { outline: none; box-shadow: var(--ring); }
-.map-ward-toggle[aria-pressed='false'] { color: var(--muted); }
+.map-layer-toggle:hover { color: var(--green-700); border-color: var(--line-strong); }
+.map-layer-toggle:focus-visible { outline: none; box-shadow: var(--ring); }
+.map-layer-toggle[aria-pressed='false'] { color: var(--muted); }
 
-.map-ward-swatch {
+.map-layer-swatch {
   width: 14px;
   height: 14px;
   border-radius: 4px;
   border: 1.5px solid var(--green-600);
   background: rgba(15, 107, 72, 0.16);
 }
-.map-ward-toggle[aria-pressed='false'] .map-ward-swatch {
+.map-layer-toggle[aria-pressed='false'] .map-layer-swatch {
+  border-color: var(--line-strong);
+  background: transparent;
+}
+
+/* The neighbourhoods swatch previews its own layer: amber, and dashed. */
+.map-layer-toggle-neigh .map-layer-swatch {
+  border-style: dashed;
+  border-color: #b45309;
+  background: rgba(180, 83, 9, 0.14);
+}
+.map-layer-toggle-neigh[aria-pressed='false'] .map-layer-swatch {
   border-color: var(--line-strong);
   background: transparent;
 }
@@ -2717,11 +3052,16 @@ tr.drop-target > td {
 .map-dot-active { background: var(--green-500); }
 .map-dot-hold { background: var(--amber); }
 .map-dot-done { background: var(--blue); }
-/* Square swatch so the ward fill reads as an area, not a project pin. */
+/* Square swatches so an area overlay reads as a region, not a project pin. */
 .map-legend .map-legend-ward {
   border-radius: 3px;
   border: 1.5px solid var(--green-600);
   background: rgba(15, 107, 72, 0.16);
+}
+.map-legend .map-legend-neigh {
+  border-radius: 3px;
+  border: 1.5px dashed #b45309;
+  background: rgba(180, 83, 9, 0.14);
 }
 
 .map-credit { margin-top: 10px; }
@@ -2738,4 +3078,286 @@ tr.drop-target > td {
 @media (max-width: 640px) {
   .map-shell { height: min(var(--map-h, 460px), max(320px, 48vh)); border-radius: var(--radius-sm); }
   .map-legend { gap: 6px 12px; }
+}
+
+/* ------------------------------ regulations ------------------------------ */
+/* The municipal library: pick a jurisdiction, scan it by category, then read a
+   by-law or pull the form without leaving the app. */
+
+.reg-jurisdictions { margin-bottom: 16px; }
+.reg-jurisdiction-count {
+  margin-left: 7px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(10, 40, 28, 0.08);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.65;
+  font-variant-numeric: tabular-nums;
+}
+/* A translucent white pill over the green left the count at 2.68:1 — white text
+   on a near-white badge. Inverted instead: a light pill with the deep green as
+   text, which also makes the count read as a badge rather than part of the label. */
+.chip.on .reg-jurisdiction-count { background: rgba(255, 255, 255, 0.92); color: var(--green-800); }
+
+/* A second row inside the same card as the search box. */
+.reg-shelves { border-top: 1px solid var(--line); }
+.reg-shelves .tag-bar { margin-bottom: 0; }
+
+.reg-docs { display: flex; flex-direction: column; }
+.reg-doc {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+  transition: background 0.15s ease;
+}
+.reg-doc:last-child { border-bottom: none; }
+.reg-doc:hover { background: var(--green-50); }
+.reg-doc-icon {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  background: var(--green-50);
+  color: var(--green-600);
+  display: grid;
+  place-items: center;
+}
+.reg-doc-main { min-width: 0; flex: 1; }
+.reg-doc-head { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+/* A document title is a button, but it must read as a heading. It measured 22px
+   tall — a comfortable click, but under the 24px WCAG 2.2 target minimum, and it
+   is the only way into a document. inline-flex keeps the heading look while
+   giving the target a floor. */
+.reg-doc-title {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  font-size: 14.5px;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  word-break: break-word;
+}
+.reg-doc-title:hover { color: var(--green-700); text-decoration: underline; }
+.reg-doc-title:focus-visible { outline: none; box-shadow: var(--ring); border-radius: 4px; }
+.reg-doc-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+/* Excerpts come straight from scraped pages, so they carry slugs and URLs with
+   no break opportunity. Without this a single long token widens the page and the
+   whole Regulations list scrolls sideways on a phone. */
+.reg-doc-excerpt {
+  margin: 8px 0 0;
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.reg-doc-terms { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+.reg-doc-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
+/* The reader. */
+.reg-document { display: flex; flex-direction: column; gap: 14px; }
+.reg-document-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.reg-document-truncated {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--amber-bg);
+  color: var(--amber);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.reg-reader {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--ink-soft);
+  font-size: 14.5px;
+  line-height: 1.65;
+}
+.reg-reader h3 { font-size: 17px; }
+.reg-reader h4 { font-size: 15.5px; }
+.reg-reader h5 { font-size: 14px; }
+.reg-reader p { margin: 0; }
+.reg-reader ul,
+.reg-reader ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; }
+.reg-reader li { padding-left: 2px; }
+.reg-reader blockquote {
+  margin: 0;
+  padding: 8px 16px;
+  border-left: 3px solid var(--green-300);
+  background: var(--green-50);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.reg-reader hr { border: none; border-top: 1px solid var(--line); margin: 4px 0; }
+.reg-reader a { font-weight: 600; }
+.reg-reader code {
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: var(--slate-bg);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+}
+.reg-reader-empty { color: var(--muted); font-size: 14px; }
+.reg-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+.reg-table-wrap .table th,
+.reg-table-wrap .table td { font-size: 13px; }
+
+.reg-cite {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--green-50);
+}
+.reg-cite > svg { flex-shrink: 0; margin-top: 2px; color: var(--green-600); }
+.reg-cite-label {
+  margin-bottom: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--green-700);
+}
+.reg-cite a { font-size: 13px; word-break: break-all; }
+
+/* The outline of a long by-law. A 55,000-character document is unnavigable as
+   one scroll, so its own headings become the table of contents. */
+.reg-outline {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--green-50);
+  padding: 0 14px;
+}
+.reg-outline > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--green-700);
+  cursor: pointer;
+  list-style: none;
+}
+.reg-outline > summary::-webkit-details-marker { display: none; }
+.reg-outline > summary::before {
+  content: '▸';
+  font-size: 11px;
+  transition: transform 0.15s ease;
+}
+.reg-outline[open] > summary::before { transform: rotate(90deg); }
+.reg-outline > summary:focus-visible { outline: none; box-shadow: var(--ring); border-radius: 6px; }
+.reg-outline-count {
+  margin-left: auto;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--green-100);
+  color: var(--green-700);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+.reg-outline ol {
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+  max-height: 264px;
+  overflow-y: auto;
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+}
+.reg-outline li[data-level='3'] { padding-left: 14px; }
+.reg-outline li[data-level='4'],
+.reg-outline li[data-level='5'],
+.reg-outline li[data-level='6'] { padding-left: 26px; }
+.reg-outline li button {
+  display: block;
+  width: 100%;
+  padding: 5px 6px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+}
+.reg-outline li button:hover { background: var(--green-100); color: var(--green-800); }
+.reg-outline li button:focus-visible { outline: none; box-shadow: var(--ring); }
+
+/* The reader's own action bar, so a by-law can be downloaded without closing
+   it, scrolling back to the list and finding the row again. */
+.reg-reader-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+.reg-reader-foot-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+
+/* The words the search matched, so a result shows why it matched. */
+.reg-hit {
+  padding: 0 2px;
+  border-radius: 3px;
+  background: var(--green-200);
+  color: var(--green-950);
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  /* Three actions beside a title is too tight; give them their own line. The row
+     has to be allowed to wrap for that to work — without it the full-width
+     actions column cannot shrink and pushes the row past the viewport. */
+  .reg-doc { flex-wrap: wrap; }
+  .reg-doc-actions { width: 100%; justify-content: flex-end; }
+  /* Stack the reader footer so both actions stay thumb-reachable. */
+  .reg-reader-foot { align-items: stretch; }
+  .reg-reader-foot-actions { margin-left: 0; }
+  .reg-reader-foot-actions .btn { flex: 1; justify-content: center; }
+  /* 24px clears the WCAG minimum but is a poor thumb target, and this is the only
+     way into a document — there are dozens of them stacked on a phone. */
+  .reg-doc-title { min-height: 40px; }
+}
+
+/* ============================================================
+   Reduced motion — the last word, so nothing above can override
+   ============================================================ */
+
+/* Hover lifts, sheet slide-ins and progress sweeps are decorative. Anyone who has
+   asked their OS to calm motion down gets the end state and none of the travel. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

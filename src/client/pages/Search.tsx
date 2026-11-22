@@ -138,6 +138,7 @@ export function SearchPage() {
           <div className="card-body">
             <form
               className="search-form"
+              role="search"
               onSubmit={(event) => {
                 event.preventDefault()
                 setQuery(input.trim())
@@ -146,12 +147,26 @@ export function SearchPage() {
               <div className="search-form-field">
                 <IconSearch size={18} className="search-form-icon" />
                 <input
-                  className="input search-form-input"
+                  className={`input search-form-input${input ? ' has-clear' : ''}`}
                   placeholder="e.g. survey, invoice, geotech report"
                   value={input}
                   onChange={(event) => setInput(event.target.value)}
                   aria-label="Search files"
+                  autoFocus
                 />
+                {input ? (
+                  <button
+                    type="button"
+                    className="search-form-clear"
+                    aria-label="Clear the search box"
+                    onClick={() => {
+                      setInput('')
+                      setQuery('')
+                    }}
+                  >
+                    ✕
+                  </button>
+                ) : null}
               </div>
               <select
                 className="input search-form-select"
@@ -218,7 +233,9 @@ export function SearchPage() {
               <div className="card-body" style={{ paddingTop: 14, paddingBottom: 0 }}>
                 <div className="tag-bar" style={{ marginBottom: 12 }}>
                   <button
+                    type="button"
                     className={`chip${tagFilter === null ? ' on' : ''}`}
+                    aria-pressed={tagFilter === null}
                     onClick={() => setTagFilter(null)}
                   >
                     All tags
@@ -226,7 +243,9 @@ export function SearchPage() {
                   {availableTags.map((tag) => (
                     <button
                       key={tag}
+                      type="button"
                       className={`chip${tagFilter === tag ? ' on' : ''}`}
+                      aria-pressed={tagFilter === tag}
                       onClick={() => setTagFilter(tagFilter === tag ? null : tag)}
                     >
                       {tag}
@@ -246,66 +265,60 @@ export function SearchPage() {
               <div className="search-results">
                 {results.map((result) => (
                   <div key={result.s3Key} className="search-result">
-                    <Link
-                      className="search-result-link"
-                      to={`/sites/${result.siteId}?tab=files${result.assetId ? `&assetId=${encodeURIComponent(result.assetId)}` : ''}`}
-                    >
-                      <div className="search-result-icon">
-                        {result.kind === 'image' ? <IconImage size={18} /> : <IconFile size={18} />}
-                      </div>
-                      <div className="search-result-main">
-                        <div className="row-between" style={{ gap: 10, alignItems: 'flex-start' }}>
-                          <div className="search-result-name">{result.name}</div>
-                          {result.siteName ? <Badge tone="green">{result.siteName}</Badge> : null}
+                    <div className="search-result-body">
+                      <Link
+                        className="search-result-link"
+                        to={`/sites/${result.siteId}?tab=files${result.assetId ? `&assetId=${encodeURIComponent(result.assetId)}` : ''}`}
+                      >
+                        <div className="search-result-icon">
+                          {result.kind === 'image' ? <IconImage size={18} /> : <IconFile size={18} />}
                         </div>
-                        <div className="search-result-meta small muted">
-                          <span>{result.kind === 'image' ? 'Image' : 'Document'}</span>
-                          <span>·</span>
-                          <span>{humanBytes(result.size)}</span>
-                          <span>·</span>
-                          <span>{relativeTime(result.uploadedAt ?? result.indexedAt)}</span>
+                        <div className="search-result-main">
+                          <div className="row-between" style={{ gap: 10, alignItems: 'flex-start' }}>
+                            <div className="search-result-name">{result.name}</div>
+                            {result.siteName ? <Badge tone="green">{result.siteName}</Badge> : null}
+                          </div>
+                          <div className="search-result-meta small muted">
+                            <span>{result.kind === 'image' ? 'Image' : 'Document'}</span>
+                            <span>·</span>
+                            <span>{humanBytes(result.size)}</span>
+                            <span>·</span>
+                            <span>{relativeTime(result.uploadedAt ?? result.indexedAt)}</span>
+                          </div>
+                          {result.snippet ? (
+                            <p className="search-result-snippet">
+                              {highlight(result.snippet, result.matched)}
+                            </p>
+                          ) : null}
+                          {result.matched.length > 0 ? (
+                            <div className="search-result-terms">
+                              {result.matched.map((term) => (
+                                <Badge key={term} tone="gray">
+                                  {term}
+                                </Badge>
+                              ))}
+                            </div>
+                          ) : null}
                         </div>
-                        {result.tags?.length ? (
-                          <div className="file-tags">
-                            {result.tags.map((tag) => (
-                              <span
-                                key={tag}
-                                role="button"
-                                tabIndex={0}
-                                className={`chip${tagFilter === tag ? ' on' : ''}`}
-                                onClick={(event) => {
-                                  event.preventDefault()
-                                  event.stopPropagation()
-                                  setTagFilter(tagFilter === tag ? null : tag)
-                                }}
-                                onKeyDown={(event) => {
-                                  if (event.key === 'Enter' || event.key === ' ') {
-                                    event.preventDefault()
-                                    setTagFilter(tagFilter === tag ? null : tag)
-                                  }
-                                }}
-                              >
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        ) : null}
-                        {result.snippet ? (
-                          <p className="search-result-snippet">
-                            {highlight(result.snippet, result.matched)}
-                          </p>
-                        ) : null}
-                        {result.matched.length > 0 ? (
-                          <div className="search-result-terms">
-                            {result.matched.map((term) => (
-                              <Badge key={term} tone="gray">
-                                {term}
-                              </Badge>
-                            ))}
-                          </div>
-                        ) : null}
-                      </div>
-                    </Link>
+                      </Link>
+                      {/* Tags sit outside the link on purpose: a control nested in an
+                          anchor is not focusable or clickable reliably. */}
+                      {result.tags?.length ? (
+                        <div className="search-result-tags">
+                          {result.tags.map((tag) => (
+                            <button
+                              key={tag}
+                              type="button"
+                              className={`chip${tagFilter === tag ? ' on' : ''}`}
+                              aria-pressed={tagFilter === tag}
+                              onClick={() => setTagFilter(tagFilter === tag ? null : tag)}
+                            >
+                              {tag}
+                            </button>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
                     {result.assetId ? (
                       <div className="search-result-actions">
                         <Button

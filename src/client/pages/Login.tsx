@@ -55,7 +55,7 @@ export function LoginPage() {
       <section className="login-hero">
         <img className="brand-logo brand-logo-hero" src="/cppi-logo.svg" alt="CPPI Management" />
 
-        <div style={{ position: 'relative', marginTop: 40 }}>
+        <div className="login-hero-body">
           <h1>Every building project, one controlled source of truth.</h1>
           <p>
             Plan stages and milestones, collect site photos and documents straight into secure storage, and keep
@@ -68,8 +68,8 @@ export function LoginPage() {
                 <IconLayers size={13} />
               </span>
               <div>
-                <strong style={{ color: '#fff' }}>Framework-driven delivery</strong>
-                <div className="small" style={{ color: '#8fc0ac' }}>
+                <strong>Framework-driven delivery</strong>
+                <div className="small">
                   Define stages and milestones once, track them across every site.
                 </div>
               </div>
@@ -79,8 +79,8 @@ export function LoginPage() {
                 <IconTarget size={13} />
               </span>
               <div>
-                <strong style={{ color: '#fff' }}>Customisable KPIs</strong>
-                <div className="small" style={{ color: '#8fc0ac' }}>
+                <strong>Customisable KPIs</strong>
+                <div className="small">
                   Choose the numbers that matter to your portfolio.
                 </div>
               </div>
@@ -90,8 +90,8 @@ export function LoginPage() {
                 <IconUsers size={13} />
               </span>
               <div>
-                <strong style={{ color: '#fff' }}>Invite-based roles</strong>
-                <div className="small" style={{ color: '#8fc0ac' }}>
+                <strong>Invite-based roles</strong>
+                <div className="small">
                   Admins invite contractors with scoped access to specific projects.
                 </div>
               </div>
@@ -101,8 +101,8 @@ export function LoginPage() {
                 <IconTrend size={13} />
               </span>
               <div>
-                <strong style={{ color: '#fff' }}>Files in S3, not on a laptop</strong>
-                <div className="small" style={{ color: '#8fc0ac' }}>
+                <strong>Files in S3, not on a laptop</strong>
+                <div className="small">
                   Private buckets and time-limited signed links.
                 </div>
               </div>
@@ -110,7 +110,7 @@ export function LoginPage() {
           </div>
         </div>
 
-        <div className="small" style={{ color: '#6d9c87', position: 'relative' }}>
+        <div className="small login-hero-foot">
           © {new Date().getFullYear()} CPPI Portal
         </div>
       </section>
@@ -138,6 +138,7 @@ export function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@company.com"
                     autoComplete="username"
+                    autoFocus
                     required
                   />
                 </Field>

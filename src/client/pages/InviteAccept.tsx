@@ -85,13 +85,13 @@ export function InviteAcceptPage() {
     <div className="login-shell">
       <section className="login-hero">
         <img className="brand-logo brand-logo-hero" src="/cppi-logo.svg" alt="CPPI Management" />
-        <div style={{ position: 'relative' }}>
+        <div>
           <h1>You have been invited.</h1>
           <p>
             Accept the invitation to join the CPPI portal and access the building projects you are working on.
           </p>
         </div>
-        <div className="small" style={{ color: '#6d9c87', position: 'relative' }}>
+        <div className="small login-hero-foot">
           © {new Date().getFullYear()} CPPI Portal
         </div>
       </section>

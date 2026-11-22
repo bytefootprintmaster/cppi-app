@@ -172,6 +172,8 @@ function sitePatchFrom(body: Record<string, unknown>): Record<string, unknown> {
   for (const field of ADDRESS_FIELDS) {
     if (body?.[field] !== undefined) patch[field] = optText(body[field], ADDRESS_LIMIT[field])
   }
+  // Pin the project to a jurisdiction by hand, overriding the city/region guess.
+  if (body?.regulationsPlace !== undefined) patch.regulationsPlace = optText(body.regulationsPlace, 60)
   return patch
 }
 
@@ -223,6 +225,7 @@ siteRouter.post('/', requireAdmin, asyncHandler(async (req, res) => {
     region: optStr(body.region, 120),
     postalCode: optStr(body.postalCode, 24),
     country: optStr(body.country, 120),
+    regulationsPlace: optStr(body.regulationsPlace, 60),
     location: optStr(body.location, 240),
     status: body.status ? oneOf(body.status, SITE_STATUS, 'status') : 'planning',
     startDate: optStr(body.startDate, 30),

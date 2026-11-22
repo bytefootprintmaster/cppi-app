@@ -5,6 +5,7 @@ import { env } from '../env'
 import { HttpError, asyncHandler, optStr, str } from '../lib/http'
 import { requireAuth } from '../auth'
 import { canWrite, requireSiteAccess } from '../services'
+import { placeForSite } from './regulations'
 import type {
   AssetRecord,
   ChatArtifact,
@@ -130,6 +131,8 @@ async function callAgent(input: {
   sessionId: string
   siteId?: string
   siteName?: string
+  /** The jurisdiction whose by-laws apply, so the agent can cite them unprompted. */
+  place?: { place: string; placeName: string }
   attachments?: Array<Pick<AssetRecord, 'name' | 's3Key' | 'contentType' | 'size' | 'tags'>>
 }): Promise<AgentReply> {
   if (!env.AGENT_API_TOKEN) {
@@ -142,9 +145,16 @@ async function callAgent(input: {
   }
 
   // The agent expects the project it should act on spelled out in the message.
-  const context = input.siteId
-    ? JSON.stringify({ siteId: input.siteId, siteName: input.siteName })
-    : ''
+  const contextPayload = input.siteId
+    ? {
+        siteId: input.siteId,
+        siteName: input.siteName,
+        ...(input.place
+          ? { regulationsPlace: input.place.place, regulationsPlaceName: input.place.placeName }
+          : {})
+      }
+    : null
+  const context = contextPayload ? JSON.stringify(contextPayload) : ''
   const text = context ? `CONTEXT ${context}\n\n${input.message}` : input.message
 
   const controller = new AbortController()
@@ -159,7 +169,7 @@ async function callAgent(input: {
       body: JSON.stringify({
         message: text,
         session_id: input.sessionId,
-        ...(input.siteId ? { context: { siteId: input.siteId, siteName: input.siteName } } : {}),
+        ...(contextPayload ? { context: contextPayload } : {}),
         ...(input.attachments?.length
           ? {
               attachments: input.attachments.map((asset) => ({
@@ -260,7 +270,7 @@ chatRouter.post('/messages', asyncHandler(async (req, res) => {
   // A single thread can span projects, so the project is chosen per turn rather
   // than frozen on the conversation.
   const siteId = optStr(body.siteId, 60)
-  if (siteId) await requireSiteAccess(req.user!, siteId)
+  const site = siteId ? await requireSiteAccess(req.user!, siteId) : undefined
 
   const attachmentIds = body.attachments === undefined
     ? []
@@ -312,12 +322,18 @@ chatRouter.post('/messages', asyncHandler(async (req, res) => {
   }
   await putItem(T.chatMessages, userMessage)
 
-  let siteName: string | undefined
-  if (siteId) {
+  const siteName = site?.name
+
+  // Which town's by-laws apply to this project. Best-effort: the regulations
+  // tables may not be set up yet, and a project whose city matches no ingested
+  // jurisdiction simply has none to cite.
+  let place: { place: string; placeName: string } | undefined
+  if (site) {
     try {
-      siteName = (await getItem<{ name?: string }>(T.sites, { siteId }))?.name
+      const match = await placeForSite(site)
+      if (match) place = { place: match.place, placeName: match.placeName }
     } catch {
-      siteName = undefined
+      place = undefined
     }
   }
 
@@ -326,6 +342,7 @@ chatRouter.post('/messages', asyncHandler(async (req, res) => {
     sessionId: thread.threadId,
     siteId,
     siteName,
+    place,
     attachments: attachedAssets.map(({ name, s3Key, contentType, size, tags }) => ({
       name,
       s3Key,

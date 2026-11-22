@@ -127,6 +127,12 @@ export interface SiteRecord {
   /** What the geocoder actually matched, so a wrong pin can be spotted. */
   geocodeLabel?: string
   geocodedAt?: string
+  /**
+   * The municipal jurisdiction whose regulations apply to this project. Left
+   * unset, it is derived from `city`/`region` by matching the known places; set
+   * it to pin the match or correct a wrong guess.
+   */
+  regulationsPlace?: string
   status: SiteStatus
   startDate?: string
   targetDate?: string
@@ -452,6 +458,93 @@ export interface FileTermRecord {
   tf: number
   /** Occurrences in the file name — a much stronger signal. */
   ntf: number
+}
+
+/* ------------------------------- regulations ------------------------------- */
+
+/** The document kinds the regulations corpus is classified into. */
+export type RegulationKind = 'bylaw' | 'form' | 'fee' | 'standard' | 'plan' | 'policy' | 'page'
+
+/**
+ * One row of the municipal regulations corpus: a page or PDF scraped from a
+ * city/town website. `place` is a jurisdiction slug (e.g. "ajax") and `docId` is
+ * derived from the source URL, so re-ingesting updates the same row instead of
+ * creating a second one.
+ */
+export interface RegulationRecord {
+  place: string
+  docId: string
+  /** `${place}#${docId}`, so every posting for a document shares a prefix. */
+  ref: string
+  placeName: string
+  kind: RegulationKind
+  title: string
+  /** The official page or file the text came from. Always shown as the citation. */
+  sourceUrl: string
+  sourceType: 'page' | 'document'
+  /** S3 keys of the raw file and its extracted markdown, when there is one. */
+  fileKey?: string
+  textKey?: string
+  contentType?: string
+  bytes?: number
+  words?: number
+  retrievedAt?: string
+  /** Bounded copy of the extracted text; empty for pages with no readable text. */
+  text?: string
+  excerpt?: string
+  textChars?: number
+  truncated?: boolean
+  chunkCount?: number
+  terms?: string[]
+  indexVersion: number
+  indexedAt?: string
+  updatedAt: string
+}
+
+/**
+ * One row of the regulations inverted index: a word and the document it was
+ * found in. The range key `ref` is `${place}#${docId}`.
+ */
+export interface RegulationTermRecord {
+  term: string
+  ref: string
+  place: string
+  docId: string
+  /** Occurrences in the document body. */
+  tf: number
+  /** Occurrences in the title — a much stronger signal. */
+  ntf: number
+}
+
+/** One page-sized window of a regulation document, for quoting an answer. */
+export interface RegulationChunkRecord {
+  docRef: string
+  chunkId: string
+  place: string
+  docId: string
+  text: string
+  offset: number
+  title?: string
+  sourceUrl?: string
+  indexVersion: number
+  indexedAt?: string
+}
+
+/** One row per jurisdiction, so the portal can list the places it knows about. */
+export interface RegulationsMetaRecord {
+  place: string
+  placeName: string
+  placeType?: string
+  jurisdiction?: string
+  sourceSite?: string
+  seedUrls?: string[]
+  pageCount?: number
+  documentCount?: number
+  /** Document counts by kind, for the browse filters. */
+  kinds?: Partial<Record<RegulationKind, number>>
+  generatedAt?: string
+  ingestedAt?: string
+  updatedAt: string
 }
 
 export interface InviteRecord {

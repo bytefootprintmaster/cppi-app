@@ -10,20 +10,50 @@ import {
   IconLogOut,
   IconMail,
   IconMenu,
+  IconScale,
   IconSearch,
   IconUsers,
   IconX
 } from './icons'
 
-/** Desktop sidebar open/closed state, shared with the page header toggle. */
+/** Sidebar open/closed state, shared with the page header toggle. */
 const SidebarNav = createContext<{ collapsed: boolean; toggle: () => void }>({
   collapsed: false,
   toggle: () => {}
 })
 
-function NavItem({ to, end, icon, label }: { to: string; end?: boolean; icon: ReactNode; label: string }) {
+const SIDEBAR_KEY = 'cppi.sidebarCollapsed'
+
+/** Mirrors react-router's own matching so the visual and announced active link agree. */
+function isCurrent(pathname: string, to: string, end?: boolean): boolean {
+  if (end) return pathname === to || pathname === `${to}/`
+  const base = to.endsWith('/') ? to : `${to}/`
+  return pathname === to || pathname.startsWith(base)
+}
+
+function NavItem({
+  to,
+  end,
+  icon,
+  label,
+  pathname
+}: {
+  to: string
+  end?: boolean
+  icon: ReactNode
+  label: string
+  pathname: string
+}) {
+  const current = isCurrent(pathname, to, end)
   return (
-    <NavLink to={to} end={end} className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
+    <NavLink
+      to={to}
+      end={end}
+      className={`nav-item${current ? ' active' : ''}`}
+      // `active` is only a colour change; aria-current is what a screen reader
+      // announces, so the two have to be driven from the same value.
+      aria-current={current ? 'page' : undefined}
+    >
       {icon}
       <span>{label}</span>
     </NavLink>
@@ -35,7 +65,12 @@ export function Layout() {
   const navigate = useNavigate()
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
-  const [collapsed, setCollapsed] = useState(false)
+  // Remembered per browser so a collapsed sidebar stays collapsed across reloads.
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem(SIDEBAR_KEY) === '1')
+
+  useEffect(() => {
+    localStorage.setItem(SIDEBAR_KEY, collapsed ? '1' : '0')
+  }, [collapsed])
 
   // Dismiss the mobile drawer whenever the route changes.
   useEffect(() => {
@@ -60,6 +95,11 @@ export function Layout() {
   return (
     <SidebarNav.Provider value={{ collapsed, toggle: () => setCollapsed((value) => !value) }}>
       <div className={`app-shell${collapsed ? ' is-collapsed' : ''}`}>
+        {/* Keyboard users should not have to tab the whole sidebar on every page. */}
+        <a className="skip-link" href="#app-main">
+          Skip to content
+        </a>
+
         <header className="mobile-bar">
           <button
             type="button"
@@ -89,16 +129,17 @@ export function Layout() {
           </div>
 
           <nav className="nav">
-            <NavItem to="/" end icon={<IconDashboard />} label="Dashboard" />
-            <NavItem to="/sites" icon={<IconBuilding />} label="Projects" />
-            <NavItem to="/search" icon={<IconSearch />} label="Search" />
-            <NavItem to="/chat" icon={<IconChat />} label="Assistant" />
+            <NavItem to="/" end icon={<IconDashboard />} label="Dashboard" pathname={location.pathname} />
+            <NavItem to="/sites" icon={<IconBuilding />} label="Projects" pathname={location.pathname} />
+            <NavItem to="/search" icon={<IconSearch />} label="Search" pathname={location.pathname} />
+            <NavItem to="/regulations" icon={<IconScale />} label="Regulations" pathname={location.pathname} />
+            <NavItem to="/chat" icon={<IconChat />} label="Assistant" pathname={location.pathname} />
 
             {user?.role === 'admin' ? (
               <>
                 <div className="nav-label">Administration</div>
-                <NavItem to="/admin/invites" icon={<IconMail />} label="Invitations" />
-                <NavItem to="/admin/users" icon={<IconUsers />} label="Users & roles" />
+                <NavItem to="/admin/invites" icon={<IconMail />} label="Invitations" pathname={location.pathname} />
+                <NavItem to="/admin/users" icon={<IconUsers />} label="Users & roles" pathname={location.pathname} />
               </>
             ) : null}
           </nav>
@@ -132,9 +173,9 @@ export function Layout() {
 
         {menuOpen ? <div className="sidebar-backdrop" onClick={() => setMenuOpen(false)} /> : null}
 
-        <div className="main">
+        <main className="main" id="app-main" tabIndex={-1}>
           <Outlet />
-        </div>
+        </main>
       </div>
     </SidebarNav.Provider>
   )
@@ -164,7 +205,9 @@ export function PageHeader({
           {collapsed ? <IconMenu /> : <IconChevronLeft />}
         </button>
         <div>
-          <div className="topbar-title">{title}</div>
+          {/* The page's one h1. Rendered as a heading so the document has a
+              name a screen reader can jump to; styled as before. */}
+          <h1 className="topbar-title">{title}</h1>
           {subtitle ? <div className="topbar-sub">{subtitle}</div> : null}
         </div>
       </div>
@@ -173,6 +216,6 @@ export function PageHeader({
   )
 }
 
-export function PageBody({ children }: { children: ReactNode }) {
-  return <div className="content">{children}</div>
+export function PageBody({ children, className = '' }: { children: ReactNode; className?: string }) {
+  return <div className={`content ${className}`.trim()}>{children}</div>
 }
