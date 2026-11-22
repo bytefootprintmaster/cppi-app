@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
-  "updatedAt": "2026-11-22T00:28:34Z",
+  "updatedAt": "2026-11-22T00:29:07Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -220,13 +220,13 @@
         "status": "pending"
       }
     ],
-    "assetCount": 15,
-    "remarkCount": 6,
+    "assetCount": 16,
+    "remarkCount": 7,
     "latestRemark": {
-      "remarkId": "edad7a89-f059-4507-8561-885938fee3c8",
-      "text": "City of Barrie building permit placard PMT23-01730, dated 02/05/2024, for 30 Lang Dr (Plan 51M742 Lot 11), \"Residential - Second Suite w/BGE\", signed by Mark Steele for the Chief Building Official. It shows the permit was issued but no construction progress.",
+      "remarkId": "a763185c-3fc6-4152-bbec-eb4dfa02413f",
+      "text": "AD-05 Staircase Details, a final submission drawing by The Archetype Studios dated 23 Apr 2018 for \"30 LANG\" (client Mr. Shahrayar), shows a new basement exterior stair, foundation and door opening. It is design evidence only, not construction progress.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T00:28:27Z"
+      "createdAt": "2026-11-22T00:29:01Z"
     }
   }
 }
