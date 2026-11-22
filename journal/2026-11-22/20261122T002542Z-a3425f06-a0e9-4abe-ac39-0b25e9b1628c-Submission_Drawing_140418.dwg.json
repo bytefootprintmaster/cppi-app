@@ -1,0 +1,429 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "recordedAt": "2026-11-22T00:25:41Z",
+  "jobId": "4927570192eb",
+  "trigger": "s3",
+  "task": "progress_update_from_file",
+  "agent": "progress",
+  "model": "claude-sonnet-5-5",
+  "source": {
+    "siteId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
+    "s3Key": "sites/a3425f06-a0e9-4abe-ac39-0b25e9b1628c/document/4e909e53-f371-4385-b9d8-6270bc597391-Submission_Drawing_140418.dwg",
+    "fileName": "Submission_Drawing_140418.dwg",
+    "kind": "document",
+    "etag": "5eb7c4a9e1cd67d11f24c6189ab36fc7",
+    "size": 520192
+  },
+  "summary": "The DWG was already on the dashboard but couldn't be read, so I logged a design-evidence remark and a low-confidence record from its name and type only. I proposed no status changes.",
+  "confidence": 0.3,
+  "steps": 4,
+  "actions": [
+    {
+      "tool": "get_project_state",
+      "input": {
+        "siteId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c"
+      },
+      "status": "ok"
+    },
+    {
+      "tool": "read_s3_object",
+      "input": {
+        "key": "sites/a3425f06-a0e9-4abe-ac39-0b25e9b1628c/document/4e909e53-f371-4385-b9d8-6270bc597391-Submission_Drawing_140418.dwg"
+      },
+      "status": "ok"
+    },
+    {
+      "tool": "search_files",
+      "input": {
+        "query": "140418 submission drawing",
+        "siteId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
+        "limit": 5
+      },
+      "status": "ok",
+      "result": {
+        "query": "140418 submission drawing",
+        "mode": "keyword",
+        "count": 1,
+        "results": [
+          {
+            "siteId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
+            "assetId": "32bb1e7f-b2b8-414f-a723-5de3eb44a1f8",
+            "name": "Submission_Drawing_140418.dwg",
+            "s3Key": "sites/a3425f06-a0e9-4abe-ac39-0b25e9b1628c/document/4e909e53-f371-4385-b9d8-6270bc597391-Submission_Drawing_140418.dwg",
+            "kind": "document",
+            "contentType": "application/octet-stream",
+            "size": 520192,
+            "uploadedAt": "2026-11-22T00:25:15.871Z",
+            "score": 0.9167,
+            "coverage": 1.0,
+            "matched": [
+              "140418",
+              "submission",
+              "drawing"
+            ],
+            "snippet": "",
+            "chunkId": null,
+            "offset": null,
+            "chunks": null,
+            "tags": []
+          }
+        ],
+        "note": "Semantic search is off (set EMBEDDINGS_PROVIDER and EMBEDDINGS_API_KEY); these are keyword matches.",
+        "hint": "Use read_s3_object with a result's s3Key when you need the full file; the snippet is only a window into the stored text."
+      }
+    },
+    {
+      "tool": "add_progress_remark",
+      "input": {
+        "siteId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
+        "text": "Submission_Drawing_140418.dwg, a CAD drawing file, was uploaded for 30 Lang Dr. Its contents could not be read, so what it shows is unverified. As a drawing it shows design intent only, not construction progress.",
+        "summary": "Unreadable DWG CAD file named as a submission drawing (likely permit/design submission set)",
+        "category": "plan",
+        "evidenceClasses": [
+          "design"
+        ],
+        "verificationStatus": "ai_interpretation",
+        "extracted": [
+          {
+            "label": "File name",
+            "value": "Submission_Drawing_140418.dwg",
+            "verification": "verified"
+          },
+          {
+            "label": "Format",
+            "value": "AutoCAD DWG, 520,192 bytes",
+            "verification": "verified"
+          },
+          {
+            "label": "Apparent purpose",
+            "value": "Drawing for permit/design submission (inferred from file name only)",
+            "verification": "ai_interpretation"
+          }
+        ],
+        "relevance": "Probably relates to the Design & Permits stage (basement secondary suite conversion). It is a possible source for the architectural drawings milestone, but this cannot be confirmed without opening it.",
+        "limitations": "No text could be extracted from the DWG. Drawing content, author, date, revision and sheet scope are unknown. Even if readable, a drawing proves design only, not that anything was built or that a permit was issued.</limitations>\n<parameter name=\"recommendedActions\">[\"Export the DWG to PDF and re-upload so it can be read\",\"Confirm the author, date and revision, and whether it matches the AD-01 to AD-05 PDF drawings and permit PMT23-01730\"]",
+        "relatedDocuments": [
+          "30 Lang Drive Barrie.dwg",
+          "AD-01.pdf",
+          "AD02.pdf",
+          "AD03.pdf",
+          "AD04.pdf",
+          "AD-05.pdf",
+          "Building_Permit_Application_20240205_123654.pdf"
+        ],
+        "sourceDocument": "Submission_Drawing_140418.dwg",
+        "confidence": 0.3
+      },
+      "status": "added",
+      "result": {
+        "status": "added",
+        "remarkId": "7d52b691-67da-4913-8819-677dea60bff4",
+        "evidenceClasses": [
+          "design"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "tool": "record_document_intelligence",
+      "input": {
+        "siteId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
+        "assetId": "32bb1e7f-b2b8-414f-a723-5de3eb44a1f8",
+        "evidenceClasses": [
+          "design"
+        ],
+        "docType": "CAD drawing (DWG), submission drawing",
+        "name": "Submission_Drawing_140418.dwg",
+        "project": "30 Lang Dr. Barrie ON",
+        "summary": "Unreadable DWG file named as a submission drawing; the content has not been verified.",
+        "facts": [
+          {
+            "label": "File name",
+            "value": "Submission_Drawing_140418.dwg",
+            "verification": "verified"
+          },
+          {
+            "label": "Size",
+            "value": "520,192 bytes",
+            "verification": "verified"
+          },
+          {
+            "label": "Number in file name",
+            "value": "140418 (meaning unknown; may be a date or reference)",
+            "verification": "ai_interpretation"
+          }
+        ],
+        "missingInformation": [
+          "Drawing content, author/designer, date, revision and sheet list",
+          "Whether it was submitted to the City of Barrie, and under which permit"
+        ],
+        "limitations": "The file could not be parsed. This record rests on the file name and type only. A drawing is design evidence, not construction progress.",
+        "recommendedActions": [
+          "Export to PDF and re-upload",
+          "Cross-check against the AD-series PDFs and the permit application"
+        ],
+        "verificationStatus": "ai_interpretation",
+        "confidence": 0.3
+      },
+      "status": "recorded",
+      "result": {
+        "status": "recorded",
+        "assetId": "32bb1e7f-b2b8-414f-a723-5de3eb44a1f8",
+        "evidenceClasses": [
+          "design"
+        ],
+        "revisions": 0,
+        "notes": []
+      }
+    },
+    {
+      "tool": "finish",
+      "input": {
+        "summary": "The DWG was already on the dashboard but couldn't be read, so I logged a design-evidence remark and a low-confidence record from its name and type only. I proposed no status changes.",
+        "confidence": 0.3,
+        "notes": "The DWG can't be parsed. Ask for a PDF export and compare it with the AD-series drawings and permit PMT23-01730. Its content, date and author are unverified."
+      },
+      "status": "done",
+      "result": {
+        "status": "done",
+        "summary": "The DWG was already on the dashboard but couldn't be read, so I logged a design-evidence remark and a low-confidence record from its name and type only. I proposed no status changes.",
+        "confidence": 0.3
+      }
+    }
+  ],
+  "pendingApprovals": [],
+  "costUsd": 0.087812,
+  "tokens": {
+    "input": 26306,
+    "output": 2226,
+    "cacheWrite": 346,
+    "cacheRead": 60374
+  },
+  "dashboard": {
+    "progress": {
+      "stages": 10,
+      "stagesCompleted": 0,
+      "milestones": 31,
+      "milestonesCompleted": 0,
+      "percent": 0
+    },
+    "siteStatus": "in_progress",
+    "stages": [
+      {
+        "stageId": "02e1ab45-0a0c-48f2-9efc-2abc6eeada1c",
+        "name": "Feasibility & Due Diligence",
+        "status": "not_started"
+      },
+      {
+        "stageId": "938cfe14-52f2-4e26-bd5b-99fc4838598e",
+        "name": "Design & Permits",
+        "status": "not_started"
+      },
+      {
+        "stageId": "8bc89d28-46d4-41cc-8cab-ba1e51ee234f",
+        "name": "Site Preparation & Excavation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "182dcd86-5236-46f3-ab0f-1349a3f04d80",
+        "name": "Foundation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "24528d58-15f4-4d06-926f-eb84a6a18be3",
+        "name": "Structural Framing",
+        "status": "not_started"
+      },
+      {
+        "stageId": "156bc1a5-8415-4ad8-9fef-50c82880ae23",
+        "name": "Building Envelope",
+        "status": "not_started"
+      },
+      {
+        "stageId": "a83bb2ca-4308-4553-8e4c-892f54684e39",
+        "name": "Rough-In Services",
+        "status": "not_started"
+      },
+      {
+        "stageId": "a483900b-2e2c-4eea-b701-a72128baae76",
+        "name": "Interior Finishes",
+        "status": "not_started"
+      },
+      {
+        "stageId": "0a8f0d38-64bd-4f3b-9f0a-6c975860d18a",
+        "name": "Landscaping & Exterior Works",
+        "status": "not_started"
+      },
+      {
+        "stageId": "7a7eb06d-56ec-4746-b237-98b18833f942",
+        "name": "Handover & Closeout",
+        "status": "not_started"
+      }
+    ],
+    "milestones": [
+      {
+        "milestoneId": "29923749-7f86-4f39-a5ea-5aba1acb9bac",
+        "name": "Site survey & boundary confirmed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "1fe06a82-3e17-450f-89f5-f3fe1402bda4",
+        "name": "Zoning & by-law review completed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "6b5c14ea-45f7-4309-911c-a2d622cce8ab",
+        "name": "Feasibility budget approved",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "afb8e8bc-e0ec-4d0b-aa00-2c37e9ea5e55",
+        "name": "Architectural drawings issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "58d5d359-d8d4-42fa-8978-a3f92d0bb038",
+        "name": "Structural & MEP drawings complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "93259a17-69d9-4c38-9979-7b8b8f295105",
+        "name": "Building permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "2176db5c-4687-465f-937d-5b41417d2de4",
+        "name": "Utilities & services located",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c8c50d0e-22ff-44a9-8601-d499add0e854",
+        "name": "Clearing & demolition complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "a74dcaa1-f9e1-41b4-b043-d9670494b06c",
+        "name": "Excavation & shoring inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "04a140ed-3982-4847-a7ee-fcfb9a4d41d9",
+        "name": "Footings inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "2a852eef-b405-42f5-ac93-db61433687fe",
+        "name": "Foundation walls poured & waterproofed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9b894991-b8f5-4838-9c43-dbf1bb3bc596",
+        "name": "Backfill & drainage complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "8fe62406-19ee-4cc7-895e-e8ab0c6d66a3",
+        "name": "Floor structure complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "4a8730e3-d894-4b9c-b358-f3cff52a9c9f",
+        "name": "Framing erected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "16495b65-de7c-480e-b892-b2143627c255",
+        "name": "Framing inspection passed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "4778b00d-bebf-400d-9819-6c59765f845a",
+        "name": "Roof trusses & sheathing complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "4a4b8068-42fa-462c-b329-a18cf60a0b86",
+        "name": "Roofing watertight",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "ba63a9e4-952f-4255-a9f0-e8ba8501ca37",
+        "name": "Windows & exterior doors installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "90f742a2-6db6-4721-a66d-884dcc331367",
+        "name": "Cladding & insulation complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "00a90acd-4a65-4806-bf64-7f80e9a30010",
+        "name": "Electrical rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "925fa377-774d-4038-b070-5ee4d0a290c9",
+        "name": "Plumbing rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "58777ff2-480e-4c42-a19f-207caf4cd4e8",
+        "name": "HVAC rough-in complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "2542db0a-1f76-4d49-a94a-c07e34c02b77",
+        "name": "Drywall & plaster complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "3c76e667-4d8e-4b48-89c9-3b858af84932",
+        "name": "Cabinetry & millwork installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "d3e2f075-0071-411f-8760-0e88ec28bfcb",
+        "name": "Flooring & paint complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "34750857-e3c9-4383-83d8-93f7585a7d9d",
+        "name": "Grading & drainage certified",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "db047065-6ee5-4c03-a7d6-77fcb25a06c2",
+        "name": "Driveway & hardscaping complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "1e34e08a-a0e6-4469-9283-a295289b0960",
+        "name": "Landscaping planted",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "afe7ad5d-a39d-430f-bf55-3286f30155c1",
+        "name": "Occupancy permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "63473974-4638-46f2-ae41-7b7d7aa42139",
+        "name": "Pre-delivery inspection (PDI) complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "be20a9ba-fc2b-41d2-8058-f06abd11ebab",
+        "name": "Final accounts & warranty documents issued",
+        "status": "pending"
+      }
+    ],
+    "assetCount": 15,
+    "remarkCount": 2,
+    "latestRemark": {
+      "remarkId": "7d52b691-67da-4913-8819-677dea60bff4",
+      "text": "Submission_Drawing_140418.dwg, a CAD drawing file, was uploaded for 30 Lang Dr. Its contents could not be read, so what it shows is unverified. As a drawing it shows design intent only, not construction progress.",
+      "authorName": "CPPI Agent (AI)",
+      "createdAt": "2026-11-22T00:25:37Z"
+    }
+  }
+}

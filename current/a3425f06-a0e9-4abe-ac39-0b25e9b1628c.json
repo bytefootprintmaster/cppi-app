@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
-  "updatedAt": "2026-11-22T00:25:15Z",
+  "updatedAt": "2026-11-22T00:25:41Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -220,13 +220,13 @@
         "status": "pending"
       }
     ],
-    "assetCount": 8,
-    "remarkCount": 1,
+    "assetCount": 15,
+    "remarkCount": 2,
     "latestRemark": {
-      "remarkId": "0d94df74-fdd9-49b7-aca8-228f783a7c68",
-      "text": "City of Barrie Required Notification for Inspection for permit PMT23-01730 (30 Lang Dr) lists 13 mandatory inspection stages. It is a requirements list, not an inspection result, so no progress is evidenced.",
+      "remarkId": "7d52b691-67da-4913-8819-677dea60bff4",
+      "text": "Submission_Drawing_140418.dwg, a CAD drawing file, was uploaded for 30 Lang Dr. Its contents could not be read, so what it shows is unverified. As a drawing it shows design intent only, not construction progress.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T00:25:09Z"
+      "createdAt": "2026-11-22T00:25:37Z"
     }
   }
 }
