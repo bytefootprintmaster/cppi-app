@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "53030545-3575-4ce1-9226-2790362bea48",
-  "updatedAt": "2026-11-22T01:00:33Z",
+  "updatedAt": "2026-11-22T01:01:55Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 2,
-    "remarkCount": 1,
+    "remarkCount": 3,
     "latestRemark": {
-      "remarkId": "83639282-1ce6-45e9-920b-086564046c4e",
-      "text": "Town of Milton building permit 2022 012163 00 RA issued April 28, 2023 for a basement apartment at 557 Hartley Blvd, with stamped reviewed drawing set (A100–A110) and nine mandatory inspections listed. Permit proves approval only, not construction.",
+      "remarkId": "44ed8854-4291-4532-be5f-325da33cb007",
+      "text": "Forwarded permit-issuance PDF for Town of Milton permit 22-12163 (557 Hartley Blvd): 15 pages of weDesignBuild drawings A100–A110 stamped Building Reviewed Mar 28, 2023 and Zoning Approved Apr 20, 2023. Approval/design evidence only, not construction.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T01:00:00Z"
+      "createdAt": "2026-11-22T01:01:13Z"
     }
   }
 }
