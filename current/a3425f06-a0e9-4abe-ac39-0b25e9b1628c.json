@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
-  "updatedAt": "2026-11-22T00:31:13Z",
+  "updatedAt": "2026-11-22T00:31:40Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 16,
-    "remarkCount": 10,
+    "remarkCount": 11,
     "latestRemark": {
-      "remarkId": "0a241a33-d3a7-4a25-a6d0-a1df2c1a5ad2",
-      "text": "Engineered Plans invoice 0253 (Oct 4, 2023) bills $1,000.00 CAD, marked PAID, for unstamped permit architectural and structural drawings for a basement renovation at 30 Lang Dr, Barrie. Engineer-stamped drawings are priced \"later\". Payment evidence only; no construction progress.",
+      "remarkId": "dc731bb7-e6a6-4366-8ece-b5771222d063",
+      "text": "Schedule 2 Sewage System Installer Information (City of Barrie permit application form) for 30 Lang Dr, signed 25/10/23 by applicant Shaharyar Sindhu, states the installer was unknown at time of application. Permit paperwork only; no construction progress.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T00:30:56Z"
+      "createdAt": "2026-11-22T00:31:35Z"
     }
   }
 }
