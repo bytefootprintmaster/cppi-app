@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import type { FeatureCollection } from 'geojson'
 import type { GeoJSONSource, Map as MapLibreMap, MapGeoJSONFeature } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 // MapLibre parses tiles in a web worker and, once bundled, looks for the worker
@@ -42,6 +43,58 @@ const STATUS_LABEL: Record<SiteStatus, string> = {
 const STYLE_URL = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
 
 const PROJECT_SOURCE = 'cppi-projects'
+
+/**
+ * Ajax municipal ward boundaries (Town of Ajax, 2018), served as a plain static
+ * asset so the geometry can be swapped — or joined by other Town GIS layers —
+ * without a rebuild. Coordinates are already WGS84, MapLibre's native CRS.
+ */
+const WARDS_URL = '/geo/ajax-wards.geojson'
+const WARD_SOURCE = 'cppi-wards'
+const WARD_FILL = 'cppi-wards-fill'
+const WARD_LINE = 'cppi-wards-line'
+const WARD_LABEL = 'cppi-wards-label'
+const WARD_LAYERS = [WARD_FILL, WARD_LINE, WARD_LABEL]
+
+/** Fetch the ward geometry; a missing or malformed file just disables the overlay. */
+async function fetchWards(): Promise<FeatureCollection | null> {
+  try {
+    const res = await fetch(WARDS_URL, { headers: { Accept: 'application/geo+json, application/json' } })
+    if (!res.ok) return null
+    const data = (await res.json()) as FeatureCollection
+    return data?.type === 'FeatureCollection' && Array.isArray(data.features) ? data : null
+  } catch {
+    return null
+  }
+}
+
+/** The extent of every ward, so the map can frame the Town when no project has a pin yet. */
+function wardBounds(wards: FeatureCollection): [[number, number], [number, number]] | null {
+  let minLng = Infinity
+  let minLat = Infinity
+  let maxLng = -Infinity
+  let maxLat = -Infinity
+  const visit = (coords: unknown): void => {
+    if (Array.isArray(coords) && typeof coords[0] === 'number' && typeof coords[1] === 'number') {
+      const [lng, lat] = coords as [number, number]
+      minLng = Math.min(minLng, lng)
+      minLat = Math.min(minLat, lat)
+      maxLng = Math.max(maxLng, lng)
+      maxLat = Math.max(maxLat, lat)
+      return
+    }
+    if (Array.isArray(coords)) for (const child of coords) visit(child)
+  }
+  for (const feature of wards.features) {
+    const geometry = feature.geometry as { coordinates?: unknown } | null
+    if (geometry?.coordinates) visit(geometry.coordinates)
+  }
+  if (!Number.isFinite(minLng)) return null
+  return [
+    [minLng, minLat],
+    [maxLng, maxLat]
+  ]
+}
 
 function popupContent(sites: MapSite[], onSelect?: (siteId: string) => void): HTMLElement {
   const root = document.createElement('div')
@@ -125,6 +178,9 @@ export function MapView({ sites, mode = 'portfolio', height = 460, onSelect }: M
   const sitesRef = useRef(sites)
   sitesRef.current = sites
   const [ready, setReady] = useState(false)
+  const [wardsOn, setWardsOn] = useState(true)
+  const [hasWards, setHasWards] = useState(false)
+  const wardBoundsRef = useRef<[[number, number], [number, number]] | null>(null)
   const siteSignature = JSON.stringify(sites)
 
   // Keep the latest callback without forcing a redraw when the parent re-renders.
@@ -139,15 +195,80 @@ export function MapView({ sites, mode = 'portfolio', height = 460, onSelect }: M
       if (cancelled || !containerRef.current || mapRef.current) return
       moduleRef.current = maplibre
       maplibre.setWorkerUrl(workerUrl)
+      const wards = await fetchWards()
+      if (cancelled || !containerRef.current || mapRef.current) return
+      if (wards) {
+        wardBoundsRef.current = wardBounds(wards)
+        setHasWards(true)
+      }
       const map = new maplibre.Map({
         container: containerRef.current,
         style: STYLE_URL,
-        center: [-96, 38],
-        zoom: 2,
+        center: [-79.02, 43.87],
+        zoom: 11,
         attributionControl: { compact: true }
       })
       map.addControl(new maplibre.NavigationControl({ showCompass: false }), 'top-right')
       map.on('load', () => {
+        // Wards are added first so project pins always draw on top of them.
+        if (wards) {
+          map.addSource(WARD_SOURCE, { type: 'geojson', data: wards, promoteId: 'WARD_NUM' })
+          map.addLayer({
+            id: WARD_FILL,
+            type: 'fill',
+            source: WARD_SOURCE,
+            paint: {
+              'fill-color': '#0f6b48',
+              'fill-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 0.15, 0.055]
+            }
+          })
+          map.addLayer({
+            id: WARD_LINE,
+            type: 'line',
+            source: WARD_SOURCE,
+            paint: {
+              'line-color': '#0f6b48',
+              'line-width': ['case', ['boolean', ['feature-state', 'hover'], false], 2.4, 1.1],
+              'line-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 0.95, 0.5]
+            }
+          })
+          map.addLayer({
+            id: WARD_LABEL,
+            type: 'symbol',
+            source: WARD_SOURCE,
+            layout: {
+              'text-field': ['concat', 'Ward ', ['to-string', ['get', 'WARD_NUM']]],
+              'text-size': 11.5,
+              'text-letter-spacing': 0.08
+            },
+            paint: {
+              'text-color': '#12513a',
+              'text-halo-color': '#ffffff',
+              'text-halo-width': 1.5
+            }
+          })
+
+          // Highlight whichever ward the pointer is over.
+          let hovered: string | number | null = null
+          const clearHover = () => {
+            if (hovered !== null) map.setFeatureState({ source: WARD_SOURCE, id: hovered }, { hover: false })
+            hovered = null
+          }
+          map.on('mousemove', WARD_FILL, (event) => {
+            const feature = event.features?.[0]
+            if (!feature || feature.id === undefined) return
+            map.getCanvas().style.cursor = 'pointer'
+            if (feature.id === hovered) return
+            clearHover()
+            hovered = feature.id
+            map.setFeatureState({ source: WARD_SOURCE, id: hovered }, { hover: true })
+          })
+          map.on('mouseleave', WARD_FILL, () => {
+            map.getCanvas().style.cursor = ''
+            clearHover()
+          })
+        }
+
         map.addSource(PROJECT_SOURCE, {
           type: 'geojson',
           data: { type: 'FeatureCollection', features: [] },
@@ -261,7 +382,18 @@ export function MapView({ sites, mode = 'portfolio', height = 460, onSelect }: M
     if (!map || !maplibre || !ready) return
     const source = map.getSource(PROJECT_SOURCE) as GeoJSONSource | undefined
     const currentSites = sitesRef.current
-    if (!source || currentSites.length === 0) return
+    if (!source) return
+
+    if (currentSites.length === 0) {
+      void source.setData({ type: 'FeatureCollection', features: [] })
+      // No pins yet — frame the Town instead so the ward overlay has context.
+      const bounds = wardBoundsRef.current
+      if (bounds) {
+        const box = new maplibre.LngLatBounds(bounds[0], bounds[1])
+        map.fitBounds(box, { padding: 40, duration: 0 })
+      }
+      return
+    }
 
     void source.setData({
       type: 'FeatureCollection',
@@ -288,6 +420,16 @@ export function MapView({ sites, mode = 'portfolio', height = 460, onSelect }: M
     }
   }, [siteSignature, mode, ready])
 
+  // Show or hide the ward overlay from the on-map toggle.
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !ready) return
+    const visibility = wardsOn ? 'visible' : 'none'
+    for (const id of WARD_LAYERS) {
+      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', visibility)
+    }
+  }, [wardsOn, ready])
+
   // MapLibre measures its container once; tell it when the box changes (e.g.
   // the map is inside a tab that was hidden when the page first rendered).
   useEffect(() => {
@@ -302,6 +444,17 @@ export function MapView({ sites, mode = 'portfolio', height = 460, onSelect }: M
     // The height is handed to CSS so phones can cap it against the viewport.
     <div className="map-shell" style={{ '--map-h': `${height}px` } as CSSProperties}>
       <div className="map-canvas" ref={containerRef} />
+      {hasWards ? (
+        <button
+          type="button"
+          className="map-ward-toggle"
+          aria-pressed={wardsOn}
+          onClick={() => setWardsOn((on) => !on)}
+        >
+          <span className="map-ward-swatch" aria-hidden="true" />
+          Ward boundaries
+        </button>
+      ) : null}
     </div>
   )
 }

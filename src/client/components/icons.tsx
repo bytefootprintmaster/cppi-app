@@ -279,3 +279,32 @@ export const IconSend = makeIcon(
     <path d="M21.5 2.5 14.5 21l-4-8-8-4Z" />
   </>
 )
+
+/** Sparkle / magic wand — marks the AI-assisted composer and empty state. */
+export const IconSparkle = makeIcon(
+  <>
+    <path d="M12 3.5 13.6 8.4 18.5 10l-4.9 1.6L12 16.5 10.4 11.6 5.5 10l4.9-1.6L12 3.5Z" />
+    <path d="M18.5 14.5 19.2 16.2 21 16.9 19.2 17.6 18.5 19.3 17.8 17.6 16 16.9 17.8 16.2 18.5 14.5Z" />
+  </>
+)
+
+/** Paperclip — attach a file or link. */
+export const IconPaperclip = makeIcon(
+  <path d="M16.5 7.5 8 16a3.2 3.2 0 1 1-4.5-4.5l7.6-7.6a4.6 4.6 0 0 1 6.5 6.5L9.9 18.1a2.3 2.3 0 1 1-3.2-3.2L13 8.5" />
+)
+
+/** Thumbs up — react to an assistant response. */
+export const IconThumbUp = makeIcon(
+  <>
+    <path d="M7 10v9H4.5A1.5 1.5 0 0 1 3 17.5v-5A1.5 1.5 0 0 1 4.5 11H7Z" />
+    <path d="M7 11l4.2-6.4a1.8 1.8 0 0 1 3.2 1.4V9h3.6a2 2 0 0 1 2 2.3l-.9 5A2 2 0 0 1 17 18H7" />
+  </>
+)
+
+/** Thumbs down — react to an assistant response. */
+export const IconThumbDown = makeIcon(
+  <>
+    <path d="M17 14V5h2.5A1.5 1.5 0 0 1 21 6.5v5A1.5 1.5 0 0 1 19.5 13H17Z" />
+    <path d="M17 13l-4.2 6.4a1.8 1.8 0 0 1-3.2-1.4V15H6a2 2 0 0 1-2-2.3l.9-5A2 2 0 0 1 7 6h10" />
+  </>
+)

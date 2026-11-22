@@ -6,7 +6,6 @@ import { useVoiceInput } from '../lib/useVoiceInput'
 import { PageBody, PageHeader } from '../components/Layout'
 import { Badge, Button, Empty, ErrorNote, Loading, Modal } from '../components/ui'
 import {
-  IconChat,
   IconCheck,
   IconChevronDown,
   IconCopy,
@@ -14,10 +13,14 @@ import {
   IconFile,
   IconImage,
   IconMic,
+  IconPaperclip,
   IconPlus,
   IconSearch,
   IconSend,
+  IconSparkle,
   IconTag,
+  IconThumbDown,
+  IconThumbUp,
   IconTrash,
   IconUpload,
   IconX
@@ -282,6 +285,37 @@ interface ChatServiceStatus {
   reason?: 'storage_unavailable' | 'missing_agent_token' | 'agent_unreachable' | 'ready'
 }
 
+/* ------------------------------ agent avatar ----------------------------- */
+
+/**
+ * The friendly assistant face used in the empty state and beside every assistant
+ * message. A dark rounded face with two vertical eyes and a green-cyan gradient
+ * ring, matching the portal's brand while feeling approachable.
+ */
+function AgentAvatar({ size = 36, className = '' }: { size?: number; className?: string }) {
+  return (
+    <span className={`agent-avatar ${className}`.trim()} style={{ width: size, height: size }} aria-hidden="true">
+      <span className="agent-avatar-ring" />
+      <svg viewBox="0 0 40 40" width={size} height={size} className="agent-avatar-face">
+        <defs>
+          <linearGradient id="agent-ring" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#4bd39a" />
+            <stop offset="55%" stopColor="#1fb877" />
+            <stop offset="100%" stopColor="#3b82f6" />
+          </linearGradient>
+        </defs>
+        <rect x="5" y="5" width="30" height="30" rx="11" fill="url(#agent-ring)" opacity="0.18" />
+        <rect x="7" y="7" width="26" height="26" rx="9" fill="#0a1f17" />
+        <rect x="15" y="14" width="3.2" height="8" rx="1.6" fill="#dff5e9" />
+        <rect x="21.8" y="14" width="3.2" height="8" rx="1.6" fill="#dff5e9" />
+        <path d="M15 25.5c1.6 1.6 8.4 1.6 10 0" fill="none" stroke="#9fe8c4" strokeWidth="1.8" strokeLinecap="round" />
+        <circle cx="31" cy="9" r="3.4" fill="#10935f" />
+        <path d="M31 7.4v3.2M29.4 9h3.2" stroke="#fff" strokeWidth="1.2" strokeLinecap="round" />
+      </svg>
+    </span>
+  )
+}
+
 /* -------------------------------- bubbles -------------------------------- */
 
 function Thinking() {
@@ -337,7 +371,9 @@ function PendingCard({
 function ArtifactCard({ artifact, onDownload }: { artifact: ChatArtifact; onDownload: (a: ChatArtifact) => void }) {
   return (
     <button type="button" className="chat-artifact" onClick={() => onDownload(artifact)}>
-      <IconDownload size={16} />
+      <span className="chat-artifact-thumb">
+        <IconFile size={20} />
+      </span>
       <span className="chat-artifact-text">
         <span className="chat-artifact-title">{artifact.title ?? artifact.name}</span>
         <span className="small muted">
@@ -345,6 +381,7 @@ function ArtifactCard({ artifact, onDownload }: { artifact: ChatArtifact; onDown
           {artifact.size ? ` · ${Math.max(1, Math.round(artifact.size / 1024))} KB` : ''}
         </span>
       </span>
+      <IconDownload size={16} className="chat-artifact-dl" />
     </button>
   )
 }
@@ -725,68 +762,100 @@ export function ChatPage() {
   function renderTurn(message: ChatMessageRecord) {
     return (
       <div key={message.messageId} className={`chat-turn chat-turn-${message.role}`}>
-        <div
-          className={`chat-bubble${
-            message.role === 'user'
-              ? ' chat-bubble-user'
-              : message.status === 'error'
-                ? ' chat-bubble-error'
-                : ' chat-bubble-bot'
-          }`}
-        >
-          {message.role === 'assistant' && !query.trim()
-            ? renderMarkdown(message.text)
-            : highlight(message.text, query)}
-        </div>
-        {message.attachments?.length ? (
-          <ChatAttachmentList attachments={message.attachments} onOpen={downloadAttachment} />
-        ) : null}
-        {message.pending?.length ? (
-          <div className="chat-extras">
-            {message.pending.map((action) => (
-              <PendingCard
-                key={action.actionId}
-                action={action}
-                busy={busyAction === action.actionId}
-                onDecide={decide}
-              />
-            ))}
+        {message.role === 'assistant' ? <AgentAvatar size={30} /> : null}
+        <div className="chat-turn-body">
+          <div
+            className={`chat-bubble${
+              message.role === 'user'
+                ? ' chat-bubble-user'
+                : message.status === 'error'
+                  ? ' chat-bubble-error'
+                  : ' chat-bubble-bot'
+            }`}
+          >
+            {message.role === 'assistant' && !query.trim()
+              ? renderMarkdown(message.text)
+              : highlight(message.text, query)}
           </div>
-        ) : null}
-        {message.artifacts?.length ? (
-          <div className="chat-extras">
-            {message.artifacts.map((artifact) => (
-              <ArtifactCard key={artifact.s3Key ?? artifact.name} artifact={artifact} onDownload={download} />
-            ))}
-          </div>
-        ) : null}
-        <div className="chat-meta">
-          <span>
-            {message.role === 'assistant' && message.agent ? `${message.agent} · ` : ''}
-            {clockTime(message.createdAt)}
-          </span>
-          <div className="chat-actions">
-            {message.role === 'assistant' && message.text.trim() ? (
-              <button
-                type="button"
-                className="chat-copy"
-                aria-label={copiedMessageId === message.messageId ? 'Response copied' : 'Copy response'}
-                title={copiedMessageId === message.messageId ? 'Copied' : 'Copy response'}
-                onClick={() => void copyMessage(message.messageId, message.text)}
-              >
-                {copiedMessageId === message.messageId ? <IconCheck size={14} /> : <IconCopy size={14} />}
-                <span>{copiedMessageId === message.messageId ? 'Copied' : 'Copy'}</span>
-              </button>
-            ) : null}
-            <button
-              type="button"
-              className="chat-delete"
-              aria-label={message.role === 'user' ? 'Delete this question' : 'Delete this answer'}
-              title={message.role === 'user' ? 'Delete this question' : 'Delete this answer'}
-              onClick={() => setConfirmDelete(message)}
-            >
-              <IconTrash size={14} />
-            </button>
+          {message.attachments?.length ? (
+            <ChatAttachmentList attachments={message.attachments} onOpen={downloadAttachment} />
+          ) : null}
+          {message.pending?.length ? (
+            <div className="chat-extras">
+              {message.pending.map((action) => (
+                <PendingCard
+                  key={action.actionId}
+                  action={action}
+                  busy={busyAction === action.actionId}
+                  onDecide={decide}
+                />
+              ))}
+            </div>
+          ) : null}
+          {message.artifacts?.length ? (
+            <div className="chat-extras chat-artifacts">
+              {message.artifacts.map((artifact) => (
+                <ArtifactCard key={artifact.s3Key ?? artifact.name} artifact={artifact} onDownload={download} />
+              ))}
+            </div>
+          ) : null}
+          <div className="chat-meta">
+            <span>
+              {message.role === 'assistant' && message.agent ? `${message.agent} · ` : ''}
+              {clockTime(message.createdAt)}
+            </span>
+            {message.role === 'assistant' ? (
+              <div className="chat-actions">
+                <button
+                  type="button"
+                  className="chat-action-btn"
+                  aria-label="Mark as helpful"
+                  title="Helpful"
+                >
+                  <IconThumbUp size={15} />
+                </button>
+                <button
+                  type="button"
+                  className="chat-action-btn"
+                  aria-label="Mark as not helpful"
+                  title="Not helpful"
+                >
+                  <IconThumbDown size={15} />
+                </button>
+                {message.text.trim() ? (
+                  <button
+                    type="button"
+                    className="chat-action-btn"
+                    aria-label={copiedMessageId === message.messageId ? 'Response copied' : 'Copy response'}
+                    title={copiedMessageId === message.messageId ? 'Copied' : 'Copy response'}
+                    onClick={() => void copyMessage(message.messageId, message.text)}
+                  >
+                    {copiedMessageId === message.messageId ? <IconCheck size={14} /> : <IconCopy size={14} />}
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  className="chat-action-btn"
+                  aria-label="Delete this answer"
+                  title="Delete this answer"
+                  onClick={() => setConfirmDelete(message)}
+                >
+                  <IconTrash size={14} />
+                </button>
+              </div>
+            ) : (
+              <div className="chat-actions">
+                <button
+                  type="button"
+                  className="chat-action-btn"
+                  aria-label="Delete this question"
+                  title="Delete this question"
+                  onClick={() => setConfirmDelete(message)}
+                >
+                  <IconTrash size={14} />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -848,11 +917,13 @@ export function ChatPage() {
                 <Loading label="Loading the conversation…" />
               ) : !conversationStarted ? (
                 <div className="chat-empty">
-                  <div className="chat-empty-icon">
-                    <IconChat size={26} />
+                  <div className="chat-empty-avatar">
+                    <AgentAvatar size={76} />
                   </div>
-                  <h2>How can I help?</h2>
-                  <p className="muted">
+                  <h2 className="chat-empty-title">
+                    How can I <span className="chat-gradient-text">help you</span> today?
+                  </h2>
+                  <p className="muted chat-empty-sub">
                     Tell me what you are looking at and I will answer from the project files, or write it up.
                   </p>
                   <div className="chat-suggest">
@@ -860,7 +931,7 @@ export function ChatPage() {
                       <button
                         key={example}
                         type="button"
-                        className="chip"
+                        className="chip chat-suggest-chip"
                         onClick={() => {
                           setDraft(example)
                           if (paramSiteId) setSiteId(paramSiteId)
@@ -881,41 +952,45 @@ export function ChatPage() {
 
                   {overlay.map((turn, index) => (
                     <div key={`overlay-${index}`} className={`chat-turn chat-turn-${turn.role}`}>
-                      <div
-                        className={`chat-bubble${
-                          turn.role === 'user'
-                            ? ' chat-bubble-user'
-                            : turn.thinking
-                              ? ' chat-bubble-bot chat-bubble-thinking'
-                              : ' chat-bubble-error'
-                        }`}
-                      >
-                        {turn.thinking
-                          ? <Thinking />
-                          : turn.role === 'assistant'
-                            ? renderMarkdown(turn.text)
-                            : turn.text}
-                      </div>
-                      {turn.role === 'assistant' && !turn.thinking && turn.text.trim() ? (
-                        <div className="chat-meta">
-                          <span />
-                          <button
-                            type="button"
-                            className="chat-copy"
-                            aria-label={copiedMessageId === `overlay-${index}` ? 'Response copied' : 'Copy response'}
-                            title={copiedMessageId === `overlay-${index}` ? 'Copied' : 'Copy response'}
-                            onClick={() => void copyMessage(`overlay-${index}`, turn.text)}
-                          >
-                            {copiedMessageId === `overlay-${index}`
-                              ? <IconCheck size={14} />
-                              : <IconCopy size={14} />}
-                            <span>{copiedMessageId === `overlay-${index}` ? 'Copied' : 'Copy'}</span>
-                          </button>
+                      {turn.role === 'assistant' ? <AgentAvatar size={30} /> : null}
+                      <div className="chat-turn-body">
+                        <div
+                          className={`chat-bubble${
+                            turn.role === 'user'
+                              ? ' chat-bubble-user'
+                              : turn.thinking
+                                ? ' chat-bubble-bot chat-bubble-thinking'
+                                : ' chat-bubble-error'
+                          }`}
+                        >
+                          {turn.thinking
+                            ? <Thinking />
+                            : turn.role === 'assistant'
+                              ? renderMarkdown(turn.text)
+                              : turn.text}
                         </div>
-                      ) : null}
-                      {turn.attachments?.length ? (
-                        <ChatAttachmentList attachments={turn.attachments} onOpen={downloadAttachment} />
-                      ) : null}
+                        {turn.role === 'assistant' && !turn.thinking && turn.text.trim() ? (
+                          <div className="chat-meta">
+                            <span />
+                            <div className="chat-actions">
+                              <button
+                                type="button"
+                                className="chat-action-btn"
+                                aria-label="Copy response"
+                                title="Copy response"
+                                onClick={() => void copyMessage(`overlay-${index}`, turn.text)}
+                              >
+                                {copiedMessageId === `overlay-${index}`
+                                  ? <IconCheck size={14} />
+                                  : <IconCopy size={14} />}
+                              </button>
+                            </div>
+                          </div>
+                        ) : null}
+                        {turn.attachments?.length ? (
+                          <ChatAttachmentList attachments={turn.attachments} onOpen={downloadAttachment} />
+                        ) : null}
+                      </div>
                     </div>
                   ))}
                 </>
@@ -941,27 +1016,60 @@ export function ChatPage() {
               void send()
             }}
           >
-            <label className="chat-context">
-              <span className="small muted">Project context</span>
-              <select
-                className="select"
-                value={siteId}
-                onChange={(event) => {
-                  setSiteId(event.target.value)
-                  setSelectedFiles([])
-                  setChatAttachments([])
-                }}
-              >
-                <option value="">General (no specific project)</option>
-                {(sites.data?.sites ?? []).map((site) => (
-                  <option key={site.siteId} value={site.siteId}>
-                    {site.name}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <div className="chat-compose-info">
+              <span className="chat-compose-info-left">
+                <IconSparkle size={13} />
+                {thread?.messageCount ? `${thread.messageCount} messages in conversation` : 'New conversation'}
+              </span>
+              <span className={`chat-status ${assistantReady ? 'is-ready' : 'is-offline'}`}>
+                {assistantReady ? 'Assistant ready' : 'Assistant offline'}
+              </span>
+            </div>
 
-            <div className="chat-upload-tools">
+            {(selectedFiles.length > 0 || chatAttachments.length > 0 || tagDraft) ? (
+              <div className="chat-upload-tools">
+                <input
+                  ref={fileInputRef}
+                  className="chat-file-input"
+                  type="file"
+                  multiple
+                  accept="image/*,.pdf,.docx,.xlsx,.csv,.txt,.md,.json"
+                  onChange={(event) => chooseFiles(event.target.files)}
+                  disabled={uploadingFiles || sending}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={!siteId || uploadingFiles || sending || chatAttachments.length + selectedFiles.length >= 5}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <IconPlus size={15} />
+                  Add files
+                </Button>
+                <label className="chat-tag-field">
+                  <IconTag size={15} />
+                  <input
+                    className="input"
+                    value={tagDraft}
+                    onChange={(event) => setTagDraft(event.target.value)}
+                    placeholder="Tags for selected files (comma separated)"
+                    disabled={uploadingFiles || sending}
+                  />
+                </label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={!siteId || !selectedFiles.length || uploadingFiles || sending}
+                  loading={uploadingFiles}
+                  onClick={() => void uploadFiles()}
+                >
+                  <IconUpload size={15} />
+                  Upload
+                </Button>
+              </div>
+            ) : (
               <input
                 ref={fileInputRef}
                 className="chat-file-input"
@@ -971,38 +1079,7 @@ export function ChatPage() {
                 onChange={(event) => chooseFiles(event.target.files)}
                 disabled={uploadingFiles || sending}
               />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                disabled={!siteId || uploadingFiles || sending || chatAttachments.length + selectedFiles.length >= 5}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <IconPlus size={15} />
-                Add files
-              </Button>
-              <label className="chat-tag-field">
-                <IconTag size={15} />
-                <input
-                  className="input"
-                  value={tagDraft}
-                  onChange={(event) => setTagDraft(event.target.value)}
-                  placeholder="Tags for selected files (comma separated)"
-                  disabled={uploadingFiles || sending}
-                />
-              </label>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                disabled={!siteId || !selectedFiles.length || uploadingFiles || sending}
-                loading={uploadingFiles}
-                onClick={() => void uploadFiles()}
-              >
-                <IconUpload size={15} />
-                Upload
-              </Button>
-            </div>
+            )}
             {!siteId ? (
               <div className="small muted chat-hint">Choose a project to upload project files.</div>
             ) : null}
@@ -1045,55 +1122,103 @@ export function ChatPage() {
             ) : null}
 
             <div className="chat-compose-row">
-              <textarea
-                className="textarea chat-input"
-                rows={2}
-                placeholder="Ask a question, describe what you see, or ask for a report…"
-                value={draft}
-                disabled={sending}
-                onChange={(event) => setDraft(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' && !event.shiftKey) {
-                    event.preventDefault()
-                    void send()
-                  }
-                }}
-              />
-              <Button
-                type="button"
-                variant={voice.listening ? 'danger' : 'ghost'}
-                className={`chat-mic${voice.listening ? ' chat-mic-recording' : ''}`}
-                loading={voice.loading}
-                disabled={sending || !voice.supported}
-                aria-pressed={voice.listening}
-                aria-label={
-                  voice.listening
-                    ? 'Stop voice dictation'
-                    : voice.supported
-                      ? 'Dictate message with your microphone'
-                      : 'Voice dictation is unavailable'
-                }
-                onClick={voice.toggle}
-                title={
-                  voice.supported
-                    ? voice.listening
-                      ? 'Stop dictating'
-                      : 'Dictate a message (processed on this device)'
-                    : 'Voice input requires HTTPS and browser microphone support'
-                }
-              >
-                <IconMic size={16} />
-                {voice.loading ? 'Loading…' : voice.listening ? 'Stop' : 'Dictate'}
-              </Button>
-              <Button
+              <div className="chat-input-wrap">
+                <IconSparkle size={16} className="chat-input-sparkle" />
+                <textarea
+                  className="chat-input"
+                  rows={1}
+                  placeholder="Ask anything…"
+                  value={draft}
+                  disabled={sending}
+                  onChange={(event) => setDraft(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                      event.preventDefault()
+                      void send()
+                    }
+                  }}
+                />
+                <div className="chat-tool-strip">
+                  <button
+                    type="button"
+                    className="chat-tool-btn"
+                    aria-label="Attach files"
+                    title="Attach files"
+                    disabled={sending}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <IconPlus size={17} />
+                  </button>
+                  <button
+                    type="button"
+                    className="chat-tool-btn"
+                    aria-label="Add a link"
+                    title="Add a link"
+                    disabled
+                  >
+                    <IconPaperclip size={17} />
+                  </button>
+                  <button
+                    type="button"
+                    className="chat-tool-btn"
+                    aria-label="Insert image"
+                    title="Insert image"
+                    disabled={sending}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <IconImage size={17} />
+                  </button>
+                  <button
+                    type="button"
+                    className={`chat-tool-btn${voice.listening ? ' chat-tool-btn-active' : ''}`}
+                    aria-pressed={voice.listening}
+                    aria-label={
+                      voice.listening
+                        ? 'Stop voice dictation'
+                        : voice.supported
+                          ? 'Dictate message with your microphone'
+                          : 'Voice dictation is unavailable'
+                    }
+                    title={
+                      voice.supported
+                        ? voice.listening
+                          ? 'Stop dictating'
+                          : 'Dictate a message (processed on this device)'
+                        : 'Voice input requires HTTPS and browser microphone support'
+                    }
+                    disabled={sending || !voice.supported}
+                    onClick={voice.toggle}
+                  >
+                    <IconMic size={17} />
+                  </button>
+                  <select
+                    className="chat-context-select"
+                    value={siteId}
+                    onChange={(event) => {
+                      setSiteId(event.target.value)
+                      setSelectedFiles([])
+                      setChatAttachments([])
+                    }}
+                    aria-label="Project context"
+                    title="Project context"
+                  >
+                    <option value="">General</option>
+                    {(sites.data?.sites ?? []).map((site) => (
+                      <option key={site.siteId} value={site.siteId}>
+                        {site.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <button
                 type="submit"
-                loading={sending || status.loading}
-                disabled={(!draft.trim() && !chatAttachments.length) || !assistantReady || uploadingFiles}
-                className="chat-send"
+                className="chat-send-btn"
+                disabled={(!draft.trim() && !chatAttachments.length) || !assistantReady || uploadingFiles || sending}
+                aria-label="Send message"
               >
-                <IconSend size={16} />
-                Send
-              </Button>
+                {sending ? <span className="spinner" /> : <IconSend size={18} />}
+              </button>
             </div>
             {voice.listening ? (
               <div className="chat-voice-status" role="status">
@@ -1103,7 +1228,6 @@ export function ChatPage() {
             {voice.error ? <div className="small chat-voice-error">{voice.error}</div> : null}
             <div className="small muted chat-hint">
               Enter to send · Shift + Enter for a new line
-              {thread?.messageCount ? ` · ${thread.messageCount} messages in this conversation` : ''}
             </div>
             {!voice.supported ? (
               <div className="small muted chat-hint">

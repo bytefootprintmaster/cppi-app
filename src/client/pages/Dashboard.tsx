@@ -329,6 +329,10 @@ export function DashboardPage() {
                       <i className="map-legend-dot map-dot-done" />
                       Completed
                     </span>
+                    <span>
+                      <i className="map-legend-dot map-legend-ward" />
+                      Ward boundary
+                    </span>
                     <span className="muted">Pin size reflects budget · clusters show nearby projects</span>
                   </div>
                 </>
