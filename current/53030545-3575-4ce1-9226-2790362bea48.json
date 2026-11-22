@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "53030545-3575-4ce1-9226-2790362bea48",
-  "updatedAt": "2026-11-22T01:04:37Z",
+  "updatedAt": "2026-11-22T01:05:01Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 7,
-    "remarkCount": 6,
+    "remarkCount": 7,
     "latestRemark": {
-      "remarkId": "0d41a7fa-e2fe-4ef4-b14e-5030296efe46",
-      "text": "Photo Garage1.jpeg shows a finished garage interior: a dark SUV parked beside a textured stucco-style wall with brooms and a dustpan hung on it, a closed sectional garage door and a concrete floor. No visible construction work, date or signage; it does not show progress on any stage.",
+      "remarkId": "4ee55dca-86fe-4ad7-91ec-9879e47c6b69",
+      "text": "Photo Garage_3.jpeg shows a finished garage interior: a dark SUV parked beside a painted wall, a sectional garage door with opener and track hardware, overhead shelving and a concrete floor. No visible construction work, date or signage; it does not show progress on any stage.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T01:04:33Z"
+      "createdAt": "2026-11-22T01:04:57Z"
     }
   }
 }
