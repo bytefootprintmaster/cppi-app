@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
-  "updatedAt": "2026-11-22T16:06:52Z",
+  "updatedAt": "2026-11-22T16:07:27Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -220,13 +220,13 @@
         "status": "pending"
       }
     ],
-    "assetCount": 27,
-    "remarkCount": 26,
+    "assetCount": 28,
+    "remarkCount": 27,
     "latestRemark": {
-      "remarkId": "000705d4-dcf3-4458-a045-b81c41e1af34",
-      "text": "Photo stamped 21-Nov-2026 6:12 pm, captioned \"unit 1 laundry\": new stud-wall framing forming a small framed room with a headered opening, with pink batt insulation behind poly on an existing exterior wall. Interior partition framing is underway.",
+      "remarkId": "4009c022-8baf-4e61-af14-8cd35d90d4ba",
+      "text": "Photo stamped 16-Nov-2026 10:07 am: an interior wall stripped back to studs, with old drywall on the adjoining face, exposed wiring and a switch box, pink batt insulation, white pipe stubs, and a cordless drill and stepladder. A gutted room with a fireplace is visible through the doorway. Interior strip-out is underway.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T16:06:48Z"
+      "createdAt": "2026-11-22T16:07:22Z"
     }
   }
 }
