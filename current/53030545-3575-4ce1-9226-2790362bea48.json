@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "53030545-3575-4ce1-9226-2790362bea48",
-  "updatedAt": "2026-11-22T01:06:20Z",
+  "updatedAt": "2026-11-22T01:07:08Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 8,
-    "remarkCount": 9,
+    "remarkCount": 10,
     "latestRemark": {
-      "remarkId": "8821e258-9461-4031-b7de-1f3ad3b5c4a6",
-      "text": "Town of Milton zoning preconsultation sheet for 557 Hartley Blvd, signed by Zoning Officer Rob Catarino, Feb 7, 2023. It lists two by-law deficiencies to legalize: an A/C unit in the exterior side yard, and a garage 5.6 m long instead of 6.0 m (-0.4 m). Planning evidence only, not construction.",
+      "remarkId": "f25f0159-80d4-400a-a777-d0da19f78bfe",
+      "text": "ESA Certificate of Acceptance no. 18968077, dated Nov 16, 2026, accepts the electrical installation at 557 Hartley Blvd (basement and attached garage) under the Ontario Electrical Safety Code. Electrician is 1000 Lumens Electrical Services; scope is a 68-item renovation plus 1 EV charger outlet.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T01:06:14Z"
+      "createdAt": "2026-11-22T01:06:59Z"
     }
   }
 }
