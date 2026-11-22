@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
-  "updatedAt": "2026-11-22T00:33:26Z",
+  "updatedAt": "2026-11-22T00:34:46Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 16,
-    "remarkCount": 14,
+    "remarkCount": 15,
     "latestRemark": {
-      "remarkId": "ebb332f3-6dbc-403f-8bf5-e9ce9cc5d2bd",
-      "text": "CAD file \"30 Lang Drive Barrie.dwg\" (338 KB) is on the project file list. The DWG format could not be read, so its contents are unverified. By name it is a drawing for 30 Lang Drive; design material only, not construction progress.",
+      "remarkId": "3ad95506-ded4-431d-97d0-15662eda684c",
+      "text": "City of Barrie stamped permit drawing set (9 sheets, A101-A109) for 30 Lang Dr, PMT23-01730, marked CONDITIONAL FULL PERMIT, reviewed 2/5/2024 by Mark Steele. Scope: second dwelling with new basement entrance. Design/permit evidence only; no construction progress.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T00:33:22Z"
+      "createdAt": "2026-11-22T00:34:25Z"
     }
   }
 }
