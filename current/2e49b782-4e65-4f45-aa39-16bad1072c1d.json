@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
-  "updatedAt": "2026-11-22T16:04:33Z",
+  "updatedAt": "2026-11-22T16:05:00Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 21,
-    "remarkCount": 21,
+    "remarkCount": 22,
     "latestRemark": {
-      "remarkId": "61516aeb-efbc-4ce3-b0d9-14a1bb63cbe6",
-      "text": "Photo IMG_1186 (no date stamp or caption): a finished entry level with painted walls, hardwood hallway floor, trim, interior doors, a leaded-glass front door with sidelights, and a stair with wood-capped metal-baluster railing. It looks like existing finished space, not new work.",
+      "remarkId": "bc24d96d-f9d5-464b-9a38-54aa160c8fd1",
+      "text": "Photo stamped 21-Nov-2026 6:33 pm, captioned \"working on #2 door opening for bedroom 1, 2 and washroom\": new stud wall framing with framed door openings, a mitre saw, cut lumber, metal track and cable on the plywood subfloor. Interior framing is underway.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T16:04:29Z"
+      "createdAt": "2026-11-22T16:04:54Z"
     }
   }
 }
