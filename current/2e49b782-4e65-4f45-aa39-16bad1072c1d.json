@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
-  "updatedAt": "2026-11-22T16:07:56Z",
+  "updatedAt": "2026-11-22T16:08:22Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 28,
-    "remarkCount": 28,
+    "remarkCount": 29,
     "latestRemark": {
-      "remarkId": "b4d76ab1-b1ab-4287-810d-ffcbb2988cd5",
-      "text": "Photo stamped 16-Nov-2026 10:35 am: a wall opening stripped to bare studs with pink batt insulation, a cut-open outlet box and loose wiring, and demolition debris on the floor. A hammer and cordless tools lie on the floor. A gutted room with a brick fireplace is visible beyond. Interior strip-out is underway.",
+      "remarkId": "6e00099f-2104-4446-be6b-dc89d504a282",
+      "text": "Photo (no date stamp or caption): a grassy, weedy yard beside a wooden plank fence, with a strip of bare disturbed soil near the fence, a juniper shrub on the right, and scattered dead leaves. No construction work, equipment or materials are visible.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T16:07:51Z"
+      "createdAt": "2026-11-22T16:08:17Z"
     }
   }
 }
