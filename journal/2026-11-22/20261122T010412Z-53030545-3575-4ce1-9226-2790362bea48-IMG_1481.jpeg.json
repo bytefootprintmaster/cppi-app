@@ -1,0 +1,371 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "recordedAt": "2026-11-22T01:04:11Z",
+  "jobId": "f1031f008f5a",
+  "trigger": "s3",
+  "task": "progress_update_from_file",
+  "agent": "progress",
+  "model": "claude-sonnet-5-5",
+  "source": {
+    "siteId": "53030545-3575-4ce1-9226-2790362bea48",
+    "s3Key": "sites/53030545-3575-4ce1-9226-2790362bea48/image/ed8f61b1-4a43-4e86-a7b1-f68c2f0b5218-IMG_1481.jpeg",
+    "fileName": "IMG_1481.jpeg",
+    "kind": "image",
+    "etag": "5918152af22cbdfc46b674cde7678995",
+    "size": 385226
+  },
+  "summary": "IMG_1481.jpeg is a personal ID card photo, not site evidence. It was already registered. I recorded a remark and document intelligence with no personal identifiers copied, and raised a finding to review and remove it. No status changes were proposed.",
+  "confidence": 0.9,
+  "steps": 3,
+  "actions": [
+    {
+      "tool": "get_project_state",
+      "input": {
+        "siteId": "53030545-3575-4ce1-9226-2790362bea48"
+      },
+      "status": "ok"
+    },
+    {
+      "tool": "add_progress_remark",
+      "input": {
+        "siteId": "53030545-3575-4ce1-9226-2790362bea48",
+        "text": "IMG_1481.jpeg is a photo of a personal identity card on a stone countertop, not a construction photo. It shows no site, work or materials, so it is not evidence of progress on any stage. It may have been uploaded by mistake.",
+        "category": "other",
+        "summary": "Photo of a foreign national identity card (personal ID) lying on a marbled countertop; unrelated to the project.",
+        "relevance": "None identified. The card names an individual and a residential address that is not 557 Hartley Blvd. Nothing in it ties to a stage, milestone, contractor or permit.",
+        "evidenceClasses": [],
+        "verificationStatus": "ai_interpretation",
+        "extracted": [
+          {
+            "label": "Visible content",
+            "value": "Government-issued personal identity card (back side) with addresses, QR code and machine-readable zone, on a stone countertop",
+            "verification": "extracted"
+          },
+          {
+            "label": "Project link",
+            "value": "No reference to 557 Hartley Blvd, a contractor, permit or building work",
+            "verification": "ai_interpretation"
+          },
+          {
+            "label": "Personal data",
+            "value": "Contains sensitive personal identifiers; deliberately not copied into the dashboard record",
+            "verification": "ai_interpretation"
+          }
+        ],
+        "limitations": "Shows no construction activity, material, date or signage. It does not prove progress, compliance, contractor identity or anything else about the project.",
+        "recommendedActions": [
+          "Confirm with the uploader whether this was uploaded by mistake",
+          "Have an administrator remove the file from the project, since it holds sensitive personal information",
+          "Upload actual site photos for the basement conversion instead"
+        ],
+        "sourceDocument": "IMG_1481.jpeg",
+        "confidence": 0.9
+      },
+      "status": "added",
+      "result": {
+        "status": "added",
+        "remarkId": "dbd9d3d4-c17a-4b6b-830a-16333865543a",
+        "evidenceClasses": [],
+        "notes": []
+      }
+    },
+    {
+      "tool": "record_document_intelligence",
+      "input": {
+        "siteId": "53030545-3575-4ce1-9226-2790362bea48",
+        "assetId": "03d0af4c-7348-4434-8b05-c2fc92d0368c",
+        "evidenceClasses": [],
+        "docType": "Personal identity card photo (not a project document)",
+        "summary": "Photo of a personal national identity card on a countertop; unrelated to construction.",
+        "purpose": "Unknown; likely uploaded in error.",
+        "relevance": "No relevance to the basement second-suite conversion at 557 Hartley Blvd.",
+        "verificationStatus": "ai_interpretation",
+        "risks": [
+          "Contains sensitive personal information (identity card) stored in a project file area",
+          "Currently registered under category 'progress', which could be mistaken for site evidence"
+        ],
+        "limitations": "Not evidence of construction, approval, compliance or payment.",
+        "recommendedActions": [
+          "Review and remove the file if it was uploaded by mistake",
+          "Do not use as progress evidence"
+        ],
+        "confidence": 0.9
+      },
+      "status": "recorded",
+      "result": {
+        "status": "recorded",
+        "assetId": "03d0af4c-7348-4434-8b05-c2fc92d0368c",
+        "evidenceClasses": [],
+        "revisions": 0,
+        "notes": []
+      }
+    },
+    {
+      "tool": "record_finding",
+      "input": {
+        "siteId": "53030545-3575-4ce1-9226-2790362bea48",
+        "kind": "inconsistency",
+        "severity": "medium",
+        "title": "Personal ID card photo uploaded as a progress image",
+        "detail": "IMG_1481.jpeg is a photo of a personal identity card, not a site photo, and is registered under category 'progress'. It contains sensitive personal data and proves nothing about the project. Confirm with the uploader and remove it, and do not count it as progress evidence.",
+        "relatedAssets": [
+          "IMG_1481.jpeg"
+        ]
+      },
+      "status": "recorded",
+      "result": {
+        "status": "recorded",
+        "findingId": "c54ac4f9-228f-481c-93c2-7ad286bbe913"
+      }
+    },
+    {
+      "tool": "finish",
+      "input": {
+        "summary": "IMG_1481.jpeg is a personal ID card photo, not site evidence. It was already registered. I recorded a remark and document intelligence with no personal identifiers copied, and raised a finding to review and remove it. No status changes were proposed.",
+        "confidence": 0.9,
+        "notes": "The file holds sensitive personal data and sits under the 'progress' category. A human should confirm with the uploader and remove it."
+      },
+      "status": "done",
+      "result": {
+        "status": "done",
+        "summary": "IMG_1481.jpeg is a personal ID card photo, not site evidence. It was already registered. I recorded a remark and document intelligence with no personal identifiers copied, and raised a finding to review and remove it. No status changes were proposed.",
+        "confidence": 0.9
+      }
+    }
+  ],
+  "pendingApprovals": [],
+  "costUsd": 0.070601,
+  "tokens": {
+    "input": 15424,
+    "output": 2277,
+    "cacheWrite": 2787,
+    "cacheRead": 50076
+  },
+  "dashboard": {
+    "progress": {
+      "stages": 10,
+      "stagesCompleted": 0,
+      "milestones": 31,
+      "milestonesCompleted": 0,
+      "percent": 0
+    },
+    "siteStatus": "in_progress",
+    "stages": [
+      {
+        "stageId": "0bb19513-5436-4821-8bf8-2b4cd3ecfbf5",
+        "name": "Feasibility & Due Diligence",
+        "status": "not_started"
+      },
+      {
+        "stageId": "9a1489e2-cc1f-438c-8baa-fc9373da0609",
+        "name": "Design & Permits",
+        "status": "not_started"
+      },
+      {
+        "stageId": "2d10e5f2-1dd2-416d-bd30-871576773530",
+        "name": "Site Preparation & Excavation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "68754d94-943c-4d77-8a0f-04bd3993f42b",
+        "name": "Foundation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "e8542d39-d821-417a-a264-d17c3486f17f",
+        "name": "Structural Framing",
+        "status": "not_started"
+      },
+      {
+        "stageId": "758f939e-9fe0-4699-bf7d-94f6e4f1f218",
+        "name": "Building Envelope",
+        "status": "not_started"
+      },
+      {
+        "stageId": "155c0264-0e07-42e6-8878-0d2d473ff048",
+        "name": "Rough-In Services",
+        "status": "not_started"
+      },
+      {
+        "stageId": "89f01fcf-15ed-4077-ada7-ea175e6093e2",
+        "name": "Interior Finishes",
+        "status": "not_started"
+      },
+      {
+        "stageId": "3b81d6ee-474f-404b-be45-9155a4895b5e",
+        "name": "Landscaping & Exterior Works",
+        "status": "not_started"
+      },
+      {
+        "stageId": "3bd34703-aba7-4d31-ad88-87c1a5e4fb53",
+        "name": "Handover & Closeout",
+        "status": "not_started"
+      }
+    ],
+    "milestones": [
+      {
+        "milestoneId": "e3f947fe-9e6e-42e3-b01e-3a567c34b2c3",
+        "name": "Site survey & boundary confirmed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "10f0f49b-520f-4a25-b7fb-4911a2e8615b",
+        "name": "Zoning & by-law review completed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "15596e02-473c-4bea-9168-80573231556d",
+        "name": "Feasibility budget approved",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "24a69d3f-7ef9-46a4-b92a-0e7b1c82beba",
+        "name": "Architectural drawings issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "6ad6a6ff-2709-4f90-814b-dea34d303e21",
+        "name": "Structural & MEP drawings complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "5f866b41-76f0-4d19-8d6e-bd0475e19abe",
+        "name": "Building permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "a799bf78-7a19-46ac-bdd0-b274c6715b54",
+        "name": "Utilities & services located",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "77813d98-2b4f-44b7-8cfb-fceccace6279",
+        "name": "Clearing & demolition complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "832155f0-94a6-4def-bfe6-ec51ab04d68d",
+        "name": "Excavation & shoring inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "42f3cea6-95ce-4487-9e75-d0cb0064538e",
+        "name": "Footings inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "2d579931-fee0-4091-9186-7403ee03d237",
+        "name": "Foundation walls poured & waterproofed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "b226c4ff-8ee8-47ae-b5ff-443997f59767",
+        "name": "Backfill & drainage complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9b0ef7c9-6447-4b06-9abb-882741360312",
+        "name": "Floor structure complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "2f0a7567-1847-4cd8-804f-315b59d62a70",
+        "name": "Framing erected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c6883253-20aa-4eca-89c1-bbba11cb1911",
+        "name": "Framing inspection passed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "772a9fda-98a4-45b1-a4e7-52ad74316699",
+        "name": "Roof trusses & sheathing complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "02e3a5c9-0c6d-4d71-93aa-11adbe88bd77",
+        "name": "Roofing watertight",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "0d7aa6a0-72e8-4c20-8566-d2d6869552d6",
+        "name": "Windows & exterior doors installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "fb6ab54a-822c-4cda-a4e9-bb8aa8b0adb2",
+        "name": "Cladding & insulation complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c5a2c344-c495-447d-ad9e-4f808a36d1b7",
+        "name": "Electrical rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "7ae91f02-d696-4d89-a846-ec3902025f4b",
+        "name": "Plumbing rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "ae02a856-9df4-459a-9eb9-7ee54a06f044",
+        "name": "HVAC rough-in complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "b1c01865-6619-435f-a1ac-9edb448b0332",
+        "name": "Drywall & plaster complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "0c984257-ab16-47ef-b65a-aaa219f2a934",
+        "name": "Cabinetry & millwork installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "8f53202e-9088-4c0f-9ad9-efe968e93ca0",
+        "name": "Flooring & paint complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "5b807223-c96e-4738-8dae-0841bc5d1e12",
+        "name": "Grading & drainage certified",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "077a45ee-f692-4c7a-b768-990580c64c55",
+        "name": "Driveway & hardscaping complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "0ef63e1a-b9bc-49c8-a5c7-20457fbc1ef1",
+        "name": "Landscaping planted",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "685327eb-b5d0-4be1-a98a-bccd133e7777",
+        "name": "Occupancy permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "ac058383-e72e-47e9-9d8c-bbbc3f630600",
+        "name": "Pre-delivery inspection (PDI) complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "47058bdc-fa35-42a1-a628-44d6d50ef999",
+        "name": "Final accounts & warranty documents issued",
+        "status": "pending"
+      }
+    ],
+    "assetCount": 6,
+    "remarkCount": 5,
+    "latestRemark": {
+      "remarkId": "dbd9d3d4-c17a-4b6b-830a-16333865543a",
+      "text": "IMG_1481.jpeg is a photo of a personal identity card on a stone countertop, not a construction photo. It shows no site, work or materials, so it is not evidence of progress on any stage. It may have been uploaded by mistake.",
+      "authorName": "CPPI Agent (AI)",
+      "createdAt": "2026-11-22T01:04:06Z"
+    }
+  }
+}
