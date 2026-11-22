@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
-  "updatedAt": "2026-11-22T16:08:22Z",
+  "updatedAt": "2026-11-22T16:08:46Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 28,
-    "remarkCount": 29,
+    "remarkCount": 30,
     "latestRemark": {
-      "remarkId": "6e00099f-2104-4446-be6b-dc89d504a282",
-      "text": "Photo (no date stamp or caption): a grassy, weedy yard beside a wooden plank fence, with a strip of bare disturbed soil near the fence, a juniper shrub on the right, and scattered dead leaves. No construction work, equipment or materials are visible.",
+      "remarkId": "53163e8e-744d-4c0e-bf2b-4eade92d1080",
+      "text": "Photo (no date stamp or caption): a side yard of mown, weedy grass between a wooden fence and the house, with a weathered wood deck pad, a small wooden shed, a concrete step and a raised planter box. No construction work, equipment or materials are visible.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T16:08:17Z"
+      "createdAt": "2026-11-22T16:08:41Z"
     }
   }
 }
