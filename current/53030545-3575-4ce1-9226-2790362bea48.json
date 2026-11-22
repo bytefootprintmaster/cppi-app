@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "53030545-3575-4ce1-9226-2790362bea48",
-  "updatedAt": "2026-11-22T01:05:39Z",
+  "updatedAt": "2026-11-22T01:06:20Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -220,13 +220,13 @@
         "status": "pending"
       }
     ],
-    "assetCount": 7,
-    "remarkCount": 8,
+    "assetCount": 8,
+    "remarkCount": 9,
     "latestRemark": {
-      "remarkId": "6511511f-021e-4f1f-97d1-48ba7465aa5d",
-      "text": "Town of Milton final letter dated April 20, 2023: no appeals were received, so the Committee of Adjustment minor variance decision for 557 Hartley Blvd is final and binding, subject to conditions. The letter cites file A23-023/M, but the filename says A23-024.",
+      "remarkId": "8821e258-9461-4031-b7de-1f3ad3b5c4a6",
+      "text": "Town of Milton zoning preconsultation sheet for 557 Hartley Blvd, signed by Zoning Officer Rob Catarino, Feb 7, 2023. It lists two by-law deficiencies to legalize: an A/C unit in the exterior side yard, and a garage 5.6 m long instead of 6.0 m (-0.4 m). Planning evidence only, not construction.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T01:05:32Z"
+      "createdAt": "2026-11-22T01:06:14Z"
     }
   }
 }

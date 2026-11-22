@@ -1,0 +1,946 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "recordedAt": "2026-11-22T01:06:20Z",
+  "jobId": "80b81ff68678",
+  "trigger": "s3",
+  "task": "progress_update_from_file",
+  "agent": "progress",
+  "model": "claude-sonnet-5-5",
+  "source": {
+    "siteId": "53030545-3575-4ce1-9226-2790362bea48",
+    "s3Key": "sites/53030545-3575-4ce1-9226-2790362bea48/document/d6bd274e-102e-4bac-822b-d1684ce9cfec-557_HartleyBlvd_Zoning_Sheet.pdf",
+    "fileName": "557_HartleyBlvd_Zoning_Sheet.pdf",
+    "kind": "document",
+    "etag": "ce0efedaf757a29a2c71ed4ca3f3fbcc",
+    "size": 130948
+  },
+  "summary": "Processed the zoning preconsultation sheet, which was already registered. I recorded a remark and the document intelligence, added 3 links, and proposed the 'Zoning & by-law review completed' milestone as in_progress (waiting for approval).",
+  "confidence": 0.88,
+  "steps": 4,
+  "actions": [
+    {
+      "tool": "get_project_state",
+      "input": {
+        "siteId": "53030545-3575-4ce1-9226-2790362bea48"
+      },
+      "status": "ok"
+    },
+    {
+      "tool": "get_project_intelligence",
+      "input": {
+        "siteId": "53030545-3575-4ce1-9226-2790362bea48"
+      },
+      "status": "ok",
+      "result": {
+        "siteId": "53030545-3575-4ce1-9226-2790362bea48",
+        "documentCount": 7,
+        "documents": [
+          {
+            "assetId": "cdeb9091-7513-4ad6-8bf8-8800eb900272",
+            "name": "557 Hartley Blvd Milton Minor variance A23-024 FINAL LETTER.pdf",
+            "docType": "Committee of Adjustment final letter – no appeals (minor variance)",
+            "issuer": "Town of Milton, Committee of Adjustment and Consent",
+            "documentDate": "2023-04-20",
+            "referenceNumber": "A23-023/M",
+            "evidenceClasses": [
+              "permit_approval"
+            ],
+            "verificationStatus": "extracted",
+            "summary": "Letter confirming the appeal period for the minor variance decision has expired with no appeals, making the decision final and binding subject to conditions.",
+            "purpose": "Notifies the applicant that the variance is final and that remaining conditions must be satisfied, or the approval lapses.",
+            "limitations": "Shows the decision is final, not what it granted. Not evidence of construction, inspection or condition clearance.",
+            "missingInformation": [
+              "March 30, 2023 Notice of Decision (relief granted and conditions)",
+              "Evidence that conditions were cleared",
+              "Approved sketch/site plan"
+            ],
+            "inconsistencies": [
+              "Filename cites A23-024 but the letter states File A23-023/M; the existing permit documents' missing-info lists refer to A23/024"
+            ],
+            "risks": [
+              "Approval lapses if conditions are not satisfied; no reminders are issued by the Town",
+              "Conditions are unknown, so compliance cannot be confirmed"
+            ],
+            "recommendedActions": [
+              "Obtain the Notice of Decision and check the conditions",
+              "Get written clearance of conditions from the Town",
+              "Confirm the correct file number with the Committee Secretary-Treasurer"
+            ],
+            "confidence": 0.9,
+            "updatedAt": "2026-11-22T01:05:32Z"
+          },
+          {
+            "assetId": "424934ba-6af4-4487-88f6-17c001ad6c89",
+            "name": "Garage 3.jpeg",
+            "docType": "Site photograph (garage interior)",
+            "issuer": null,
+            "documentDate": null,
+            "referenceNumber": null,
+            "evidenceClasses": [
+              "construction_progress"
+            ],
+            "verificationStatus": "ai_interpretation",
+            "summary": "Photo of a finished garage interior with a parked SUV, garage door and opener hardware.",
+            "purpose": null,
+            "limitations": "A photo shows only what is visible. It does not establish location, date, compliance or progress.",
+            "missingInformation": [
+              "Date and location of photo",
+              "Photos of basement conversion work"
+            ],
+            "inconsistencies": [],
+            "risks": [],
+            "recommendedActions": [
+              "Confirm purpose of the Garage photo set",
+              "Upload dated basement work photos"
+            ],
+            "confidence": 0.8,
+            "updatedAt": "2026-11-22T01:04:57Z"
+          },
+          {
+            "assetId": "e9fd2f64-5d0c-49d7-9049-a863c7aebef6",
+            "name": "Garage1.jpeg",
+            "docType": "Site photo (garage interior)",
+            "issuer": null,
+            "documentDate": null,
+            "referenceNumber": null,
+            "evidenceClasses": [
+              "construction_progress"
+            ],
+            "verificationStatus": "ai_interpretation",
+            "summary": "Photo of a finished, in-use garage interior with a parked SUV; no construction activity visible.",
+            "purpose": "Uploaded as a progress photo; content appears to be existing garage conditions.",
+            "limitations": "A photo shows only what is visible; it proves no construction progress, compliance, concealed work or completion.",
+            "missingInformation": [
+              "Date taken",
+              "Location confirmation",
+              "Link to the work being documented"
+            ],
+            "inconsistencies": [],
+            "risks": [],
+            "recommendedActions": [
+              "Ask uploader for purpose of photo",
+              "Upload dated photos of basement conversion work"
+            ],
+            "confidence": 0.7,
+            "updatedAt": "2026-11-22T01:04:33Z"
+          },
+          {
+            "assetId": "03d0af4c-7348-4434-8b05-c2fc92d0368c",
+            "name": "IMG_1481.jpeg",
+            "docType": "Personal identity card photo (not a project document)",
+            "issuer": null,
+            "documentDate": null,
+            "referenceNumber": null,
+            "evidenceClasses": [],
+            "verificationStatus": "ai_interpretation",
+            "summary": "Photo of a personal national identity card on a countertop; unrelated to construction.",
+            "purpose": "Unknown; likely uploaded in error.",
+            "limitations": "Not evidence of construction, approval, compliance or payment.",
+            "missingInformation": [],
+            "inconsistencies": [],
+            "risks": [
+              "Contains sensitive personal information (identity card) stored in a project file area",
+              "Currently registered under category 'progress', which could be mistaken for site evidence"
+            ],
+            "recommendedActions": [
+              "Review and remove the file if it was uploaded by mistake",
+              "Do not use as progress evidence"
+            ],
+            "confidence": 0.9,
+            "updatedAt": "2026-11-22T01:04:06Z"
+          },
+          {
+            "assetId": "990df633-4952-447c-9609-10c075669a2c",
+            "name": "Garage 2.jpeg",
+            "docType": "Site photograph (garage interior)",
+            "issuer": null,
+            "documentDate": null,
+            "referenceNumber": null,
+            "evidenceClasses": [
+              "construction_progress"
+            ],
+            "verificationStatus": "ai_interpretation",
+            "summary": "Garage interior with parked SUV, a textured half-height wall with grey ledge and blue-grey wall above, a green bin and household items.",
+            "purpose": "Uploaded as a project photo. No caption or date is given, so its intended purpose is unclear.",
+            "limitations": "A photo shows only what is visible. It cannot show compliance, fire separation, concealed work, structural adequacy or completion. No construction activity is visible.",
+            "missingInformation": [
+              "Date taken",
+              "Location within the building and the work the photo is meant to show",
+              "Link to a permit inspection or milestone"
+            ],
+            "inconsistencies": [],
+            "risks": [],
+            "recommendedActions": [
+              "Request a caption with date and location",
+              "Upload dated photos of the basement suite work"
+            ],
+            "confidence": 0.6,
+            "updatedAt": "2026-11-22T01:03:40Z"
+          },
+          {
+            "assetId": "8dbaa6d5-f2c1-4966-ba99-0ced0925ae02",
+            "name": "Fwd PERMIT ISSUANCE Permit #22-12163, 557 Hartley Blvd.pdf",
+            "docType": "Town-stamped permit drawing set (forwarded permit issuance email attachment)",
+            "issuer": "Town of Milton Planning and Development (Building Division); drawings by weDesignBuild Inc.",
+            "documentDate": "2023-03-28",
+            "referenceNumber": "22-12163",
+            "evidenceClasses": [
+              "permit_approval",
+              "design"
+            ],
+            "verificationStatus": "extracted",
+            "summary": "15-page PDF: permit notes page, drawings A100–A110 stamped Building Reviewed (Mar 28, 2023) and Zoning Approved (Apr 20, 2023), 2003 lot grading plan, Town sprinkler diagram and basement insulation detail.",
+            "purpose": "Records the Town-reviewed drawings that accompanied permit issuance for a basement second suite.",
+            "limitations": "Approval and design only; no proof of construction, inspection or completion.",
+            "missingInformation": [
+              "Permit certificate page and inspection list in this file",
+              "Minor Variance A23/024 decision",
+              "Contractor identity, WSIB and insurance",
+              "ESA electrical notification",
+              "Evidence of commencement or inspections"
+            ],
+            "inconsistencies": [
+              "Drawing list on A100 numbers drawings A101–A110 differently from the title blocks (e.g. site plan listed as A102, existing basement as A103); minor",
+              "2003 grading plan shows zone MD1-E1 whereas the stamp shows RMD1*35",
+              "Area statistics values are blank in the extracted text"
+            ],
+            "risks": [
+              "Permit start condition may have lapsed given dashboard start date 2024-11-21 (already an open finding)"
+            ],
+            "recommendedActions": [
+              "Treat as supporting copy of permit binder",
+              "Confirm permit validity with the Town",
+              "Request contractor compliance documents"
+            ],
+            "confidence": 0.88,
+            "updatedAt": "2026-11-22T01:01:14Z"
+          },
+          {
+            "assetId": "4540ea88-7238-4738-a03f-f5c89e13b075",
+            "name": "20230428 - 557 Hartley Blvd - Milton - Approved Permit BINDER.pdf",
+            "docType": "Building permit with approved drawing set (permit binder)",
+            "issuer": "Town of Milton, Planning and Development Department (Building Division)",
+            "documentDate": "2023-04-28",
+            "referenceNumber": "2022 012163 00 RA",
+            "evidenceClasses": [
+              "permit_approval",
+              "design",
+              "engineering"
+            ],
+            "verificationStatus": "extracted",
+            "summary": "18-page approved permit binder: building permit page, reviewed drawings A100-A110, 2003 lot grading plan, Town sprinkler/furnace room diagram and basement insulation detail.",
+            "purpose": "Authorizes construction of a basement second suite and records approved plans and mandatory inspections.",
+            "limitations": "Approval/design document only; does not prove construction, inspection pass or completion.",
+            "missingInformation": [
+              "Evidence of construction commencement",
+              "Inspection records",
+              "Contractor identity, WSIB and insurance",
+              "Minor Variance A23/024 decision",
+              "Folder #23-2756 permit",
+              "Electrical (ESA) notification"
+            ],
+            "inconsistencies": [
+              "A100 drawing list numbers site plan A102 and basement plans A103/A104, but drawing A101 is General Notes and the permit page lists the main drawing sequence differently in the list vs titles (list says A103 existing basement, A104 new basement - consistent) - minor; the 2003 lot grading plan shows lot as MD1-E1 whereas permit zone is RMD1*35",
+              "Site description says project start 2024-11-21 while permit issued April 28, 2023; 6-month start condition may have lapsed"
+            ],
+            "risks": [
+              "Permit may be revocable if construction did not start by about Oct 28, 2023",
+              "Door at garage and window wells need inspector site review at final",
+              "Owner-use basement under separate permit; suite must stay separated"
+            ],
+            "recommendedActions": [
+              "Confirm permit status with Town given dashboard start date 2024-11-21",
+              "Upload inspection records as they occur",
+              "Obtain contractor compliance documents"
+            ],
+            "confidence": 0.9,
+            "updatedAt": "2026-11-22T01:00:00Z"
+          }
+        ],
+        "evidenceCovered": [
+          "construction_progress",
+          "design",
+          "engineering",
+          "permit_approval"
+        ],
+        "evidenceMissing": [
+          "land_survey",
+          "contractor_compliance",
+          "procurement_quote",
+          "executed_contract",
+          "commencement",
+          "inspection_verification",
+          "financial_payment",
+          "completion_occupancy"
+        ],
+        "findingCount": 4,
+        "openFindings": [
+          {
+            "findingId": "a3627fc5-169f-4e6a-a46f-6d72d74bee3c",
+            "kind": "missing_document",
+            "severity": "medium",
+            "title": "Minor variance Notice of Decision and condition clearances not on file",
+            "detail": "The Apr 20, 2023 final letter says the variance is binding only if all conditions in the March 30 Notice of Decision are satisfied, and the approval lapses otherwise. The Town sends no reminders. The Notice of Decision and any clearance of conditions are not on file. Obtain both. The letter cites file A23-023/M while the filename says A23-024, so confirm the correct number.",
+            "relatedAssets": [
+              "cdeb9091-7513-4ad6-8bf8-8800eb900272"
+            ],
+            "status": "open",
+            "createdAt": "2026-11-22T01:05:34Z"
+          },
+          {
+            "findingId": "c54ac4f9-228f-481c-93c2-7ad286bbe913",
+            "kind": "inconsistency",
+            "severity": "medium",
+            "title": "Personal ID card photo uploaded as a progress image",
+            "detail": "IMG_1481.jpeg is a photo of a personal identity card, not a site photo, and is registered under category 'progress'. It contains sensitive personal data and proves nothing about the project. Confirm with the uploader and remove it, and do not count it as progress evidence.",
+            "relatedAssets": [
+              "IMG_1481.jpeg"
+            ],
+            "status": "open",
+            "createdAt": "2026-11-22T01:04:07Z"
+          },
+          {
+            "findingId": "31b66073-f2d9-4ccf-ae95-5c18f9463a3e",
+            "kind": "inconsistency",
+            "severity": "medium",
+            "title": "Permit issued 2023-04-28 but project start date is 2024-11-21",
+            "detail": "The permit states it is subject to revocation if construction is not started within 6 months of issuance (about Oct 28, 2023). The dashboard start date is 2024-11-21, and there is no commencement evidence on file. Confirm with the Town that permit 2022 012163 00 RA is still valid, or whether construction started earlier.",
+            "relatedAssets": [
+              "4540ea88-7238-4738-a03f-f5c89e13b075"
+            ],
+            "status": "open",
+            "createdAt": "2026-11-22T01:00:12Z"
+          },
+          {
+            "findingId": "aa444992-9c4c-4963-b203-49d907183740",
+            "kind": "inconsistency",
+            "severity": "medium",
+            "title": "Permit start condition vs project start date",
+            "detail": "Permit 2022 012163 00 RA was issued April 28, 2023 and is revocable if construction is not started within 6 months. The project start date on the dashboard is 2024-11-21. Confirm with the Town of Milton that the permit is still valid and obtain evidence of commencement.",
+            "relatedAssets": [
+              "4540ea88-7238-4738-a03f-f5c89e13b075"
+            ],
+            "status": "open",
+            "createdAt": "2026-11-22T01:00:09Z"
+          }
+        ],
+        "relationshipCount": 9,
+        "relationships": [
+          {
+            "fromType": "document",
+            "fromId": "990df633-4952-447c-9609-10c075669a2c",
+            "fromLabel": "Garage 2.jpeg",
+            "relation": "part_of",
+            "toType": "project",
+            "toId": "53030545-3575-4ce1-9226-2790362bea48",
+            "toLabel": "557 Hartley Blvd. Milton",
+            "note": null
+          },
+          {
+            "fromType": "document",
+            "fromId": "4540ea88-7238-4738-a03f-f5c89e13b075",
+            "fromLabel": "Approved Permit BINDER 2022 012163 00 RA",
+            "relation": "references",
+            "toType": "property",
+            "toId": "Lot 87, 20M-874",
+            "toLabel": "557 Hartley Blvd, Lot 87, Plan 20M-874",
+            "note": null
+          },
+          {
+            "fromType": "document",
+            "fromId": "cdeb9091-7513-4ad6-8bf8-8800eb900272",
+            "fromLabel": "Minor Variance Final Letter A23-023/M",
+            "relation": "references",
+            "toType": "property",
+            "toId": "Lot 87, 20M-874",
+            "toLabel": "557 Hartley Blvd, Lot 87, Plan 20M-874",
+            "note": null
+          },
+          {
+            "fromType": "document",
+            "fromId": "8dbaa6d5-f2c1-4966-ba99-0ced0925ae02",
+            "fromLabel": "Fwd PERMIT ISSUANCE Permit #22-12163",
+            "relation": "relates_to",
+            "toType": "document",
+            "toId": "4540ea88-7238-4738-a03f-f5c89e13b075",
+            "toLabel": "Approved Permit BINDER 2022 012163 00 RA",
+            "note": null
+          },
+          {
+            "fromType": "document",
+            "fromId": "cdeb9091-7513-4ad6-8bf8-8800eb900272",
+            "fromLabel": "Minor Variance Final Letter A23-023/M",
+            "relation": "relates_to",
+            "toType": "document",
+            "toId": "4540ea88-7238-4738-a03f-f5c89e13b075",
+            "toLabel": "Approved Permit BINDER 2022 012163 00 RA",
+            "note": "Zoning approval stamped Apr 20, 2023 on permit drawings, same date as this letter"
+          },
+          {
+            "fromType": "document",
+            "fromId": "cdeb9091-7513-4ad6-8bf8-8800eb900272",
+            "fromLabel": "Minor Variance Final Letter A23-023/M",
+            "relation": "part_of",
+            "toType": "project",
+            "toId": "53030545-3575-4ce1-9226-2790362bea48",
+            "toLabel": "557 Hartley Blvd. Milton",
+            "note": null
+          },
+          {
+            "fromType": "document",
+            "fromId": "8dbaa6d5-f2c1-4966-ba99-0ced0925ae02",
+            "fromLabel": "Fwd PERMIT ISSUANCE Permit #22-12163 drawings",
+            "relation": "references",
+            "toType": "document",
+            "toId": "4540ea88-7238-4738-a03f-f5c89e13b075",
+            "toLabel": "Approved Permit BINDER 2022 012163 00 RA",
+            "note": "Same permit file and drawing set"
+          },
+          {
+            "fromType": "document",
+            "fromId": "8dbaa6d5-f2c1-4966-ba99-0ced0925ae02",
+            "fromLabel": "Fwd PERMIT ISSUANCE Permit #22-12163",
+            "relation": "part_of",
+            "toType": "project",
+            "toId": "53030545-3575-4ce1-9226-2790362bea48",
+            "toLabel": "557 Hartley Blvd. Milton",
+            "note": null
+          },
+          {
+            "fromType": "document",
+            "fromId": "4540ea88-7238-4738-a03f-f5c89e13b075",
+            "fromLabel": "Approved Permit BINDER 2022 012163 00 RA",
+            "relation": "part_of",
+            "toType": "project",
+            "toId": "53030545-3575-4ce1-9226-2790362bea48",
+            "toLabel": "557 Hartley Blvd. Milton",
+            "note": null
+          }
+        ]
+      }
+    },
+    {
+      "tool": "register_asset",
+      "input": {
+        "siteId": "53030545-3575-4ce1-9226-2790362bea48",
+        "name": "557_HartleyBlvd_Zoning_Sheet.pdf",
+        "s3Key": "sites/53030545-3575-4ce1-9226-2790362bea48/document/d6bd274e-102e-4bac-822b-d1684ce9cfec-557_HartleyBlvd_Zoning_Sheet.pdf",
+        "type": "document",
+        "category": "permit",
+        "contentType": "application/pdf",
+        "size": 130948,
+        "stageId": "0bb19513-5436-4821-8bf8-2b4cd3ecfbf5"
+      },
+      "status": "already_registered",
+      "result": {
+        "status": "already_registered",
+        "assetId": "7140fc0c-47fb-4d9c-8443-b53155e0fd18"
+      }
+    },
+    {
+      "tool": "add_progress_remark",
+      "input": {
+        "siteId": "53030545-3575-4ce1-9226-2790362bea48",
+        "text": "Town of Milton zoning preconsultation sheet for 557 Hartley Blvd, signed by Zoning Officer Rob Catarino, Feb 7, 2023. It lists two by-law deficiencies to legalize: an A/C unit in the exterior side yard, and a garage 5.6 m long instead of 6.0 m (-0.4 m). Planning evidence only, not construction.",
+        "category": "permit",
+        "stageId": "0bb19513-5436-4821-8bf8-2b4cd3ecfbf5",
+        "sourceDocument": "557_HartleyBlvd_Zoning_Sheet.pdf",
+        "sourceRef": "Page 1",
+        "summary": "Internal zoning preconsultation / minor variance request sheet identifying two zoning deficiencies at 557 Hartley Blvd.",
+        "evidenceClasses": [
+          "permit_approval"
+        ],
+        "verificationStatus": "extracted",
+        "confidence": 0.88,
+        "extracted": [
+          {
+            "label": "Document type",
+            "value": "Zoning Preconsultation – Minor Variance Application/Request for Permission (internal use)",
+            "verification": "extracted"
+          },
+          {
+            "label": "Property",
+            "value": "557 Hartley Blvd.",
+            "verification": "extracted"
+          },
+          {
+            "label": "Signed by / date",
+            "value": "Rob Catarino, Zoning Officer, Feb. 7/23",
+            "verification": "extracted"
+          },
+          {
+            "label": "Zoning by-law / zone",
+            "value": "016-2014; zone RMD1*35 (line 2 reads RMD1-35)",
+            "verification": "extracted"
+          },
+          {
+            "label": "Purpose",
+            "value": "To legalize existing on-site conditions; existing, residential",
+            "verification": "extracted"
+          },
+          {
+            "label": "Variance type",
+            "value": "Type 2",
+            "verification": "extracted"
+          },
+          {
+            "label": "Item 1",
+            "value": "Sec. 13.1.1.35 i) c): A/C units only in rear or interior side yards; existing unit in exterior side yard, 1.2 m setback",
+            "verification": "extracted"
+          },
+          {
+            "label": "Item 2",
+            "value": "Sec. 4.2.2.1 v): garage parking space min 2.9 m x 6.0 m; garage length 5.6 m, difference -0.4 m",
+            "verification": "extracted"
+          },
+          {
+            "label": "Background boxes ticked",
+            "value": "Building Permit Application; Source Water Protection (not in wellhead area). No Order to Comply or Stop Work Order ticked",
+            "verification": "extracted"
+          },
+          {
+            "label": "Application file no. / applicant",
+            "value": "Blank on the sheet",
+            "verification": "extracted"
+          }
+        ],
+        "relevance": "Explains why the minor variance (file A23-023/M, final Apr 20, 2023) was needed before the zoning approval stamp on the permit drawings. It supports the Feasibility zoning review and the garage/A-C conditions in the basement suite permit.",
+        "limitations": "Preliminary internal sheet based on applicant information and subject to further review. It does not show the variance was granted, the conditions, or that any work was built or inspected. The file number and applicant fields are blank.",
+        "recommendedActions": [
+          "Obtain the March 30, 2023 Notice of Decision and confirm both items were granted",
+          "Confirm the correct Committee of Adjustment file number",
+          "Get written clearance of any variance conditions"
+        ],
+        "relatedDocuments": [
+          "557 Hartley Blvd Milton Minor variance A23-024 FINAL LETTER.pdf",
+          "20230428 - 557 Hartley Blvd - Milton - Approved Permit BINDER.pdf"
+        ]
+      },
+      "status": "added",
+      "result": {
+        "status": "added",
+        "remarkId": "8821e258-9461-4031-b7de-1f3ad3b5c4a6",
+        "evidenceClasses": [
+          "permit_approval"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "tool": "record_document_intelligence",
+      "input": {
+        "siteId": "53030545-3575-4ce1-9226-2790362bea48",
+        "assetId": "7140fc0c-47fb-4d9c-8443-b53155e0fd18",
+        "docType": "Zoning preconsultation / minor variance request sheet",
+        "issuer": "Town of Milton, Zoning Section (Zoning Officer Rob Catarino)",
+        "documentDate": "2023-02-07",
+        "property": "557 Hartley Blvd., Milton",
+        "project": "557 Hartley Blvd. Milton – basement secondary suite",
+        "evidenceClasses": [
+          "permit_approval"
+        ],
+        "summary": "Internal Town zoning preconsultation sheet listing two zoning deficiencies at an existing residential property to be legalized through a minor variance.",
+        "purpose": "Identifies which by-law provisions the existing conditions fail, to support a Committee of Adjustment minor variance application.",
+        "relevance": "Lifecycle position: Approvals (pre-permit/feasibility). Background to the minor variance final letter and zoning approval on the permit drawings.",
+        "facts": [
+          {
+            "label": "Zoning by-law",
+            "value": "016-2014",
+            "verification": "extracted"
+          },
+          {
+            "label": "Zone",
+            "value": "RMD1*35",
+            "verification": "extracted"
+          },
+          {
+            "label": "Variance type",
+            "value": "Type 2",
+            "verification": "extracted"
+          },
+          {
+            "label": "Signed",
+            "value": "Rob Catarino, Zoning Officer, Feb 7, 2023",
+            "verification": "extracted"
+          },
+          {
+            "label": "Existing condition",
+            "value": "Existing, residential",
+            "verification": "extracted"
+          }
+        ],
+        "extracts": [
+          {
+            "kind": "regulatory",
+            "detail": "Sec. 13.1.1.35 i) c): A/C and heat exchange units permitted only in rear or interior side yards; existing A/C is in the exterior side yard with 1.2 m setback.",
+            "verification": "extracted"
+          },
+          {
+            "kind": "regulatory",
+            "detail": "Sec. 4.2.2.1 v): min parking space in garage 2.9 m x 6.0 m; garage length reduced to 5.6 m (-0.4 m).",
+            "verification": "extracted"
+          },
+          {
+            "kind": "regulatory",
+            "detail": "Background: Building Permit Application ticked; not in a wellhead protection area; no Order to Comply or Stop Work Order ticked.",
+            "verification": "extracted"
+          }
+        ],
+        "missingInformation": [
+          "Application file number and applicant/owner (blank)",
+          "Notice of Decision showing relief granted and conditions",
+          "Approved sketch showing the A/C location and garage dimensions"
+        ],
+        "inconsistencies": [
+          "Zone written as RMD1*35 on item 1 and RMD1-35 on item 2 (probably a typo)",
+          "Type 2 is defined for new dwellings or additions over 75 m2 while the purpose is to legalize existing conditions in a basement conversion; classification not explained"
+        ],
+        "risks": [
+          "Garage 0.4 m short of the minimum parking space length; if the variance conditions are not cleared, the approval lapses",
+          "Basement suite parking depends on the reduced garage length being legalized"
+        ],
+        "limitations": "Preliminary and internal; based on applicant information and subject to further review. Does not prove the variance was granted, any condition was cleared, or any construction was done.",
+        "recommendedActions": [
+          "Obtain Notice of Decision and condition clearances",
+          "Confirm file number A23-023/M vs A23-024",
+          "Check garage photos against the 5.6 m dimension only through a measured survey"
+        ],
+        "verificationStatus": "extracted",
+        "confidence": 0.88,
+        "sourceRef": "Page 1"
+      },
+      "status": "recorded",
+      "result": {
+        "status": "recorded",
+        "assetId": "7140fc0c-47fb-4d9c-8443-b53155e0fd18",
+        "evidenceClasses": [
+          "permit_approval"
+        ],
+        "revisions": 0,
+        "notes": []
+      }
+    },
+    {
+      "tool": "link_project_items",
+      "input": {
+        "siteId": "53030545-3575-4ce1-9226-2790362bea48",
+        "fromType": "document",
+        "fromId": "7140fc0c-47fb-4d9c-8443-b53155e0fd18",
+        "fromLabel": "Zoning Preconsultation Sheet, 557 Hartley Blvd",
+        "relation": "part_of",
+        "toType": "project",
+        "toId": "53030545-3575-4ce1-9226-2790362bea48",
+        "toLabel": "557 Hartley Blvd. Milton"
+      },
+      "status": "linked",
+      "result": {
+        "status": "linked",
+        "relId": "3f0c1247-03e0-4959-85dd-2ea1eec96c6c"
+      }
+    },
+    {
+      "tool": "link_project_items",
+      "input": {
+        "siteId": "53030545-3575-4ce1-9226-2790362bea48",
+        "fromType": "document",
+        "fromId": "7140fc0c-47fb-4d9c-8443-b53155e0fd18",
+        "fromLabel": "Zoning Preconsultation Sheet, 557 Hartley Blvd",
+        "relation": "relates_to",
+        "toType": "document",
+        "toId": "cdeb9091-7513-4ad6-8bf8-8800eb900272",
+        "toLabel": "Minor Variance Final Letter A23-023/M",
+        "note": "Preconsultation sheet identifies the deficiencies later addressed by the minor variance"
+      },
+      "status": "linked",
+      "result": {
+        "status": "linked",
+        "relId": "ef17a7d8-f03c-47c4-a53c-24fadcb012fa"
+      }
+    },
+    {
+      "tool": "link_project_items",
+      "input": {
+        "siteId": "53030545-3575-4ce1-9226-2790362bea48",
+        "fromType": "document",
+        "fromId": "7140fc0c-47fb-4d9c-8443-b53155e0fd18",
+        "fromLabel": "Zoning Preconsultation Sheet, 557 Hartley Blvd",
+        "relation": "references",
+        "toType": "property",
+        "toId": "Lot 87, 20M-874",
+        "toLabel": "557 Hartley Blvd, Lot 87, Plan 20M-874"
+      },
+      "status": "linked",
+      "result": {
+        "status": "linked",
+        "relId": "af2c9b31-c5fc-460e-9518-cfed438d4009"
+      }
+    },
+    {
+      "tool": "propose_milestone_status",
+      "input": {
+        "siteId": "53030545-3575-4ce1-9226-2790362bea48",
+        "milestoneId": "10f0f49b-520f-4a25-b7fb-4911a2e8615b",
+        "status": "in_progress",
+        "reason": "Town zoning officer's Feb 7, 2023 preconsultation sheet shows the zoning review has started and found two deficiencies. It is preliminary, and the Notice of Decision and condition clearances are not on file, so completion is not shown."
+      },
+      "status": "pending_approval",
+      "result": {
+        "status": "pending_approval",
+        "action_id": "05487b0b8dcb",
+        "preview": "Mark milestone *Zoning & by-law review completed* on *557 Hartley Blvd. Milton* as *in_progress*\nReason: Town zoning officer's Feb 7, 2023 preconsultation sheet shows the zoning review has started and found two deficiencies. It is preliminary, and the Notice of Decision and condition clearances are not on file, so completion is not shown.",
+        "note": "Queued for human approval. It has NOT been applied."
+      }
+    },
+    {
+      "tool": "finish",
+      "input": {
+        "summary": "Processed the zoning preconsultation sheet, which was already registered. I recorded a remark and the document intelligence, added 3 links, and proposed the 'Zoning & by-law review completed' milestone as in_progress (waiting for approval).",
+        "confidence": 0.88,
+        "notes": "The sheet is preliminary and has no file number or applicant. The Notice of Decision and condition clearances are still missing, and that finding is already open. I did not raise a duplicate finding."
+      },
+      "status": "done",
+      "result": {
+        "status": "done",
+        "summary": "Processed the zoning preconsultation sheet, which was already registered. I recorded a remark and the document intelligence, added 3 links, and proposed the 'Zoning & by-law review completed' milestone as in_progress (waiting for approval).",
+        "confidence": 0.88
+      }
+    }
+  ],
+  "pendingApprovals": [
+    "05487b0b8dcb"
+  ],
+  "costUsd": 0.164135,
+  "tokens": {
+    "input": 45828,
+    "output": 5164,
+    "cacheWrite": 2894,
+    "cacheRead": 68018
+  },
+  "dashboard": {
+    "progress": {
+      "stages": 10,
+      "stagesCompleted": 0,
+      "milestones": 31,
+      "milestonesCompleted": 0,
+      "percent": 0
+    },
+    "siteStatus": "in_progress",
+    "stages": [
+      {
+        "stageId": "0bb19513-5436-4821-8bf8-2b4cd3ecfbf5",
+        "name": "Feasibility & Due Diligence",
+        "status": "not_started"
+      },
+      {
+        "stageId": "9a1489e2-cc1f-438c-8baa-fc9373da0609",
+        "name": "Design & Permits",
+        "status": "not_started"
+      },
+      {
+        "stageId": "2d10e5f2-1dd2-416d-bd30-871576773530",
+        "name": "Site Preparation & Excavation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "68754d94-943c-4d77-8a0f-04bd3993f42b",
+        "name": "Foundation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "e8542d39-d821-417a-a264-d17c3486f17f",
+        "name": "Structural Framing",
+        "status": "not_started"
+      },
+      {
+        "stageId": "758f939e-9fe0-4699-bf7d-94f6e4f1f218",
+        "name": "Building Envelope",
+        "status": "not_started"
+      },
+      {
+        "stageId": "155c0264-0e07-42e6-8878-0d2d473ff048",
+        "name": "Rough-In Services",
+        "status": "not_started"
+      },
+      {
+        "stageId": "89f01fcf-15ed-4077-ada7-ea175e6093e2",
+        "name": "Interior Finishes",
+        "status": "not_started"
+      },
+      {
+        "stageId": "3b81d6ee-474f-404b-be45-9155a4895b5e",
+        "name": "Landscaping & Exterior Works",
+        "status": "not_started"
+      },
+      {
+        "stageId": "3bd34703-aba7-4d31-ad88-87c1a5e4fb53",
+        "name": "Handover & Closeout",
+        "status": "not_started"
+      }
+    ],
+    "milestones": [
+      {
+        "milestoneId": "e3f947fe-9e6e-42e3-b01e-3a567c34b2c3",
+        "name": "Site survey & boundary confirmed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "10f0f49b-520f-4a25-b7fb-4911a2e8615b",
+        "name": "Zoning & by-law review completed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "15596e02-473c-4bea-9168-80573231556d",
+        "name": "Feasibility budget approved",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "24a69d3f-7ef9-46a4-b92a-0e7b1c82beba",
+        "name": "Architectural drawings issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "6ad6a6ff-2709-4f90-814b-dea34d303e21",
+        "name": "Structural & MEP drawings complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "5f866b41-76f0-4d19-8d6e-bd0475e19abe",
+        "name": "Building permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "a799bf78-7a19-46ac-bdd0-b274c6715b54",
+        "name": "Utilities & services located",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "77813d98-2b4f-44b7-8cfb-fceccace6279",
+        "name": "Clearing & demolition complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "832155f0-94a6-4def-bfe6-ec51ab04d68d",
+        "name": "Excavation & shoring inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "42f3cea6-95ce-4487-9e75-d0cb0064538e",
+        "name": "Footings inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "2d579931-fee0-4091-9186-7403ee03d237",
+        "name": "Foundation walls poured & waterproofed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "b226c4ff-8ee8-47ae-b5ff-443997f59767",
+        "name": "Backfill & drainage complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9b0ef7c9-6447-4b06-9abb-882741360312",
+        "name": "Floor structure complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "2f0a7567-1847-4cd8-804f-315b59d62a70",
+        "name": "Framing erected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c6883253-20aa-4eca-89c1-bbba11cb1911",
+        "name": "Framing inspection passed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "772a9fda-98a4-45b1-a4e7-52ad74316699",
+        "name": "Roof trusses & sheathing complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "02e3a5c9-0c6d-4d71-93aa-11adbe88bd77",
+        "name": "Roofing watertight",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "0d7aa6a0-72e8-4c20-8566-d2d6869552d6",
+        "name": "Windows & exterior doors installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "fb6ab54a-822c-4cda-a4e9-bb8aa8b0adb2",
+        "name": "Cladding & insulation complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c5a2c344-c495-447d-ad9e-4f808a36d1b7",
+        "name": "Electrical rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "7ae91f02-d696-4d89-a846-ec3902025f4b",
+        "name": "Plumbing rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "ae02a856-9df4-459a-9eb9-7ee54a06f044",
+        "name": "HVAC rough-in complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "b1c01865-6619-435f-a1ac-9edb448b0332",
+        "name": "Drywall & plaster complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "0c984257-ab16-47ef-b65a-aaa219f2a934",
+        "name": "Cabinetry & millwork installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "8f53202e-9088-4c0f-9ad9-efe968e93ca0",
+        "name": "Flooring & paint complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "5b807223-c96e-4738-8dae-0841bc5d1e12",
+        "name": "Grading & drainage certified",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "077a45ee-f692-4c7a-b768-990580c64c55",
+        "name": "Driveway & hardscaping complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "0ef63e1a-b9bc-49c8-a5c7-20457fbc1ef1",
+        "name": "Landscaping planted",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "685327eb-b5d0-4be1-a98a-bccd133e7777",
+        "name": "Occupancy permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "ac058383-e72e-47e9-9d8c-bbbc3f630600",
+        "name": "Pre-delivery inspection (PDI) complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "47058bdc-fa35-42a1-a628-44d6d50ef999",
+        "name": "Final accounts & warranty documents issued",
+        "status": "pending"
+      }
+    ],
+    "assetCount": 8,
+    "remarkCount": 9,
+    "latestRemark": {
+      "remarkId": "8821e258-9461-4031-b7de-1f3ad3b5c4a6",
+      "text": "Town of Milton zoning preconsultation sheet for 557 Hartley Blvd, signed by Zoning Officer Rob Catarino, Feb 7, 2023. It lists two by-law deficiencies to legalize: an A/C unit in the exterior side yard, and a garage 5.6 m long instead of 6.0 m (-0.4 m). Planning evidence only, not construction.",
+      "authorName": "CPPI Agent (AI)",
+      "createdAt": "2026-11-22T01:06:14Z"
+    }
+  }
+}
