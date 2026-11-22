@@ -1,0 +1,372 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "recordedAt": "2026-11-22T16:09:31Z",
+  "jobId": "8f56677dc6e6",
+  "trigger": "s3",
+  "task": "progress_update_from_file",
+  "agent": "progress",
+  "model": "claude-sonnet-5-5",
+  "source": {
+    "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+    "s3Key": "sites/2e49b782-4e65-4f45-aa39-16bad1072c1d/image/1aad1350-bd9c-4592-bf1d-005171240641-c3fcadc5ef486bdb58f99c3a1a8057d4.jpeg",
+    "fileName": "c3fcadc5ef486bdb58f99c3a1a8057d4.jpeg",
+    "kind": "image",
+    "etag": "cb047d4030d281741126287b8f8e3ee5",
+    "size": 163572
+  },
+  "summary": "The photo was already on the dashboard. I added a remark and stored its document intelligence. It shows an undated backyard with a fence, shed and deck and no construction work, so I proposed no status changes.",
+  "confidence": 0.8,
+  "steps": 3,
+  "actions": [
+    {
+      "tool": "get_project_state",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d"
+      },
+      "status": "ok"
+    },
+    {
+      "tool": "add_progress_remark",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+        "text": "Photo (no date stamp or caption): a mown grass yard with a wood plank fence, a small weathered wooden shed on the left, and a weathered wood deck in the foreground, with the house wall behind. No construction work, equipment or materials are visible.",
+        "category": "progress",
+        "summary": "Site photo of the existing backyard: lawn, fence, shed and deck; no works visible",
+        "extracted": [
+          {
+            "label": "Visible features",
+            "value": "Mown lawn, wood plank fence with post lights, small wooden shed, weathered wood deck, house wall with brick base and vertical siding, utility meter",
+            "verification": "ai_interpretation"
+          },
+          {
+            "label": "Date stamp / caption",
+            "value": "None visible",
+            "verification": "extracted"
+          },
+          {
+            "label": "Construction activity",
+            "value": "None visible",
+            "verification": "ai_interpretation"
+          }
+        ],
+        "relevance": "Records existing exterior and yard condition at 288 Salisbury Ave. It is useful as a baseline for later Landscaping & Exterior Works and any site-preparation comparison.",
+        "evidenceClasses": [
+          "construction_progress"
+        ],
+        "verificationStatus": "ai_interpretation",
+        "limitations": "The photo has no date, location marker or caption, so it cannot be tied to 288 Salisbury Ave. beyond the upload. It shows no work and does not prove grading, drainage, clearing or any milestone status.",
+        "recommendedActions": [
+          "Ask the uploader to add a date and caption (location and direction) to site photos",
+          "Keep as a baseline for the exterior and landscaping stage"
+        ],
+        "sourceDocument": "c3fcadc5ef486bdb58f99c3a1a8057d4.jpeg",
+        "confidence": 0.8
+      },
+      "status": "added",
+      "result": {
+        "status": "added",
+        "remarkId": "91b4420e-2fe4-4b9f-8266-aa7fd3a57307",
+        "evidenceClasses": [
+          "construction_progress"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "tool": "record_document_intelligence",
+      "input": {
+        "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
+        "assetId": "6e6b5cb0-25c6-47de-8e91-0cba3b885203",
+        "docType": "Site photograph (existing yard)",
+        "property": "288 Salisbury Ave., Cambridge, ON",
+        "project": "288 Salisbury Ave. Cambridge",
+        "summary": "Undated photo of a mown backyard with fence, shed and weathered deck; no construction activity visible.",
+        "purpose": "Visual record of the existing site conditions.",
+        "relevance": "Baseline of existing exterior conditions; no progress on any milestone is shown.",
+        "evidenceClasses": [
+          "construction_progress"
+        ],
+        "facts": [
+          {
+            "label": "Date stamp",
+            "value": "None visible",
+            "verification": "extracted"
+          },
+          {
+            "label": "Visible items",
+            "value": "Lawn, plank fence, wooden shed, wood deck, brick and siding wall, utility meter",
+            "verification": "ai_interpretation"
+          }
+        ],
+        "missingInformation": [
+          "Date and time of photo",
+          "Caption or location within the property"
+        ],
+        "limitations": "Shows only visible surface conditions. It does not establish compliance, grading, drainage or completion of any work.",
+        "recommendedActions": [
+          "Add date and caption to future site photos"
+        ],
+        "verificationStatus": "ai_interpretation",
+        "confidence": 0.8
+      },
+      "status": "recorded",
+      "result": {
+        "status": "recorded",
+        "assetId": "6e6b5cb0-25c6-47de-8e91-0cba3b885203",
+        "evidenceClasses": [
+          "construction_progress"
+        ],
+        "revisions": 0,
+        "notes": []
+      }
+    },
+    {
+      "tool": "finish",
+      "input": {
+        "summary": "The photo was already on the dashboard. I added a remark and stored its document intelligence. It shows an undated backyard with a fence, shed and deck and no construction work, so I proposed no status changes.",
+        "confidence": 0.8
+      },
+      "status": "done",
+      "result": {
+        "status": "done",
+        "summary": "The photo was already on the dashboard. I added a remark and stored its document intelligence. It shows an undated backyard with a fence, shed and deck and no construction work, so I proposed no status changes.",
+        "confidence": 0.8
+      }
+    }
+  ],
+  "pendingApprovals": [],
+  "costUsd": 0.074104,
+  "tokens": {
+    "input": 18919,
+    "output": 1826,
+    "cacheWrite": 3025,
+    "cacheRead": 52220
+  },
+  "dashboard": {
+    "progress": {
+      "stages": 10,
+      "stagesCompleted": 0,
+      "milestones": 31,
+      "milestonesCompleted": 6,
+      "percent": 19
+    },
+    "siteStatus": "in_progress",
+    "stages": [
+      {
+        "stageId": "a178ee5d-c7aa-4837-b7e0-189fba21e49c",
+        "name": "Feasibility & Due Diligence",
+        "status": "not_started"
+      },
+      {
+        "stageId": "148fb8ea-c715-40c7-9ee7-2c259780c4f2",
+        "name": "Design & Permits",
+        "status": "in_progress"
+      },
+      {
+        "stageId": "93c0b7e7-6cfd-4247-a01b-35487978f9d9",
+        "name": "Site Preparation & Excavation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "b8107dd2-5e8e-4cf9-8c8c-f02aa265093d",
+        "name": "Foundation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "7c3acc10-7598-4c70-8a7b-7e4f6a54b63b",
+        "name": "Structural Framing",
+        "status": "not_started"
+      },
+      {
+        "stageId": "2d610aea-b999-4273-9407-24a807c0a070",
+        "name": "Building Envelope",
+        "status": "not_started"
+      },
+      {
+        "stageId": "ec35698a-8cb1-4314-8a96-1e86798c6641",
+        "name": "Rough-In Services",
+        "status": "not_started"
+      },
+      {
+        "stageId": "44487e07-2e6c-45b7-b85c-5fa7c7056fce",
+        "name": "Interior Finishes",
+        "status": "not_started"
+      },
+      {
+        "stageId": "300c66e9-fab8-492c-9ddb-8d84ce9b6a92",
+        "name": "Landscaping & Exterior Works",
+        "status": "not_started"
+      },
+      {
+        "stageId": "7ea9447d-4b0c-43ad-8ae5-9433e8f90f5a",
+        "name": "Handover & Closeout",
+        "status": "not_started"
+      }
+    ],
+    "milestones": [
+      {
+        "milestoneId": "0c523cf9-264f-42d8-b715-2dc509e98c90",
+        "name": "Site survey & boundary confirmed",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "ab96545e-0f90-4eab-9f30-11ee09d2d290",
+        "name": "Zoning & by-law review completed",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "e0dda174-92bc-47ad-b064-760862d6d6d5",
+        "name": "Feasibility budget approved",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "d4b669cc-0d8a-4ad6-b852-3d5b748471d2",
+        "name": "Architectural drawings issued",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "287dceb2-aaa5-4b24-a6a5-7e4f03358a99",
+        "name": "Structural & MEP drawings complete",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "1b85f76a-4551-457b-9c21-33f460e217e6",
+        "name": "Building permit issued",
+        "status": "completed"
+      },
+      {
+        "milestoneId": "6c7e0a89-6833-44d0-bcf7-ce9f67ec4672",
+        "name": "Utilities & services located",
+        "status": "in_progress"
+      },
+      {
+        "milestoneId": "2141a41c-a0f9-4879-8e1b-930e839b48eb",
+        "name": "Clearing & demolition complete",
+        "status": "in_progress"
+      },
+      {
+        "milestoneId": "24805f97-3552-4a3c-9fbf-caddfeb2f643",
+        "name": "Excavation & shoring inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c6f1f9fb-950c-4ad2-b3a6-317c09496dc0",
+        "name": "Footings inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "b6be4a74-a4dc-4816-b277-5bac9230e7af",
+        "name": "Foundation walls poured & waterproofed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "02d280ee-f2ac-4579-be9f-3cabf5aefb22",
+        "name": "Backfill & drainage complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "cadf04a0-cad4-4591-ac7f-cc6e7f5d7506",
+        "name": "Floor structure complete",
+        "status": "in_progress"
+      },
+      {
+        "milestoneId": "dce92415-6eaa-4833-8854-65e2194b189b",
+        "name": "Framing erected",
+        "status": "in_progress"
+      },
+      {
+        "milestoneId": "a3f3b501-1186-488e-b1eb-1457574378da",
+        "name": "Framing inspection passed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "544e66cc-49f4-4e0f-927a-297c363bb376",
+        "name": "Roof trusses & sheathing complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "79ac0026-b890-4427-aab8-25f54a3adc72",
+        "name": "Roofing watertight",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "04665110-c0b9-4ee7-a208-f00f57dc4a4a",
+        "name": "Windows & exterior doors installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c553e85e-ed66-4f1e-b40b-7a8e88a7fd30",
+        "name": "Cladding & insulation complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c6b56de5-ed16-4c5f-aa58-efd936121d49",
+        "name": "Electrical rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "0ce7a092-c344-44c6-b18a-86c1c47b991f",
+        "name": "Plumbing rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "d5ffab5c-85df-4638-8753-2706850d339e",
+        "name": "HVAC rough-in complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "eb94ed97-93da-49ad-af04-2f896b0ae1a0",
+        "name": "Drywall & plaster complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "2dc00489-2b34-497a-b4d6-1febe512add5",
+        "name": "Cabinetry & millwork installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "d66dc6fe-847f-44f7-9596-a5ed6c494723",
+        "name": "Flooring & paint complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "cdddea56-da89-45ac-b55a-b54a0a182d07",
+        "name": "Grading & drainage certified",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "dcf8b547-ddfa-4f0e-93a5-872da4ae74ca",
+        "name": "Driveway & hardscaping complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "8565fc1f-f23b-47e7-967d-e60426288901",
+        "name": "Landscaping planted",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "b30aaed6-86b8-4037-935e-fbeb0ca916de",
+        "name": "Occupancy permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "f83705ba-86ed-4ca1-baf1-c81bb174ab25",
+        "name": "Pre-delivery inspection (PDI) complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "ef0c8733-772e-4374-ab5d-7d9bc944e234",
+        "name": "Final accounts & warranty documents issued",
+        "status": "pending"
+      }
+    ],
+    "assetCount": 28,
+    "remarkCount": 32,
+    "latestRemark": {
+      "remarkId": "91b4420e-2fe4-4b9f-8266-aa7fd3a57307",
+      "text": "Photo (no date stamp or caption): a mown grass yard with a wood plank fence, a small weathered wooden shed on the left, and a weathered wood deck in the foreground, with the house wall behind. No construction work, equipment or materials are visible.",
+      "authorName": "CPPI Agent (AI)",
+      "createdAt": "2026-11-22T16:09:26Z"
+    }
+  }
+}
