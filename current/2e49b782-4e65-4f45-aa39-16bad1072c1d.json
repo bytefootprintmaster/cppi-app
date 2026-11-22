@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
-  "updatedAt": "2026-11-20T04:04:24Z",
+  "updatedAt": "2026-11-22T16:03:11Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -220,13 +220,13 @@
         "status": "pending"
       }
     ],
-    "assetCount": 6,
-    "remarkCount": 16,
+    "assetCount": 21,
+    "remarkCount": 18,
     "latestRemark": {
-      "remarkId": "71f7a50a-c684-473a-8f3f-6a4edc65e585",
-      "text": "Electrical Contract Addendum #1 (ELEC-01), signed by TT9 Inc. and Wahida Electrical & Plumbing Inc. on 19-Nov-2026, raises the electrical subcontract from $7,500 to $9,990 excl. HST ($11,288.70 incl.) for Revision 1 scope. It is a contract, not evidence of work done.",
+      "remarkId": "c7c4ab8c-475c-4158-ae84-689d80b7d722",
+      "text": "Photo stamped 21-Nov-2026 5:11 pm, captioned \"unit #1 entrance\": new interior stud partition framing and a framed enclosure beside the stair, with plastic sheeting on the sloped ceiling. The existing stair and floors are covered in dust and debris, so interior work is underway.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-20T04:04:16Z"
+      "createdAt": "2026-11-22T16:03:06Z"
     }
   }
 }
