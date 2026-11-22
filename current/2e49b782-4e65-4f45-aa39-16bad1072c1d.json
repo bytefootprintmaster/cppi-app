@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
-  "updatedAt": "2026-11-22T16:03:40Z",
+  "updatedAt": "2026-11-22T16:04:10Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 21,
-    "remarkCount": 19,
+    "remarkCount": 20,
     "latestRemark": {
-      "remarkId": "c2a9b7d6-9def-4361-93b7-ebf70cceecbf",
-      "text": "Photo stamped 21-Nov-2026 6:16 pm, captioned \"#1 2nd bedroom\": new stud wall framing with a framed door opening and header, on bare plywood subfloor. A fridge, range and microwave are in the background, so this is a partly occupied or equipped space.",
+      "remarkId": "96a732c9-8155-46fe-bc31-970acf7769e7",
+      "text": "Photo IMG_1189 (no date stamp or caption): a finished, lived-in bathroom with a stone-look vanity and wood cabinet, mirror, skylight, tub/shower surround and wainscot. Toiletries and towels are in use, so it looks like an existing, occupied bathroom, not new work.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T16:03:34Z"
+      "createdAt": "2026-11-22T16:04:06Z"
     }
   }
 }
