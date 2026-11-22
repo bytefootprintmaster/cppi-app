@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
-  "updatedAt": "2026-11-22T16:05:00Z",
+  "updatedAt": "2026-11-22T16:05:27Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 21,
-    "remarkCount": 22,
+    "remarkCount": 23,
     "latestRemark": {
-      "remarkId": "bc24d96d-f9d5-464b-9a38-54aa160c8fd1",
-      "text": "Photo stamped 21-Nov-2026 6:33 pm, captioned \"working on #2 door opening for bedroom 1, 2 and washroom\": new stud wall framing with framed door openings, a mitre saw, cut lumber, metal track and cable on the plywood subfloor. Interior framing is underway.",
+      "remarkId": "398857f6-6960-45b4-b54f-6632a0ebda94",
+      "text": "Photo stamped 21-Nov-2026 6:14 pm, captioned \"#1 m. bedroom\": new stud wall framing with framed openings, plastic sheeting on the ceiling, and a black ABS drain stack and capped copper stubs at the plywood subfloor. Interior framing and plumbing rough-in appear underway.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T16:04:54Z"
+      "createdAt": "2026-11-22T16:05:22Z"
     }
   }
 }
