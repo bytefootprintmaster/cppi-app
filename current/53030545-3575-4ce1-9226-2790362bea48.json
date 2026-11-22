@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "53030545-3575-4ce1-9226-2790362bea48",
-  "updatedAt": "2026-11-22T01:04:11Z",
+  "updatedAt": "2026-11-22T01:04:37Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -220,13 +220,13 @@
         "status": "pending"
       }
     ],
-    "assetCount": 6,
-    "remarkCount": 5,
+    "assetCount": 7,
+    "remarkCount": 6,
     "latestRemark": {
-      "remarkId": "dbd9d3d4-c17a-4b6b-830a-16333865543a",
-      "text": "IMG_1481.jpeg is a photo of a personal identity card on a stone countertop, not a construction photo. It shows no site, work or materials, so it is not evidence of progress on any stage. It may have been uploaded by mistake.",
+      "remarkId": "0d41a7fa-e2fe-4ef4-b14e-5030296efe46",
+      "text": "Photo Garage1.jpeg shows a finished garage interior: a dark SUV parked beside a textured stucco-style wall with brooms and a dustpan hung on it, a closed sectional garage door and a concrete floor. No visible construction work, date or signage; it does not show progress on any stage.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T01:04:06Z"
+      "createdAt": "2026-11-22T01:04:33Z"
     }
   }
 }
