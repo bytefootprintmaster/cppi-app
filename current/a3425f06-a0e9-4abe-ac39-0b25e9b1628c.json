@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
-  "updatedAt": "2026-11-22T00:29:07Z",
+  "updatedAt": "2026-11-22T00:29:43Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 16,
-    "remarkCount": 7,
+    "remarkCount": 8,
     "latestRemark": {
-      "remarkId": "a763185c-3fc6-4152-bbec-eb4dfa02413f",
-      "text": "AD-05 Staircase Details, a final submission drawing by The Archetype Studios dated 23 Apr 2018 for \"30 LANG\" (client Mr. Shahrayar), shows a new basement exterior stair, foundation and door opening. It is design evidence only, not construction progress.",
+      "remarkId": "190eb05e-99eb-418a-9de9-b39b4ffd7b2f",
+      "text": "AD-01 Site Plan, a submission drawing by The Archtype Studios dated 14 Apr 2018 for \"30 LANG\" (client Mr. Shahrayar), shows a 40' x 190'-6\" lot, building footprint, proposed basement entrance, existing shed and driveway. Design evidence only, not construction progress.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T00:29:01Z"
+      "createdAt": "2026-11-22T00:29:36Z"
     }
   }
 }
