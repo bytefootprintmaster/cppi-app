@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
-  "updatedAt": "2026-11-22T00:26:18Z",
+  "updatedAt": "2026-11-22T00:26:54Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 15,
-    "remarkCount": 3,
+    "remarkCount": 4,
     "latestRemark": {
-      "remarkId": "be6ae82d-69e8-436c-a551-19439bead14b",
-      "text": "AD-03 Ground Floor Layout, a submission drawing by The Archtype Studios dated 14 Apr 2018 for \"30 LANG\" (client Mr. Shahrayar), was uploaded. It is design evidence only and shows no construction progress.",
+      "remarkId": "bfc4f696-793d-41bc-84b9-93656ca0c86f",
+      "text": "City of Barrie Applicable Law Checklist for 30 Lang Dr, signed by Shaharyar Sindhu (10/25/2023), answers \"No\" to every question and declares no applicable-law approvals apply. It is a self-declaration, not a permit or approval, so no progress is evidenced.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T00:26:12Z"
+      "createdAt": "2026-11-22T00:26:47Z"
     }
   }
 }
