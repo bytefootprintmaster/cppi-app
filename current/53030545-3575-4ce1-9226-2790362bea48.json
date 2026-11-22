@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "53030545-3575-4ce1-9226-2790362bea48",
-  "updatedAt": "2026-11-22T01:01:56Z",
+  "updatedAt": "2026-11-22T01:03:45Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -220,13 +220,13 @@
         "status": "pending"
       }
     ],
-    "assetCount": 2,
-    "remarkCount": 3,
+    "assetCount": 6,
+    "remarkCount": 4,
     "latestRemark": {
-      "remarkId": "44ed8854-4291-4532-be5f-325da33cb007",
-      "text": "Forwarded permit-issuance PDF for Town of Milton permit 22-12163 (557 Hartley Blvd): 15 pages of weDesignBuild drawings A100–A110 stamped Building Reviewed Mar 28, 2023 and Zoning Approved Apr 20, 2023. Approval/design evidence only, not construction.",
+      "remarkId": "ce5424de-5a32-46d4-a64c-e5a1f3910907",
+      "text": "Photo Garage_2.jpeg shows a garage interior: a dark SUV parked beside a textured half-height wall with a grey ledge, and a green bin and brooms at the back. No visible construction activity, date or signage. It does not show progress on any stage.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T01:01:13Z"
+      "createdAt": "2026-11-22T01:03:40Z"
     }
   }
 }
