@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
-  "updatedAt": "2026-11-22T00:30:19Z",
+  "updatedAt": "2026-11-22T00:31:13Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 16,
-    "remarkCount": 9,
+    "remarkCount": 10,
     "latestRemark": {
-      "remarkId": "c4fb2e23-143c-411f-88c5-30452dbef616",
-      "text": "City of Barrie receipt 118117 (11/02/2023) shows a $1,043.11 credit card payment by applicant Shaharyar Sindhu toward building permit PMT23-01730 for 30 Lang Dr, \"Residential - Second Suite w/BGE\". Payment evidence only; no construction progress.",
+      "remarkId": "0a241a33-d3a7-4a25-a6d0-a1df2c1a5ad2",
+      "text": "Engineered Plans invoice 0253 (Oct 4, 2023) bills $1,000.00 CAD, marked PAID, for unstamped permit architectural and structural drawings for a basement renovation at 30 Lang Dr, Barrie. Engineer-stamped drawings are priced \"later\". Payment evidence only; no construction progress.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T00:30:12Z"
+      "createdAt": "2026-11-22T00:30:56Z"
     }
   }
 }
