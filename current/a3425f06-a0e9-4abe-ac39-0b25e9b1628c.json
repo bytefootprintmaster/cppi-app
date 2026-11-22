@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
-  "updatedAt": "2026-11-22T00:31:40Z",
+  "updatedAt": "2026-11-22T00:32:22Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 16,
-    "remarkCount": 11,
+    "remarkCount": 12,
     "latestRemark": {
-      "remarkId": "dc731bb7-e6a6-4366-8ece-b5771222d063",
-      "text": "Schedule 2 Sewage System Installer Information (City of Barrie permit application form) for 30 Lang Dr, signed 25/10/23 by applicant Shaharyar Sindhu, states the installer was unknown at time of application. Permit paperwork only; no construction progress.",
+      "remarkId": "0ef4ee30-f7f9-460a-afe0-7c42db5af56d",
+      "text": "City of Barrie permit application PMT23-01730, submitted 10/30/2023 by Shaharyar Sindhu for 30 Lang Dr (Plan 51M742 Lot 11): change of use to two dwelling units, \"Residential - Second Suite w/BGE\", est. $50,000, 100 m². Application only; no construction progress.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T00:31:35Z"
+      "createdAt": "2026-11-22T00:32:13Z"
     }
   }
 }
