@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
-  "updatedAt": "2026-11-22T16:11:30Z",
+  "updatedAt": "2026-11-22T16:11:55Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 28,
-    "remarkCount": 39,
+    "remarkCount": 42,
     "latestRemark": {
-      "remarkId": "fdeaa43e-8e0f-4755-947c-067e2e24228e",
-      "text": "Photo (no date stamp or caption): a finished, lived-in kitchen with maple cabinets, tile backsplash, stainless dishwasher, fridge, range, vinyl flooring and small appliances on the counters. It looks like an existing, occupied or pre-renovation condition, not new work; no construction activity is visible.",
+      "remarkId": "00e6ee54-0f19-4abb-8813-91b27bd1cf81",
+      "text": "Photo (no date stamp or caption): backyard with a stained wooden storage shed (shingled gable roof, double doors, window), a tall wood privacy fence, uncut grass and mature trees. Looks like existing site condition; no construction activity visible.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T16:11:26Z"
+      "createdAt": "2026-11-22T16:11:55Z"
     }
   }
 }
