@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
-  "updatedAt": "2026-11-22T00:33:00Z",
+  "updatedAt": "2026-11-22T00:33:26Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 16,
-    "remarkCount": 13,
+    "remarkCount": 14,
     "latestRemark": {
-      "remarkId": "c013d19f-9b44-4edb-8afb-c3085056cf9c",
-      "text": "AD-02 Basement Layout, a submission drawing by The Archtype Studios dated 14 Apr 2018 for \"30 LANG\" (client Mr. Shahrayar), shows the basement plan with a 12-riser exterior stair, cold cellar and an area marked UNEXCAVATED. Design evidence only, not construction progress.",
+      "remarkId": "ebb332f3-6dbc-403f-8bf5-e9ce9cc5d2bd",
+      "text": "CAD file \"30 Lang Drive Barrie.dwg\" (338 KB) is on the project file list. The DWG format could not be read, so its contents are unverified. By name it is a drawing for 30 Lang Drive; design material only, not construction progress.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T00:32:53Z"
+      "createdAt": "2026-11-22T00:33:22Z"
     }
   }
 }
