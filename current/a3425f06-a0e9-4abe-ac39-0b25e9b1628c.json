@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
-  "updatedAt": "2026-11-22T00:29:43Z",
+  "updatedAt": "2026-11-22T00:30:19Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 16,
-    "remarkCount": 8,
+    "remarkCount": 9,
     "latestRemark": {
-      "remarkId": "190eb05e-99eb-418a-9de9-b39b4ffd7b2f",
-      "text": "AD-01 Site Plan, a submission drawing by The Archtype Studios dated 14 Apr 2018 for \"30 LANG\" (client Mr. Shahrayar), shows a 40' x 190'-6\" lot, building footprint, proposed basement entrance, existing shed and driveway. Design evidence only, not construction progress.",
+      "remarkId": "c4fb2e23-143c-411f-88c5-30452dbef616",
+      "text": "City of Barrie receipt 118117 (11/02/2023) shows a $1,043.11 credit card payment by applicant Shaharyar Sindhu toward building permit PMT23-01730 for 30 Lang Dr, \"Residential - Second Suite w/BGE\". Payment evidence only; no construction progress.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T00:29:36Z"
+      "createdAt": "2026-11-22T00:30:12Z"
     }
   }
 }

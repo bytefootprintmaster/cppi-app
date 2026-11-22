@@ -1,0 +1,965 @@
+{
+  "schema": "cppi-agent-audit/1",
+  "recordedAt": "2026-11-22T00:30:19Z",
+  "jobId": "aaf27a228380",
+  "trigger": "s3",
+  "task": "progress_update_from_file",
+  "agent": "progress",
+  "model": "claude-sonnet-5-5",
+  "source": {
+    "siteId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
+    "s3Key": "sites/a3425f06-a0e9-4abe-ac39-0b25e9b1628c/document/fcd9d100-4866-4973-8b14-f3a2247a9bf0-Barrie_Fees_Paid_-_30_Lang.pdf",
+    "fileName": "Barrie_Fees_Paid_-_30_Lang.pdf",
+    "kind": "document",
+    "etag": "695d289a42eb903d5151ef94025ed3e9",
+    "size": 65463
+  },
+  "summary": "Recorded the City of Barrie permit fee receipt 118117 for PMT23-01730. It was already registered, so I added a remark, stored the document intelligence and linked it to the permit placard and the project. I proposed no status changes.",
+  "confidence": 0.9,
+  "steps": 3,
+  "actions": [
+    {
+      "tool": "get_project_state",
+      "input": {
+        "siteId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c"
+      },
+      "status": "ok"
+    },
+    {
+      "tool": "get_project_intelligence",
+      "input": {
+        "siteId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c"
+      },
+      "status": "ok",
+      "result": {
+        "siteId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
+        "documentCount": 9,
+        "documents": [
+          {
+            "assetId": "c3395130-d35f-4742-8b6d-f1ac3b1f5f7c",
+            "name": "AD-01.pdf",
+            "docType": "Architectural site plan (submission drawing)",
+            "issuer": "The Archtype Studios & Engineering Consultancy (Ali Ahmed Saeed)",
+            "documentDate": "2018-04-14",
+            "referenceNumber": "AD-01",
+            "evidenceClasses": [
+              "design"
+            ],
+            "verificationStatus": "extracted",
+            "summary": "Site plan AD-01: 40' x 190'-6\" lot with hatched building footprint, proposed basement entrance, existing drainage swale to be maintained, existing shed and driveway.",
+            "purpose": "Submission drawing showing building placement on the lot and the proposed basement entrance.",
+            "limitations": "Design only; no proof of approval, boundary accuracy or construction. Not a survey.",
+            "missingInformation": [
+              "Municipal address and city in title block",
+              "Real project number (shows XXXXX)",
+              "Permit approval stamp",
+              "Surveyor certification",
+              "Revision history",
+              "Scale"
+            ],
+            "inconsistencies": [
+              "Drawing dated April 2018 while permit PMT23-01730 was issued in 2024",
+              "Title block shows only '30 LANG' with no city; link to Barrie is unconfirmed"
+            ],
+            "risks": [],
+            "recommendedActions": [
+              "Confirm this sheet is in the permit-approved set",
+              "Obtain a surveyor's plan",
+              "Confirm AD-series belongs to 30 Lang Drive, Barrie"
+            ],
+            "confidence": 0.85,
+            "updatedAt": "2026-11-22T00:29:37Z"
+          },
+          {
+            "assetId": "e11db2e5-4501-4e7d-b660-29acaf262479",
+            "name": "AD-05.pdf",
+            "docType": "Architectural detail drawing – staircase and basement entrance",
+            "issuer": "The Archetype Studios & Engineering Consultancy (architect Ali Ahmed Saeed)",
+            "documentDate": "2018-04-23",
+            "referenceNumber": "AD-05",
+            "evidenceClasses": [
+              "design"
+            ],
+            "verificationStatus": "extracted",
+            "summary": "Final submission sheet AD-05 with six details for a new exterior basement stair, foundation and door opening.",
+            "purpose": "Show the design of the exterior stair, its foundation and the door opening for permit and construction.",
+            "limitations": "Design only; it does not prove any work was done or that the design was approved.",
+            "missingInformation": [
+              "Engineer's seal",
+              "Permit approval stamp",
+              "Real project number"
+            ],
+            "inconsistencies": [
+              "Drawing dated April 2018 but the building permit PMT23-01730 was issued in 2024",
+              "Project number and plotted size show placeholder 'XXXX'"
+            ],
+            "risks": [],
+            "recommendedActions": [
+              "Confirm this sheet is in the permit-approved set",
+              "Request sealed structural detail if required by the building department"
+            ],
+            "confidence": 0.8,
+            "updatedAt": "2026-11-22T00:29:01Z"
+          },
+          {
+            "assetId": "70f90540-321b-4472-8e27-ae5f96b4cecc",
+            "name": "BLD_Placard_Prod_20240205_123643.pdf",
+            "docType": "Building permit placard",
+            "issuer": "City of Barrie, Building Division (Chief Building Official)",
+            "documentDate": "2024-02-05",
+            "referenceNumber": "PMT23-01730",
+            "evidenceClasses": [
+              "permit_approval"
+            ],
+            "verificationStatus": "extracted",
+            "summary": "Barrie building permit placard PMT23-01730 for a Residential Second Suite w/BGE at 30 Lang Dr, issued 02/05/2024.",
+            "purpose": "Posting card to be displayed at the site showing a building permit has been issued, and how to request inspections.",
+            "limitations": "A placard only. It does not prove commencement, inspections passed, or ongoing permit validity.",
+            "missingInformation": [
+              "Permit expiry or validity period",
+              "Permit conditions",
+              "Approved drawings stamp",
+              "Permit fee / construction value"
+            ],
+            "inconsistencies": [
+              "Permit purpose reads 'Single Family Dwelling' while the project is a basement second suite; consistent with project description 'Second Suite w/BGE' but worth confirming.",
+              "Permit issued Feb 2024 but project start date on the dashboard is Nov 2026; permit currency should be confirmed."
+            ],
+            "risks": [
+              "Permit may lapse if work has not commenced within the permitted period"
+            ],
+            "recommendedActions": [
+              "Obtain full permit document and conditions",
+              "Confirm permit validity against project schedule"
+            ],
+            "confidence": 0.9,
+            "updatedAt": "2026-11-22T00:28:28Z"
+          },
+          {
+            "assetId": "efce7f83-bc7f-44c5-bb3f-0cacb0421b07",
+            "name": "Applicable-Law-Checklist.pdf",
+            "docType": "Applicable Law Checklist (building permit supporting form)",
+            "issuer": "City of Barrie Building Department (form); completed by applicant Shaharyar Sindhu",
+            "documentDate": "2023-10-24",
+            "referenceNumber": null,
+            "evidenceClasses": [
+              "permit_approval"
+            ],
+            "verificationStatus": "extracted",
+            "summary": "Completed 6-page City of Barrie Applicable Law Checklist; every question answered No and the declaration states none of the applicable-law approvals apply. Appears to duplicate Applicable-Law-Checklist-2.pdf.",
+            "purpose": "Confirms to the Building Department whether approvals from other agencies are needed before a building permit can be issued.",
+            "limitations": "Self-declaration by the applicant. It is not an approval, does not prove a permit was issued, and shows no construction progress.",
+            "missingInformation": [
+              "Application number",
+              "Signature",
+              "City acknowledgement or acceptance",
+              "Issued building permit"
+            ],
+            "inconsistencies": [
+              "Duplicate of Applicable-Law-Checklist-2.pdf, which was recorded with a declaration date of 10/25/2023; this copy shows a typed date of 24/10/2023 and a blank signature date.",
+              "Demolition answered No although the work is a basement conversion."
+            ],
+            "risks": [
+              "If any answer is wrong, the permit could be delayed or revoked."
+            ],
+            "recommendedActions": [
+              "Upload issued permit PMT23-01730",
+              "Remove or confirm the duplicate checklist upload"
+            ],
+            "confidence": 0.9,
+            "updatedAt": "2026-11-22T00:27:50Z"
+          },
+          {
+            "assetId": "11f5fd0f-0819-4bbe-a802-e8a68d766cb8",
+            "name": "AD04.pdf",
+            "docType": "Architectural submission drawing - first floor layout",
+            "issuer": "The Archtype Studios & Engineering Consultancy (Ali Ahmed Saeed)",
+            "documentDate": "2018-04-14",
+            "referenceNumber": "AD-04",
+            "evidenceClasses": [
+              "design"
+            ],
+            "verificationStatus": "extracted",
+            "summary": "First floor plan of a residential dwelling with master suite, three bedrooms, main bath and curved stair.",
+            "purpose": "Submission drawing showing the first floor room layout and dimensions.",
+            "limitations": "Design intent only; no proof of construction, approval or compliance.",
+            "missingInformation": [
+              "No architect stamp or approval",
+              "No basement drawings in this sheet",
+              "No revision history"
+            ],
+            "inconsistencies": [
+              "Two rooms are both labelled Bedroom-2 (likely should be Bedroom-3)",
+              "Drawing is cross-referenced to AD-01 and its file path names AD-01.dwg",
+              "Project is described as a basement conversion, but this sheet shows the first floor of a 2018 design"
+            ],
+            "risks": [],
+            "recommendedActions": [
+              "Confirm applicability of the 2018 set to the current scope"
+            ],
+            "confidence": 0.85,
+            "updatedAt": "2026-11-22T00:27:21Z"
+          },
+          {
+            "assetId": "b48c36bb-1c9d-46ff-98e4-e2d0897467a7",
+            "name": "Applicable-Law-Checklist-2.pdf",
+            "docType": "Applicable Law Checklist (building permit supporting form)",
+            "issuer": "City of Barrie Building Department (form); completed by applicant Shaharyar Sindhu",
+            "documentDate": "2023-10-24",
+            "referenceNumber": null,
+            "evidenceClasses": [
+              "permit_approval"
+            ],
+            "verificationStatus": "extracted",
+            "summary": "Completed 6-page City of Barrie Applicable Law Checklist; all questions answered No and the declaration states no applicable-law approvals apply.",
+            "purpose": "Confirms to the Building Department whether approvals from other agencies are needed before a building permit can be issued.",
+            "limitations": "Self-declaration by the applicant. It is not an approval, does not prove a permit was issued, and shows no construction progress.",
+            "missingInformation": [
+              "Application number",
+              "City acknowledgement or acceptance",
+              "Issued building permit"
+            ],
+            "inconsistencies": [
+              "Form date on page 1 is 24/10/2023 but the declaration is signed/dated 10/25/2023 (one day apart, different date formats).",
+              "Demolition answered No although the work is a basement conversion; the extent of interior demolition is not shown."
+            ],
+            "risks": [
+              "If any answer is wrong (e.g. conservation authority or source water), the permit could be delayed or revoked."
+            ],
+            "recommendedActions": [
+              "Upload issued permit PMT23-01730",
+              "Confirm application number on the form"
+            ],
+            "confidence": 0.9,
+            "updatedAt": "2026-11-22T00:26:47Z"
+          },
+          {
+            "assetId": "4cf84479-3539-4c94-a718-a82315aa6627",
+            "name": "AD03.pdf",
+            "docType": "Architectural floor plan (submission drawing)",
+            "issuer": "The Archtype Studios & Engineering Consultancy (Ali Ahmed Saeed)",
+            "documentDate": "2018-04-14",
+            "referenceNumber": "AD-03",
+            "evidenceClasses": [
+              "design"
+            ],
+            "verificationStatus": "extracted",
+            "summary": "Ground floor layout plan, sheet AD-03, for a residential house with garage, family room, living, dining, kitchen, breakfast, pantry, laundry and powder room.",
+            "purpose": "Submission drawing showing the ground floor room layout.",
+            "limitations": "Design evidence only. It proves nothing about construction progress, approval or compliance.",
+            "missingInformation": [
+              "Basement plan relevant to the secondary suite conversion",
+              "Permit stamp or approval reference",
+              "Revision history",
+              "Stated drawing scale",
+              "City and address in title block"
+            ],
+            "inconsistencies": [
+              "Project here is a basement-to-secondary-suite conversion, but this sheet shows a ground floor of a new-style house layout.",
+              "Drawing dated 2018 with 'construction year 2018-19', while permit PMT23-01730 and the project start date are much later.",
+              "Title block reads '30 LANG' without a city; designer contact suggests a different locale, so the link to Barrie is unconfirmed."
+            ],
+            "risks": [
+              "The drawing may belong to a different project or be unrelated to the permitted scope."
+            ],
+            "recommendedActions": [
+              "Confirm the sheet belongs to 30 Lang Drive, Barrie",
+              "Obtain the permit-approved drawing set"
+            ],
+            "confidence": 0.8,
+            "updatedAt": "2026-11-22T00:26:12Z"
+          },
+          {
+            "assetId": "32bb1e7f-b2b8-414f-a723-5de3eb44a1f8",
+            "name": "Submission_Drawing_140418.dwg",
+            "docType": "CAD drawing (DWG), submission drawing",
+            "issuer": null,
+            "documentDate": null,
+            "referenceNumber": null,
+            "evidenceClasses": [
+              "design"
+            ],
+            "verificationStatus": "ai_interpretation",
+            "summary": "Unreadable DWG file named as a submission drawing; the content has not been verified.",
+            "purpose": null,
+            "limitations": "The file could not be parsed. This record rests on the file name and type only. A drawing is design evidence, not construction progress.",
+            "missingInformation": [
+              "Drawing content, author/designer, date, revision and sheet list",
+              "Whether it was submitted to the City of Barrie, and under which permit"
+            ],
+            "inconsistencies": [],
+            "risks": [],
+            "recommendedActions": [
+              "Export to PDF and re-upload",
+              "Cross-check against the AD-series PDFs and the permit application"
+            ],
+            "confidence": 0.3,
+            "updatedAt": "2026-11-22T00:25:37Z"
+          },
+          {
+            "assetId": "92d6f368-75a3-455a-af30-bb7b6a5013a5",
+            "name": "Required_Inspections_20240205_123640.pdf",
+            "docType": "Required Notification for Inspection",
+            "issuer": "City of Barrie Building Department",
+            "documentDate": null,
+            "referenceNumber": "PMT23-01730",
+            "evidenceClasses": [
+              "permit_approval"
+            ],
+            "verificationStatus": "extracted",
+            "summary": "Municipal notice listing the 13 mandatory inspection stages for building permit PMT23-01730, with notification procedure under OBC Div C 1.3.5.",
+            "purpose": "Tells the permit holder which construction stages need inspection notice and how to request them.",
+            "limitations": "A requirements list only. It does not evidence permit issuance, inspections performed or passed, or any physical work.",
+            "missingInformation": [
+              "Document issue date",
+              "Issued building permit and approved plans",
+              "Any inspection requests or results"
+            ],
+            "inconsistencies": [],
+            "risks": [],
+            "recommendedActions": [
+              "Upload the issued permit PMT23-01730",
+              "Track each inspection booking and result against this list"
+            ],
+            "confidence": 0.9,
+            "updatedAt": "2026-11-22T00:25:09Z"
+          }
+        ],
+        "evidenceCovered": [
+          "design",
+          "permit_approval"
+        ],
+        "evidenceMissing": [
+          "land_survey",
+          "engineering",
+          "contractor_compliance",
+          "procurement_quote",
+          "executed_contract",
+          "commencement",
+          "construction_progress",
+          "inspection_verification",
+          "financial_payment",
+          "completion_occupancy"
+        ],
+        "findingCount": 2,
+        "openFindings": [
+          {
+            "findingId": "99143264-bc42-4299-bf96-804f8c929687",
+            "kind": "inconsistency",
+            "severity": "medium",
+            "title": "AD-series drawing scope and date do not clearly match this project",
+            "detail": "AD-03 is a 2018 ground floor layout titled '30 LANG' for Mr. Shahrayar. It has no city. This project is a basement-to-secondary-suite conversion with permit PMT23-01730. Confirm with the designer that the AD-series belongs to 30 Lang Drive, Barrie, and upload the basement plans and the permit-approved set.",
+            "relatedAssets": [
+              "AD03.pdf"
+            ],
+            "status": "open",
+            "createdAt": "2026-11-22T00:26:13Z"
+          },
+          {
+            "findingId": "1f24be22-e813-4959-bb46-85dda1afe0ba",
+            "kind": "missing_document",
+            "severity": "medium",
+            "title": "Building permit PMT23-01730 not on file",
+            "detail": "The inspection notice references permit PMT23-01730 for 30 Lang Dr, but the issued permit and approved plans are not on the dashboard. Upload them so the 'Building permit issued' milestone can be evidenced.",
+            "relatedAssets": [
+              "Required_Inspections_20240205_123640.pdf"
+            ],
+            "status": "open",
+            "createdAt": "2026-11-22T00:25:10Z"
+          }
+        ],
+        "relationshipCount": 11,
+        "relationships": [
+          {
+            "fromType": "document",
+            "fromId": "Required_Inspections_20240205_123640.pdf",
+            "fromLabel": "Required Notification for Inspection",
+            "relation": "references",
+            "toType": "document",
+            "toId": "BLD_Placard_Prod_20240205_123643.pdf",
+            "toLabel": "Building permit placard PMT23-01730",
+            "note": "Both cite permit PMT23-01730"
+          },
+          {
+            "fromType": "document",
+            "fromId": "e11db2e5-4501-4e7d-b660-29acaf262479",
+            "fromLabel": "AD-05 Staircase Details",
+            "relation": "part_of",
+            "toType": "project",
+            "toId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
+            "toLabel": "30 Lang Dr. Barrie ON",
+            "note": null
+          },
+          {
+            "fromType": "document",
+            "fromId": "11f5fd0f-0819-4bbe-a802-e8a68d766cb8",
+            "fromLabel": "AD-04 First Floor Layout",
+            "relation": "issued_by",
+            "toType": "contractor",
+            "toId": "archtype-studios",
+            "toLabel": "The Archtype Studios & Engineering Consultancy",
+            "note": null
+          },
+          {
+            "fromType": "document",
+            "fromId": "efce7f83-bc7f-44c5-bb3f-0cacb0421b07",
+            "fromLabel": "Applicable Law Checklist (30 Lang Dr, 24/10/2023)",
+            "relation": "relates_to",
+            "toType": "document",
+            "toId": "b48c36bb-1c9d-46ff-98e4-e2d0897467a7",
+            "toLabel": "Applicable Law Checklist (30 Lang Dr, signed 10/25/2023)",
+            "note": "Apparent duplicate copy of the same form"
+          },
+          {
+            "fromType": "document",
+            "fromId": "c3395130-d35f-4742-8b6d-f1ac3b1f5f7c",
+            "fromLabel": "AD-01 Site Plan",
+            "relation": "part_of",
+            "toType": "project",
+            "toId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
+            "toLabel": "30 Lang Dr. Barrie ON",
+            "note": "Design drawing; project link per title block '30 LANG', unconfirmed"
+          },
+          {
+            "fromType": "document",
+            "fromId": "efce7f83-bc7f-44c5-bb3f-0cacb0421b07",
+            "fromLabel": "Applicable Law Checklist (30 Lang Dr, 24/10/2023)",
+            "relation": "relates_to",
+            "toType": "project",
+            "toId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
+            "toLabel": "30 Lang Dr. Barrie ON",
+            "note": "Supports building permit application; address matches project"
+          },
+          {
+            "fromType": "document",
+            "fromId": "c3395130-d35f-4742-8b6d-f1ac3b1f5f7c",
+            "fromLabel": "AD-01 Site Plan",
+            "relation": "issued_by",
+            "toType": "contractor",
+            "toId": "archtype-studios",
+            "toLabel": "The Archtype Studios & Engineering Consultancy",
+            "note": null
+          },
+          {
+            "fromType": "document",
+            "fromId": "BLD_Placard_Prod_20240205_123643.pdf",
+            "fromLabel": "Building permit placard PMT23-01730",
+            "relation": "relates_to",
+            "toType": "project",
+            "toId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
+            "toLabel": "30 Lang Dr. Barrie ON",
+            "note": "Building permit for second suite"
+          },
+          {
+            "fromType": "document",
+            "fromId": "b48c36bb-1c9d-46ff-98e4-e2d0897467a7",
+            "fromLabel": "Applicable Law Checklist (30 Lang Dr, signed 10/25/2023)",
+            "relation": "relates_to",
+            "toType": "project",
+            "toId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
+            "toLabel": "30 Lang Dr. Barrie ON",
+            "note": "Supports building permit application; address on form matches project"
+          },
+          {
+            "fromType": "document",
+            "fromId": "92d6f368-75a3-455a-af30-bb7b6a5013a5",
+            "fromLabel": "Required Notification for Inspection (PMT23-01730)",
+            "relation": "relates_to",
+            "toType": "project",
+            "toId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
+            "toLabel": "30 Lang Dr. Barrie ON",
+            "note": "Issued by City of Barrie Building Department under permit PMT23-01730"
+          },
+          {
+            "fromType": "document",
+            "fromId": "4cf84479-3539-4c94-a718-a82315aa6627",
+            "fromLabel": "AD-03 Ground Floor Layout",
+            "relation": "part_of",
+            "toType": "project",
+            "toId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
+            "toLabel": "30 Lang Dr. Barrie ON",
+            "note": "Design drawing; project link per title block '30 LANG', unconfirmed"
+          }
+        ]
+      }
+    },
+    {
+      "tool": "add_progress_remark",
+      "input": {
+        "siteId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
+        "text": "City of Barrie receipt 118117 (11/02/2023) shows a $1,043.11 credit card payment by applicant Shaharyar Sindhu toward building permit PMT23-01730 for 30 Lang Dr, \"Residential - Second Suite w/BGE\". Payment evidence only; no construction progress.",
+        "summary": "Municipal building permit fee receipt, record balance $0.00, for PMT23-01730 at 30 Lang Dr, Barrie.",
+        "category": "invoice",
+        "evidenceClasses": [
+          "financial_payment",
+          "permit_approval"
+        ],
+        "verificationStatus": "extracted",
+        "sourceDocument": "Barrie_Fees_Paid_-_30_Lang.pdf",
+        "sourceRef": "Page 1 of 1",
+        "confidence": 0.9,
+        "extracted": [
+          {
+            "label": "Receipt No.",
+            "value": "118117",
+            "verification": "extracted"
+          },
+          {
+            "label": "Receipt date",
+            "value": "11/02/2023 (read as 2 Nov 2023; format ambiguous)",
+            "verification": "ai_interpretation"
+          },
+          {
+            "label": "Record ID",
+            "value": "PMT23-01730 (Building Permit, All Other Types)",
+            "verification": "extracted"
+          },
+          {
+            "label": "Property",
+            "value": "30 Lang Dr, Barrie, ON",
+            "verification": "extracted"
+          },
+          {
+            "label": "Work",
+            "value": "Residential - Second Suite w/BGE",
+            "verification": "extracted"
+          },
+          {
+            "label": "Applicant",
+            "value": "Shaharyar Sindhu, 57 Cloughley Dr., Barrie",
+            "verification": "extracted"
+          },
+          {
+            "label": "Payment",
+            "value": "$1,043.11 by credit card; invoice 108179",
+            "verification": "extracted"
+          },
+          {
+            "label": "Record fees / payments / balance",
+            "value": "$1,210.56 / $1,210.56 / $0.00",
+            "verification": "extracted"
+          },
+          {
+            "label": "Fee lines",
+            "value": "Retaining wall $208.08; Group C 86.68 m2 $284.31; alterations 86.68 m2 $637.10; change of use $81.07; discount -$167.45",
+            "verification": "extracted"
+          }
+        ],
+        "relevance": "Evidences that the permit fees were paid in full for PMT23-01730, supporting the Design & Permits stage and the project's financial record.",
+        "limitations": "A fee receipt does not prove the permit was issued (the placard does that), that work started, or any inspection. The payment shown ($1,043.11) differs from the record total ($1,210.56) by the $167.45 discount line.",
+        "recommendedActions": [
+          "Confirm the $167.45 discount basis and the record total versus payment difference with the City",
+          "Record the permit fees in the project budget if a budget is created"
+        ],
+        "relatedDocuments": [
+          "BLD_Placard_Prod_20240205_123643.pdf",
+          "Required_Inspections_20240205_123640.pdf",
+          "Applicable-Law-Checklist.pdf"
+        ]
+      },
+      "status": "added",
+      "result": {
+        "status": "added",
+        "remarkId": "c4fb2e23-143c-411f-88c5-30452dbef616",
+        "evidenceClasses": [
+          "financial_payment",
+          "permit_approval"
+        ],
+        "notes": []
+      }
+    },
+    {
+      "tool": "record_document_intelligence",
+      "input": {
+        "siteId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
+        "assetId": "5ddf2ed5-8a77-4208-b700-d51becd3a68b",
+        "evidenceClasses": [
+          "financial_payment",
+          "permit_approval"
+        ],
+        "docType": "Municipal building permit fee receipt",
+        "issuer": "City of Barrie, Building Division",
+        "documentDate": "2023-11-02",
+        "referenceNumber": "Receipt 118117 / Record PMT23-01730",
+        "property": "30 Lang Dr, Barrie, ON",
+        "project": "30 Lang Dr. Barrie ON",
+        "summary": "Receipt for building permit fees on PMT23-01730 (Residential - Second Suite w/BGE); balance $0.00; printed 02/05/2024.",
+        "purpose": "Proof that the applicant paid the City's building permit fees.",
+        "relevance": "Supports the permit chain for PMT23-01730 (applicable law checklist, fee payment, placard, inspection notice). Lifecycle position: Approvals.",
+        "facts": [
+          {
+            "label": "Receipt No.",
+            "value": "118117",
+            "verification": "extracted"
+          },
+          {
+            "label": "Receipt date",
+            "value": "11/02/2023 (interpreted as 2 Nov 2023)",
+            "verification": "ai_interpretation"
+          },
+          {
+            "label": "Print date",
+            "value": "02/05/2024",
+            "verification": "extracted"
+          },
+          {
+            "label": "Applicant",
+            "value": "Shaharyar Sindhu",
+            "verification": "extracted"
+          },
+          {
+            "label": "Payment method",
+            "value": "Credit card, $1,043.11",
+            "verification": "extracted"
+          },
+          {
+            "label": "Invoice #",
+            "value": "108179",
+            "verification": "extracted"
+          },
+          {
+            "label": "Record balance",
+            "value": "$0.00",
+            "verification": "extracted"
+          }
+        ],
+        "extracts": [
+          {
+            "kind": "financial",
+            "detail": "Record fees $1,210.56; record payments $1,210.56; balance $0.00; single payment $1,043.11 on 11/02/2023.",
+            "verification": "extracted"
+          },
+          {
+            "kind": "financial",
+            "detail": "Fee lines: 1.13.1 Retaining wall residential single lot $208.08; 4.3 Group C residential uses 86.68 m2 x $3.28 = $284.31; 1.5.5 alterations/repairs to houses 86.68 m2 x $7.35 = $637.10; Change of Use permit $81.07; Building discount -$167.45.",
+            "verification": "extracted"
+          },
+          {
+            "kind": "regulatory",
+            "detail": "Permit fee schedule includes a retaining wall and change of use item, consistent with the basement exterior stair and second-suite scope; affected area 86.68 m2.",
+            "verification": "ai_interpretation"
+          }
+        ],
+        "inconsistencies": [
+          "Record fees/payments $1,210.56 vs payment detail $1,043.11; difference equals the $167.45 discount line, so the header seems to show fees before discount.",
+          "Discount line reason ('Please explain') is not stated."
+        ],
+        "missingInformation": [
+          "Reason for the building discount",
+          "Payer field blank",
+          "Construction value"
+        ],
+        "risks": [
+          "Receipt dated Nov 2023 while the dashboard start date is Nov 2026; permit currency should be confirmed."
+        ],
+        "limitations": "Shows fees paid only. Does not prove permit issuance, approved drawings, commencement, inspections or construction progress.",
+        "recommendedActions": [
+          "Confirm the discount basis with the City",
+          "Add permit fees to the project budget",
+          "Obtain the full issued permit"
+        ],
+        "verificationStatus": "extracted",
+        "sourceRef": "Page 1 of 1",
+        "confidence": 0.9
+      },
+      "status": "recorded",
+      "result": {
+        "status": "recorded",
+        "assetId": "5ddf2ed5-8a77-4208-b700-d51becd3a68b",
+        "evidenceClasses": [
+          "financial_payment",
+          "permit_approval"
+        ],
+        "revisions": 0,
+        "notes": []
+      }
+    },
+    {
+      "tool": "link_project_items",
+      "input": {
+        "siteId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
+        "fromType": "document",
+        "fromId": "5ddf2ed5-8a77-4208-b700-d51becd3a68b",
+        "fromLabel": "Barrie permit fee receipt 118117",
+        "relation": "relates_to",
+        "toType": "document",
+        "toId": "BLD_Placard_Prod_20240205_123643.pdf",
+        "toLabel": "Building permit placard PMT23-01730",
+        "note": "Both cite permit record PMT23-01730"
+      },
+      "status": "linked",
+      "result": {
+        "status": "linked",
+        "relId": "b772b5cf-c6e7-455b-afc0-c89b3964666c"
+      }
+    },
+    {
+      "tool": "link_project_items",
+      "input": {
+        "siteId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
+        "fromType": "document",
+        "fromId": "5ddf2ed5-8a77-4208-b700-d51becd3a68b",
+        "fromLabel": "Barrie permit fee receipt 118117",
+        "relation": "relates_to",
+        "toType": "project",
+        "toId": "a3425f06-a0e9-4abe-ac39-0b25e9b1628c",
+        "toLabel": "30 Lang Dr. Barrie ON",
+        "note": "Permit fees paid for 30 Lang Dr"
+      },
+      "status": "linked",
+      "result": {
+        "status": "linked",
+        "relId": "17aafb84-9e1f-4aa7-9252-454983f9e75d"
+      }
+    },
+    {
+      "tool": "finish",
+      "input": {
+        "summary": "Recorded the City of Barrie permit fee receipt 118117 for PMT23-01730. It was already registered, so I added a remark, stored the document intelligence and linked it to the permit placard and the project. I proposed no status changes.",
+        "confidence": 0.9,
+        "notes": "The receipt header shows $1,210.56 in fees and payments, but the payment line is $1,043.11. The $167.45 discount line accounts for the difference. The receipt date 11/02/2023 was read as 2 Nov 2023, which is an interpretation. No budget lines were written because the file is a receipt, not a budget."
+      },
+      "status": "done",
+      "result": {
+        "status": "done",
+        "summary": "Recorded the City of Barrie permit fee receipt 118117 for PMT23-01730. It was already registered, so I added a remark, stored the document intelligence and linked it to the permit placard and the project. I proposed no status changes.",
+        "confidence": 0.9
+      }
+    }
+  ],
+  "pendingApprovals": [],
+  "costUsd": 0.13101,
+  "tokens": {
+    "input": 35522,
+    "output": 4376,
+    "cacheWrite": 2519,
+    "cacheRead": 49540
+  },
+  "dashboard": {
+    "progress": {
+      "stages": 10,
+      "stagesCompleted": 0,
+      "milestones": 31,
+      "milestonesCompleted": 0,
+      "percent": 0
+    },
+    "siteStatus": "in_progress",
+    "stages": [
+      {
+        "stageId": "02e1ab45-0a0c-48f2-9efc-2abc6eeada1c",
+        "name": "Feasibility & Due Diligence",
+        "status": "not_started"
+      },
+      {
+        "stageId": "938cfe14-52f2-4e26-bd5b-99fc4838598e",
+        "name": "Design & Permits",
+        "status": "not_started"
+      },
+      {
+        "stageId": "8bc89d28-46d4-41cc-8cab-ba1e51ee234f",
+        "name": "Site Preparation & Excavation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "182dcd86-5236-46f3-ab0f-1349a3f04d80",
+        "name": "Foundation",
+        "status": "not_started"
+      },
+      {
+        "stageId": "24528d58-15f4-4d06-926f-eb84a6a18be3",
+        "name": "Structural Framing",
+        "status": "not_started"
+      },
+      {
+        "stageId": "156bc1a5-8415-4ad8-9fef-50c82880ae23",
+        "name": "Building Envelope",
+        "status": "not_started"
+      },
+      {
+        "stageId": "a83bb2ca-4308-4553-8e4c-892f54684e39",
+        "name": "Rough-In Services",
+        "status": "not_started"
+      },
+      {
+        "stageId": "a483900b-2e2c-4eea-b701-a72128baae76",
+        "name": "Interior Finishes",
+        "status": "not_started"
+      },
+      {
+        "stageId": "0a8f0d38-64bd-4f3b-9f0a-6c975860d18a",
+        "name": "Landscaping & Exterior Works",
+        "status": "not_started"
+      },
+      {
+        "stageId": "7a7eb06d-56ec-4746-b237-98b18833f942",
+        "name": "Handover & Closeout",
+        "status": "not_started"
+      }
+    ],
+    "milestones": [
+      {
+        "milestoneId": "29923749-7f86-4f39-a5ea-5aba1acb9bac",
+        "name": "Site survey & boundary confirmed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "1fe06a82-3e17-450f-89f5-f3fe1402bda4",
+        "name": "Zoning & by-law review completed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "6b5c14ea-45f7-4309-911c-a2d622cce8ab",
+        "name": "Feasibility budget approved",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "afb8e8bc-e0ec-4d0b-aa00-2c37e9ea5e55",
+        "name": "Architectural drawings issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "58d5d359-d8d4-42fa-8978-a3f92d0bb038",
+        "name": "Structural & MEP drawings complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "93259a17-69d9-4c38-9979-7b8b8f295105",
+        "name": "Building permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "2176db5c-4687-465f-937d-5b41417d2de4",
+        "name": "Utilities & services located",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "c8c50d0e-22ff-44a9-8601-d499add0e854",
+        "name": "Clearing & demolition complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "a74dcaa1-f9e1-41b4-b043-d9670494b06c",
+        "name": "Excavation & shoring inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "04a140ed-3982-4847-a7ee-fcfb9a4d41d9",
+        "name": "Footings inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "2a852eef-b405-42f5-ac93-db61433687fe",
+        "name": "Foundation walls poured & waterproofed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "9b894991-b8f5-4838-9c43-dbf1bb3bc596",
+        "name": "Backfill & drainage complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "8fe62406-19ee-4cc7-895e-e8ab0c6d66a3",
+        "name": "Floor structure complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "4a8730e3-d894-4b9c-b358-f3cff52a9c9f",
+        "name": "Framing erected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "16495b65-de7c-480e-b892-b2143627c255",
+        "name": "Framing inspection passed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "4778b00d-bebf-400d-9819-6c59765f845a",
+        "name": "Roof trusses & sheathing complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "4a4b8068-42fa-462c-b329-a18cf60a0b86",
+        "name": "Roofing watertight",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "ba63a9e4-952f-4255-a9f0-e8ba8501ca37",
+        "name": "Windows & exterior doors installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "90f742a2-6db6-4721-a66d-884dcc331367",
+        "name": "Cladding & insulation complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "00a90acd-4a65-4806-bf64-7f80e9a30010",
+        "name": "Electrical rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "925fa377-774d-4038-b070-5ee4d0a290c9",
+        "name": "Plumbing rough-in inspected",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "58777ff2-480e-4c42-a19f-207caf4cd4e8",
+        "name": "HVAC rough-in complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "2542db0a-1f76-4d49-a94a-c07e34c02b77",
+        "name": "Drywall & plaster complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "3c76e667-4d8e-4b48-89c9-3b858af84932",
+        "name": "Cabinetry & millwork installed",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "d3e2f075-0071-411f-8760-0e88ec28bfcb",
+        "name": "Flooring & paint complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "34750857-e3c9-4383-83d8-93f7585a7d9d",
+        "name": "Grading & drainage certified",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "db047065-6ee5-4c03-a7d6-77fcb25a06c2",
+        "name": "Driveway & hardscaping complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "1e34e08a-a0e6-4469-9283-a295289b0960",
+        "name": "Landscaping planted",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "afe7ad5d-a39d-430f-bf55-3286f30155c1",
+        "name": "Occupancy permit issued",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "63473974-4638-46f2-ae41-7b7d7aa42139",
+        "name": "Pre-delivery inspection (PDI) complete",
+        "status": "pending"
+      },
+      {
+        "milestoneId": "be20a9ba-fc2b-41d2-8058-f06abd11ebab",
+        "name": "Final accounts & warranty documents issued",
+        "status": "pending"
+      }
+    ],
+    "assetCount": 16,
+    "remarkCount": 9,
+    "latestRemark": {
+      "remarkId": "c4fb2e23-143c-411f-88c5-30452dbef616",
+      "text": "City of Barrie receipt 118117 (11/02/2023) shows a $1,043.11 credit card payment by applicant Shaharyar Sindhu toward building permit PMT23-01730 for 30 Lang Dr, \"Residential - Second Suite w/BGE\". Payment evidence only; no construction progress.",
+      "authorName": "CPPI Agent (AI)",
+      "createdAt": "2026-11-22T00:30:12Z"
+    }
+  }
+}
