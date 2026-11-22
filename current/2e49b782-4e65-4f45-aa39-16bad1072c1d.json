@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
-  "updatedAt": "2026-11-22T16:05:27Z",
+  "updatedAt": "2026-11-22T16:05:53Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -221,12 +221,12 @@
       }
     ],
     "assetCount": 21,
-    "remarkCount": 23,
+    "remarkCount": 24,
     "latestRemark": {
-      "remarkId": "398857f6-6960-45b4-b54f-6632a0ebda94",
-      "text": "Photo stamped 21-Nov-2026 6:14 pm, captioned \"#1 m. bedroom\": new stud wall framing with framed openings, plastic sheeting on the ceiling, and a black ABS drain stack and capped copper stubs at the plywood subfloor. Interior framing and plumbing rough-in appear underway.",
+      "remarkId": "629b16ba-8342-4d64-b96a-3ff87467903f",
+      "text": "Photo (no date stamp or caption): street-level view of a residential street with an overgrown grass boulevard and a concrete sidewalk. Faded yellow paint marks are on the sidewalk slabs, which may be utility locate marks. No building work is visible.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T16:05:22Z"
+      "createdAt": "2026-11-22T16:05:48Z"
     }
   }
 }
