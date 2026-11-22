@@ -1,7 +1,7 @@
 {
   "schema": "cppi-agent-audit/1",
   "siteId": "2e49b782-4e65-4f45-aa39-16bad1072c1d",
-  "updatedAt": "2026-11-22T16:05:53Z",
+  "updatedAt": "2026-11-22T16:06:26Z",
   "dashboard": {
     "progress": {
       "stages": 10,
@@ -220,13 +220,13 @@
         "status": "pending"
       }
     ],
-    "assetCount": 21,
-    "remarkCount": 24,
+    "assetCount": 26,
+    "remarkCount": 25,
     "latestRemark": {
-      "remarkId": "629b16ba-8342-4d64-b96a-3ff87467903f",
-      "text": "Photo (no date stamp or caption): street-level view of a residential street with an overgrown grass boulevard and a concrete sidewalk. Faded yellow paint marks are on the sidewalk slabs, which may be utility locate marks. No building work is visible.",
+      "remarkId": "54194dba-f5b5-4381-bed1-2c74ddc5a0d1",
+      "text": "Photo (no date stamp or caption): an empty white post-and-arm sign frame with no sign panel, standing on a grassy front boulevard beside a tree, with a stamped-concrete step edge in the foreground. No construction work is visible.",
       "authorName": "CPPI Agent (AI)",
-      "createdAt": "2026-11-22T16:05:48Z"
+      "createdAt": "2026-11-22T16:06:21Z"
     }
   }
 }
