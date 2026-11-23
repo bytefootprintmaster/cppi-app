@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { env } from './env'
+import { HttpError } from './lib/http'
 
 export const s3 = new S3Client({ region: env.AWS_REGION })
 
@@ -36,4 +37,22 @@ export function presignDownload(key: string, expiresIn = 900, downloadName?: str
 
 export async function deleteObject(key: string): Promise<void> {
   await s3.send(new DeleteObjectCommand({ Bucket: env.S3_BUCKET, Key: key }))
+}
+
+/**
+ * Write an object the server produced itself (the site-report PDF), as opposed
+ * to the presigned PUT a browser uses. The body is buffered in memory, which is
+ * fine for a generated PDF.
+ */
+export async function putObject(key: string, body: Uint8Array, contentType: string): Promise<void> {
+  await s3.send(
+    new PutObjectCommand({ Bucket: env.S3_BUCKET, Key: key, Body: body, ContentType: contentType })
+  )
+}
+
+/** Read an object back into memory, e.g. to embed on-site photos in a report. */
+export async function getObjectBytes(key: string): Promise<Uint8Array> {
+  const res = await s3.send(new GetObjectCommand({ Bucket: env.S3_BUCKET, Key: key }))
+  if (!res.Body) throw new HttpError(404, 'That file is no longer in storage')
+  return (res.Body as { transformToByteArray: () => Promise<Uint8Array> }).transformToByteArray()
 }

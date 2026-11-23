@@ -8,6 +8,7 @@ import { HttpError } from './lib/http'
 import { authRouter } from './routes/auth'
 import { adminRouter } from './routes/admin'
 import { inviteRouter } from './routes/invites'
+import { inspectionRouter } from './routes/inspections'
 import { siteRouter } from './routes/sites'
 import { searchRouter } from './routes/search'
 import { dashboardRouter } from './routes/dashboard'
@@ -27,6 +28,7 @@ app.get('/api/health', (_req, res) => {
 app.use('/api', authRouter)
 app.use('/api/admin', adminRouter)
 app.use('/api/invites', inviteRouter)
+app.use('/api/inspections', inspectionRouter)
 app.use('/api/sites', siteRouter)
 app.use('/api/search', searchRouter)
 app.use('/api/dashboard', dashboardRouter)

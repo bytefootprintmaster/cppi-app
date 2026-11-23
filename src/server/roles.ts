@@ -6,13 +6,15 @@ import type {
   Role,
   RoleRecord,
   SessionUser,
+  Surface,
   UploadLimits
 } from './types'
 import { DEFAULT_UPLOAD_LIMITS } from './types'
 
 /**
- * Roles are named bundles of permissions. Three are built in — `admin`,
- * `manager` and `viewer` — and administrators may add custom roles on top.
+ * Roles are named bundles of permissions. Four are built in — `admin`,
+ * `manager`, `viewer` and `site_inspector` — and administrators may add custom
+ * roles on top.
  *
  * The built-ins live in code rather than the `roles` table so signing in never
  * depends on a read (and works before the table is provisioned). Custom roles
@@ -22,8 +24,19 @@ import { DEFAULT_UPLOAD_LIMITS } from './types'
 export const ADMIN_ROLE = 'admin'
 export const MANAGER_ROLE = 'manager'
 export const VIEWER_ROLE = 'viewer'
+/**
+ * A site worker with a phone and gloves. This role exists for the field capture
+ * screen: it may add files and send site reports, and nothing else. Its `surface`
+ * is what keeps the account out of the office portal entirely.
+ */
+export const SITE_INSPECTOR_ROLE = 'site_inspector'
 
-export const BUILTIN_ROLE_IDS: readonly string[] = [ADMIN_ROLE, MANAGER_ROLE, VIEWER_ROLE]
+export const BUILTIN_ROLE_IDS: readonly string[] = [
+  ADMIN_ROLE,
+  MANAGER_ROLE,
+  VIEWER_ROLE,
+  SITE_INSPECTOR_ROLE
+]
 
 const ALL_PERMISSIONS: Permissions = {
   uploadFiles: true,
@@ -33,6 +46,18 @@ const ALL_PERMISSIONS: Permissions = {
 }
 const VIEWER_PERMISSIONS: Permissions = {
   uploadFiles: false,
+  downloadFiles: true,
+  viewBudget: false,
+  editDetails: false
+}
+
+/**
+ * An inspector captures evidence: photos, files and a spoken report. They need
+ * to upload and to open back their own reports, so downloads stay on — but they
+ * never see a budget or edit a project's details.
+ */
+const SITE_INSPECTOR_PERMISSIONS: Permissions = {
+  uploadFiles: true,
   downloadFiles: true,
   viewBudget: false,
   editDetails: false
@@ -54,7 +79,7 @@ export function isBuiltinRole(roleId: string): boolean {
   return BUILTIN_ROLE_IDS.includes(roleId)
 }
 
-/** The three built-in roles, as records (used to seed the table and as defaults). */
+/** The built-in roles, as records (used to seed the table and as defaults). */
 export function builtinRoles(): RoleRecord[] {
   const now = new Date(0).toISOString()
   return [
@@ -80,6 +105,15 @@ export function builtinRoles(): RoleRecord[] {
       name: 'Viewer',
       builtin: true,
       permissions: VIEWER_PERMISSIONS,
+      createdAt: now,
+      updatedAt: now
+    },
+    {
+      roleId: SITE_INSPECTOR_ROLE,
+      name: 'Site inspector',
+      builtin: true,
+      surface: 'inspector',
+      permissions: SITE_INSPECTOR_PERMISSIONS,
       createdAt: now,
       updatedAt: now
     }
@@ -122,6 +156,14 @@ export async function ensureBuiltinRoles(): Promise<void> {
     const existing = await getItem<RoleRecord>(T.roles, { roleId: role.roleId })
     if (!existing) await putItem(T.roles, role)
   }
+}
+
+/**
+ * The screen a role opens. Only the built-in site inspector role is restricted;
+ * every other role — built-in or custom — lands in the standard portal.
+ */
+export function resolveSurface(role: RoleRecord | undefined): Surface {
+  return role?.surface === 'inspector' ? 'inspector' : 'standard'
 }
 
 /** Merge a role's permissions with any per-user overrides. */

@@ -14,6 +14,7 @@ import { ChatPage } from './pages/Chat'
 import { AdminInvitesPage } from './pages/AdminInvites'
 import { AdminUsersPage } from './pages/AdminUsers'
 import { InviteAcceptPage } from './pages/InviteAccept'
+import { InspectorCapturePage, InspectorReportsPage } from './pages/Inspector'
 
 function Protected({ children, admin = false }: { children: ReactNode; admin?: boolean }) {
   const { user, loading } = useAuth()
@@ -25,6 +26,17 @@ function Protected({ children, admin = false }: { children: ReactNode; admin?: b
   return <>{children}</>
 }
 
+/**
+ * The office portal. A site inspector is deliberately kept out of it: their
+ * account opens the four-button capture screen instead, so a gloved worker never
+ * meets a sidebar, a budget or a file tree they have no business in.
+ */
+function StandardShell() {
+  const { user } = useAuth()
+  if (user?.surface === 'inspector') return <Navigate to="/inspector" replace />
+  return <Layout />
+}
+
 export default function App() {
   return (
     <>
@@ -33,9 +45,26 @@ export default function App() {
         <Route path="/invite/:token" element={<InviteAcceptPage />} />
 
         <Route
+          path="/inspector"
           element={
             <Protected>
-              <Layout />
+              <InspectorCapturePage />
+            </Protected>
+          }
+        />
+        <Route
+          path="/inspector/reports"
+          element={
+            <Protected>
+              <InspectorReportsPage />
+            </Protected>
+          }
+        />
+
+        <Route
+          element={
+            <Protected>
+              <StandardShell />
             </Protected>
           }
         >

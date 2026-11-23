@@ -6,7 +6,7 @@ import type { NextFunction, Request, RequestHandler, Response } from 'express'
 import { env } from './env'
 import { T, getItem, putItem, queryAll, updateFields } from './db'
 import { HttpError } from './lib/http'
-import { ADMIN_ROLE, can, loadRole, resolveLimits, resolvePermissions } from './roles'
+import { ADMIN_ROLE, can, loadRole, resolveLimits, resolvePermissions, resolveSurface } from './roles'
 import type { InviteRecord, PermissionKey, Role, SessionUser, UserRecord } from './types'
 
 const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID)
@@ -86,6 +86,7 @@ export async function toSession(user: UserRecord): Promise<SessionUser> {
     picture: user.picture,
     role: user.role,
     siteIds: user.siteIds ?? [],
+    surface: resolveSurface(role),
     permissions: resolvePermissions(role, user.permissions),
     limits: resolveLimits(user.limits)
   }

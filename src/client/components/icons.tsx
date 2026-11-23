@@ -319,3 +319,22 @@ export const IconThumbDown = makeIcon(
     <path d="M17 13l-4.2 6.4a1.8 1.8 0 0 1-3.2-1.4V15H6a2 2 0 0 1-2-2.3l.9-5A2 2 0 0 1 7 6h10" />
   </>
 )
+
+/** Camera — the site inspector's photo capture button. */
+export const IconCamera = makeIcon(
+  <>
+    <path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h1.7a2 2 0 0 0 1.7-.95l.6-1A1.5 1.5 0 0 1 10.8 3h2.4a1.5 1.5 0 0 1 1.3.7l.6 1A2 2 0 0 0 16.8 6h1.7A2.5 2.5 0 0 1 21 8.5v9A2.5 2.5 0 0 1 18.5 20h-13A2.5 2.5 0 0 1 3 17.5Z" />
+    <circle cx="12" cy="13" r="3.6" />
+  </>
+)
+
+/** Circular arrow — retake a photo, refresh a list. */
+export const IconRefresh = makeIcon(
+  <>
+    <path d="M20 11a8 8 0 0 0-14-4.5L3.5 9" />
+    <path d="M4 13a8 8 0 0 0 14 4.5L20.5 15" />
+    <path d="M3.5 5v4h4" />
+    <path d="M20.5 19v-4h-4" />
+  </>
+)
+

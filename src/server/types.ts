@@ -6,6 +6,12 @@
  */
 export type Role = string
 export type UserStatus = 'active' | 'disabled'
+/**
+ * Which product surface an account is meant for. `standard` is the office
+ * portal; `inspector` is the field capture screen — four oversized buttons for
+ * a site worker in gloves, with no access to the rest of the portal.
+ */
+export type Surface = 'standard' | 'inspector'
 export type SiteStatus = 'planning' | 'in_progress' | 'on_hold' | 'completed'
 export type StageStatus = 'not_started' | 'in_progress' | 'completed' | 'blocked'
 export type MilestoneStatus = 'pending' | 'in_progress' | 'completed'
@@ -67,6 +73,11 @@ export interface RoleRecord {
   builtin: boolean
   /** The administrator role bypasses every permission check. */
   admin?: boolean
+  /**
+   * The screen this role opens. Unset means `standard`; the built-in
+   * `site_inspector` role sets it to `inspector`.
+   */
+  surface?: Surface
   permissions: Permissions
   createdAt: string
   updatedAt: string
@@ -79,6 +90,8 @@ export interface SessionUser {
   picture?: string
   role: Role
   siteIds: string[]
+  /** The screen this account should be shown once signed in. */
+  surface: Surface
   /** Effective permissions after the role and any per-user overrides. */
   permissions: Permissions
   /** Effective upload ceilings for this user. */
@@ -559,6 +572,23 @@ export interface InviteRecord {
   expiresAt: string
   acceptedBy?: string
   acceptedAt?: string
+}
+
+/**
+ * One site report the way the field screen lists it. A report is stored as an
+ * ordinary project file — the generated PDF, tagged `site report` — so this view
+ * is that asset joined with the project it belongs to. There is no separate
+ * report table: the PDF *is* the record, and its name carries the date and time
+ * it was sent.
+ */
+export interface SiteReportView {
+  assetId: string
+  siteId: string
+  siteName: string
+  name: string
+  size?: number
+  sentAt: string
+  sentByName: string
 }
 
 export interface KpiConfig {

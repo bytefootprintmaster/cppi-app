@@ -4,6 +4,7 @@ import { api } from '../lib/api'
 import { useApi } from '../lib/useApi'
 import { useAuth } from '../lib/auth'
 import { formatDate } from '../lib/format'
+import { sortByRecent, useRecentSites } from '../lib/recent'
 import { PageBody, PageHeader } from '../components/Layout'
 import { SiteFormModal } from '../components/SiteForm'
 import { Button, Card, CardMenu, Empty, ErrorNote, Loading, SiteStatusBadge, useConfirm, useToast } from '../components/ui'
@@ -11,7 +12,7 @@ import { IconChevronRight, IconEdit, IconMapPin, IconPlus, IconSearch, IconTrash
 import type { SiteRecord } from '../../server/types'
 
 type StatusFilter = 'all' | SiteRecord['status']
-type SortKey = 'updated' | 'name' | 'start'
+type SortKey = 'recent' | 'updated' | 'name' | 'start'
 
 const STATUS_OPTIONS: Array<{ value: StatusFilter; label: string }> = [
   { value: 'all', label: 'All statuses' },
@@ -29,7 +30,8 @@ export function SitesPage() {
   const [actionError, setActionError] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState<StatusFilter>('all')
-  const [sort, setSort] = useState<SortKey>('updated')
+  const [sort, setSort] = useState<SortKey>('recent')
+  const recent = useRecentSites()
   const navigate = useNavigate()
   const confirm = useConfirm()
   const toast = useToast()
@@ -43,7 +45,9 @@ export function SitesPage() {
 
   // The list had no way to narrow down: a growing portfolio forced a visual scan
   // of every card. Search covers name, code and location; the status filter and
-  // sort are what a project manager reaches for first.
+  // sort are what a project manager reaches for first. The default sort is what
+  // you last opened rather than what was last edited, since an edit can come
+  // from anyone while the project you are working on is yours.
   const visible = useMemo(() => {
     const needle = query.trim().toLowerCase()
     const rows = sites.filter((site) => {
@@ -53,12 +57,13 @@ export function SitesPage() {
         .filter((field): field is string => Boolean(field))
         .some((field) => field.toLowerCase().includes(needle))
     })
+    if (sort === 'recent') return sortByRecent(rows, recent, (site) => site.siteId)
     return rows.sort((a, b) => {
       if (sort === 'name') return a.name.localeCompare(b.name)
       if (sort === 'start') return (a.startDate ?? '').localeCompare(b.startDate ?? '')
       return (b.updatedAt ?? '').localeCompare(a.updatedAt ?? '')
     })
-  }, [sites, query, status, sort])
+  }, [sites, query, status, sort, recent])
 
   function open(site: SiteRecord) {
     navigate(`/sites/${site.siteId}`, { state: { site } })
@@ -150,6 +155,7 @@ export function SitesPage() {
                   value={sort}
                   onChange={(event) => setSort(event.target.value as SortKey)}
                 >
+                  <option value="recent">Recently accessed</option>
                   <option value="updated">Recently updated</option>
                   <option value="name">Name A–Z</option>
                   <option value="start">Start date</option>

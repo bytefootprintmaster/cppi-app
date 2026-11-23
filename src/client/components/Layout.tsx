@@ -4,6 +4,7 @@ import { useAuth } from '../lib/auth'
 import { Avatar, Button } from './ui'
 import {
   IconBuilding,
+  IconCamera,
   IconChat,
   IconChevronLeft,
   IconDashboard,
@@ -140,6 +141,16 @@ export function Layout() {
                 <div className="nav-label">Administration</div>
                 <NavItem to="/admin/invites" icon={<IconMail />} label="Invitations" pathname={location.pathname} />
                 <NavItem to="/admin/users" icon={<IconUsers />} label="Users & roles" pathname={location.pathname} />
+                {/* Opens the real four-button capture screen a site inspector gets,
+                    so an admin can see the field app first-hand. The field header
+                    carries a "Back to office" link for anyone without the
+                    inspector surface. */}
+                <NavItem
+                  to="/inspector"
+                  icon={<IconCamera />}
+                  label="Site inspector view"
+                  pathname={location.pathname}
+                />
               </>
             ) : null}
           </nav>

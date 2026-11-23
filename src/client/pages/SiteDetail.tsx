@@ -13,6 +13,7 @@ import { api } from '../lib/api'
 import { useApi } from '../lib/useApi'
 import { useAuth } from '../lib/auth'
 import { formatDate, formatDateTime, formatMoney, humanBytes, relativeTime } from '../lib/format'
+import { recordSiteVisit } from '../lib/recent'
 import { PageBody, PageHeader } from '../components/Layout'
 import { SiteFormModal } from '../components/SiteForm'
 import { Uploader } from '../components/Uploader'
@@ -198,6 +199,15 @@ export function SiteDetailPage() {
   useEffect(() => {
     if (data?.site.name) document.title = `${data.site.name} · CPPI`
   }, [data?.site.name])
+
+  // Opening a project is the one moment that says "this is what I am working on".
+  // Recorded here rather than at each link so every way in — tracker, list,
+  // search, map, chat or a pasted URL — counts the same.
+  const currentSiteId = data?.site.siteId
+  const userId = user?.userId
+  useEffect(() => {
+    if (currentSiteId) recordSiteVisit(userId, currentSiteId)
+  }, [userId, currentSiteId])
 
   async function removeSite() {
     if (!data) return

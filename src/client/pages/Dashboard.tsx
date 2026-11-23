@@ -4,6 +4,7 @@ import { api } from '../lib/api'
 import { useApi } from '../lib/useApi'
 import { useAuth } from '../lib/auth'
 import { formatDate, formatMoney, relativeTime } from '../lib/format'
+import { sortByRecent, useRecentSites } from '../lib/recent'
 import { PageBody, PageHeader } from '../components/Layout'
 import {
   Button,
@@ -25,8 +26,10 @@ import {
   IconChevronRight,
   IconMapPin,
   IconPlus,
+  IconSearch,
   IconSettings,
-  IconTarget
+  IconTarget,
+  IconX
 } from '../components/icons'
 import type { SiteRecord } from '../../server/types'
 import type { BudgetSummary } from '../../server/services'
@@ -188,6 +191,8 @@ export function DashboardPage() {
   const [view, setView] = useState<'tracker' | 'map'>('tracker')
   const [locating, setLocating] = useState(false)
   const [locateMsg, setLocateMsg] = useState<string | null>(null)
+  const [query, setQuery] = useState('')
+  const recent = useRecentSites()
 
   useEffect(() => {
     document.title = 'Dashboard · CPPI'
@@ -250,7 +255,23 @@ export function DashboardPage() {
   const { rows, totals, kpis, availableKpis } = data
   const visible = kpis.filter((id) => KPI_META[id])
   const isAdmin = user?.role === 'admin'
-  const mapSites: MapSite[] = rows
+  const needle = query.trim().toLowerCase()
+
+  // The tracker led with whatever was edited last, which is someone else's
+  // question. It leads with what this person last opened instead, and the search
+  // narrows that list — the KPIs above stay portfolio-wide and are labelled as such.
+  // (Computed inline, not memoised: this sits below the early returns above, so a
+  // hook here would change the hook count between renders.)
+  const ordered = sortByRecent(rows, recent, (row) => row.site.siteId)
+  const projects = needle
+    ? ordered.filter((row) =>
+        [row.site.name, row.site.code, row.site.location, row.site.address]
+          .filter((field): field is string => Boolean(field))
+          .some((field) => field.toLowerCase().includes(needle))
+      )
+    : ordered
+
+  const mapSites: MapSite[] = projects
     .filter((row) => typeof row.site.lat === 'number' && typeof row.site.lng === 'number')
     .map((row) => ({
       siteId: row.site.siteId,
@@ -263,10 +284,14 @@ export function DashboardPage() {
       budgeted: row.budget.budgeted
     }))
 
+  const located = rows.filter(
+    (row) => typeof row.site.lat === 'number' && typeof row.site.lng === 'number'
+  ).length
+
   // The attention KPI only counted "on hold or unfinished", so a project that has
   // quietly blown a milestone date looked healthy. This ranks the real problems,
   // worst first, and names them — a bare number was a dead end.
-  const attention = rows
+  const attention = projects
     .map((row) => ({ row, flag: attentionFor(row) }))
     .filter((entry): entry is { row: SiteSummary; flag: Attention } => entry.flag !== null)
     .sort((a, b) => a.flag.rank - b.flag.rank)
@@ -315,6 +340,41 @@ export function DashboardPage() {
           })}
         </div>
 
+        {/* One search for the whole page: it narrows the tracker, the map and the
+            attention list together, so the results never disagree with each other. */}
+        {rows.length > 0 ? (
+          <Card className="list-toolbar">
+            <div className="search-form" role="search">
+              <div className="search-form-field">
+                <IconSearch size={16} className="search-form-icon" />
+                <input
+                  className={`input search-form-input${query ? ' has-clear' : ''}`}
+                  type="search"
+                  placeholder="Search your projects by name, code or location…"
+                  aria-label="Search projects"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                />
+                {query ? (
+                  <button
+                    type="button"
+                    className="search-form-clear"
+                    aria-label="Clear the project search"
+                    onClick={() => setQuery('')}
+                  >
+                    <IconX size={14} />
+                  </button>
+                ) : null}
+              </div>
+              {needle ? (
+                <span className="small muted" role="status">
+                  {projects.length} of {rows.length} project{rows.length === 1 ? '' : 's'}
+                </span>
+              ) : null}
+            </div>
+          </Card>
+        ) : null}
+
         <Tabs
           id="dashboard-view"
           tabs={[
@@ -332,12 +392,16 @@ export function DashboardPage() {
             <CardHeader
               title="Portfolio map"
               sub={
-                rows.length > 0 && mapSites.length === rows.length
-                  ? `${rows.length} project${rows.length === 1 ? '' : 's'} on the map`
-                  : `${mapSites.length} of ${rows.length} projects located`
+                needle
+                  ? `${mapSites.length} of ${projects.length} matching project${projects.length === 1 ? '' : 's'} on the map`
+                  : located === rows.length
+                    ? `${rows.length} project${rows.length === 1 ? '' : 's'} on the map`
+                    : `${located} of ${rows.length} projects located`
               }
               action={
-                isAdmin && mapSites.length < rows.length ? (
+                // Geocoding is a portfolio-wide job, so this stays keyed to every
+                // project rather than to whatever the search is showing.
+                isAdmin && located < rows.length ? (
                   <Button variant="ghost" size="sm" loading={locating} onClick={locateMissing}>
                     <IconMapPin size={16} />
                     Locate missing
@@ -352,11 +416,17 @@ export function DashboardPage() {
                 </div>
               ) : null}
               {mapSites.length === 0 ? (
-                <Empty title="Nothing on the map yet">
-                  {isAdmin
-                    ? 'Give a project an address, then use "Locate missing" to drop it on the map.'
-                    : 'Projects will appear here once an administrator adds their addresses.'}
-                </Empty>
+                needle ? (
+                  <Empty title="No matching projects">
+                    Nothing matches “{query.trim()}”. Try a different name, or clear the search.
+                  </Empty>
+                ) : (
+                  <Empty title="Nothing on the map yet">
+                    {isAdmin
+                      ? 'Give a project an address, then use "Locate missing" to drop it on the map.'
+                      : 'Projects will appear here once an administrator adds their addresses.'}
+                  </Empty>
+                )
               ) : (
                 <>
                   <MapView
@@ -400,7 +470,11 @@ export function DashboardPage() {
         <Card>
           <CardHeader
             title="Project tracker"
-            sub={`${rows.length} project${rows.length === 1 ? '' : 's'}`}
+            sub={
+              needle
+                ? `${projects.length} of ${rows.length} project${rows.length === 1 ? '' : 's'} match`
+                : `${rows.length} project${rows.length === 1 ? '' : 's'} · most recently opened first`
+            }
             action={
               <Link className="btn btn-ghost btn-sm" to="/sites">
                 Manage projects
@@ -412,6 +486,10 @@ export function DashboardPage() {
               {user?.role === 'admin'
                 ? 'Create your first building site to start tracking stages, files and remarks.'
                 : 'You have not been given access to any project yet. Ask an administrator for an invitation.'}
+            </Empty>
+          ) : projects.length === 0 ? (
+            <Empty title="No matching projects">
+              Nothing matches “{query.trim()}”. Try a different name, or clear the search.
             </Empty>
           ) : (
             <>
@@ -429,7 +507,7 @@ export function DashboardPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((row) => (
+                  {projects.map((row) => (
                     <tr
                       key={row.site.siteId}
                       className="tracker-row"
@@ -497,7 +575,7 @@ export function DashboardPage() {
 
             {/* Phones: the same rows as tappable cards — no sideways scrolling. */}
             <div className="tracker-cards">
-              {rows.map((row) => (
+              {projects.map((row) => (
                 <Link className="tracker-card" to={`/sites/${row.site.siteId}`} key={row.site.siteId}>
                   <div className="tracker-card-top">
                     <div style={{ minWidth: 0 }}>
