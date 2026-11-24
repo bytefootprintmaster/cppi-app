@@ -60,7 +60,7 @@ interface SiteSummary {
     milestonesCompleted: number
     percent: number
   }
-  budget: BudgetSummary
+  budget?: BudgetSummary
   files: number
   photos: number
   remarks: number
@@ -255,6 +255,9 @@ export function DashboardPage() {
   const { rows, totals, kpis, availableKpis } = data
   const visible = kpis.filter((id) => KPI_META[id])
   const isAdmin = user?.role === 'admin'
+  // Budget figures are only sent to users who may see them; without them the
+  // dashboard drops every cost-shaped metric rather than showing zeros.
+  const canViewBudget = isAdmin || user?.permissions?.viewBudget === true
   const needle = query.trim().toLowerCase()
 
   // The tracker led with whatever was edited last, which is someone else's
@@ -281,7 +284,7 @@ export function DashboardPage() {
       status: row.site.status,
       lat: row.site.lat as number,
       lng: row.site.lng as number,
-      budgeted: row.budget.budgeted
+      budgeted: row.budget?.budgeted
     }))
 
   const located = rows.filter(
@@ -460,7 +463,11 @@ export function DashboardPage() {
                       <i className="map-legend-dot map-legend-neigh" />
                       Neighbourhood
                     </span>
-                    <span className="muted">Pin size reflects budget · clusters show nearby projects</span>
+                    <span className="muted">
+                      {canViewBudget
+                        ? 'Pin size reflects budget · clusters show nearby projects'
+                        : 'Clusters show nearby projects'}
+                    </span>
                   </div>
                 </>
               )}
@@ -500,7 +507,7 @@ export function DashboardPage() {
                     <th>Project</th>
                     <th style={{ width: 220 }}>Progress</th>
                     <th>Status</th>
-                    <th style={{ width: 180 }}>Budget</th>
+                    {canViewBudget ? <th style={{ width: 180 }}>Budget</th> : null}
                     <th>Next milestone</th>
                     <th>Activity</th>
                     <th />
@@ -536,19 +543,21 @@ export function DashboardPage() {
                       <td>
                         <SiteStatusBadge status={row.site.status} />
                       </td>
-                      <td>
-                        {row.budget.lines === 0 ? (
-                          <span className="muted small">Not budgeted</span>
-                        ) : (
-                          <>
-                            <Progress percent={row.budget.percentUsed} />
-                            <div className="small muted" style={{ marginTop: 5 }}>
-                              {formatMoney(row.budget.spent, { compact: true })} of{' '}
-                              {formatMoney(row.budget.budgeted, { compact: true })} · {row.budget.percentUsed}%
-                            </div>
-                          </>
-                        )}
-                      </td>
+                      {canViewBudget ? (
+                        <td>
+                          {!row.budget || row.budget.lines === 0 ? (
+                            <span className="muted small">Not budgeted</span>
+                          ) : (
+                            <>
+                              <Progress percent={row.budget.percentUsed} />
+                              <div className="small muted" style={{ marginTop: 5 }}>
+                                {formatMoney(row.budget.spent, { compact: true })} of{' '}
+                                {formatMoney(row.budget.budgeted, { compact: true })} · {row.budget.percentUsed}%
+                              </div>
+                            </>
+                          )}
+                        </td>
+                      ) : null}
                       <td>
                         {row.nextMilestone ? (
                           <div>
@@ -596,22 +605,24 @@ export function DashboardPage() {
                         {row.progress.milestonesCompleted}/{row.progress.milestones} milestones
                       </div>
                     </div>
-                    <div>
-                      <div className="tracker-card-label">Budget</div>
-                      {row.budget.lines === 0 ? (
-                        <div className="tracker-card-value muted">Not budgeted</div>
-                      ) : (
-                        <>
-                          <div className="tracker-card-value">
-                            {formatMoney(row.budget.spent, { compact: true })}
-                          </div>
-                          <div className="small muted">
-                            of {formatMoney(row.budget.budgeted, { compact: true })} ·{' '}
-                            {row.budget.percentUsed}%
-                          </div>
-                        </>
-                      )}
-                    </div>
+                    {canViewBudget ? (
+                      <div>
+                        <div className="tracker-card-label">Budget</div>
+                        {!row.budget || row.budget.lines === 0 ? (
+                          <div className="tracker-card-value muted">Not budgeted</div>
+                        ) : (
+                          <>
+                            <div className="tracker-card-value">
+                              {formatMoney(row.budget.spent, { compact: true })}
+                            </div>
+                            <div className="small muted">
+                              of {formatMoney(row.budget.budgeted, { compact: true })} ·{' '}
+                              {row.budget.percentUsed}%
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ) : null}
                     <div>
                       <div className="tracker-card-label">Next milestone</div>
                       {row.nextMilestone ? (

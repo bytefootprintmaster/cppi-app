@@ -3,6 +3,7 @@ import { T, getItem, putItem, queryAll } from '../db'
 import { asyncHandler, HttpError } from '../lib/http'
 import {
   accessibleSites,
+  canDo,
   computeBudget,
   computeProgress,
   listBudget,
@@ -42,10 +43,35 @@ const DEFAULT_KPIS: KpiId[] = [
   'attention'
 ]
 
+/**
+ * The KPIs that expose cost figures. They are withheld from anyone without the
+ * "see budget" permission, both from what the dashboard shows and from what the
+ * customiser offers.
+ */
+const BUDGET_KPIS: readonly KpiId[] = ['budget_total', 'budget_spent', 'budget_remaining']
+
+function isBudgetKpi(id: string): boolean {
+  return (BUDGET_KPIS as readonly string[]).includes(id)
+}
+
+/** The KPI ids a user may pick from — no budget figures without the permission. */
+function availableKpiIds(canSeeBudget: boolean): KpiId[] {
+  return canSeeBudget ? [...KPI_IDS] : KPI_IDS.filter((id) => !isBudgetKpi(id))
+}
+
+/** Keep the KPIs a user may see: known ids, minus budget figures without access. */
+function visibleKpis(kpis: readonly string[], canSeeBudget: boolean): KpiId[] {
+  return kpis.filter(
+    (id): id is KpiId =>
+      (KPI_IDS as readonly string[]).includes(id) && (canSeeBudget || !isBudgetKpi(id))
+  )
+}
+
 export interface SiteSummary {
   site: SiteRecord
   progress: ReturnType<typeof computeProgress>
-  budget: BudgetSummary
+  /** Absent when the user may not see budget figures. */
+  budget?: BudgetSummary
   files: number
   photos: number
   remarks: number
@@ -56,13 +82,15 @@ export interface SiteSummary {
 dashboardRouter.get('/', asyncHandler(async (req, res) => {
   const user = req.user!
   const sites = await accessibleSites(user)
+  const canSeeBudget = canDo(user, 'viewBudget')
 
   const rows: SiteSummary[] = await Promise.all(
     sites.map(async (site) => {
       const [stages, milestones, budgetLines, assets, remarks] = await Promise.all([
         listStages(site.siteId),
         listMilestones(site.siteId),
-        listBudget(site.siteId),
+        // Cost lines never leave the server for a user without budget access.
+        canSeeBudget ? listBudget(site.siteId) : Promise.resolve([]),
         queryAll<AssetRecord>(T.assets, {
           KeyConditionExpression: 'siteId = :s',
           ExpressionAttributeValues: { ':s': site.siteId }
@@ -90,7 +118,7 @@ dashboardRouter.get('/', asyncHandler(async (req, res) => {
       return {
         site,
         progress: computeProgress(stages, milestones),
-        budget: computeBudget(budgetLines),
+        budget: canSeeBudget ? computeBudget(budgetLines) : undefined,
         files: assets.filter((a) => a.type === 'document').length,
         photos: assets.filter((a) => a.type === 'image').length,
         remarks: remarks.length,
@@ -105,10 +133,10 @@ dashboardRouter.get('/', asyncHandler(async (req, res) => {
   const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100
   const budgetTotals = rows.reduce(
     (acc, r) => ({
-      budgeted: acc.budgeted + r.budget.budgeted,
-      spent: acc.spent + r.budget.spent,
-      paid: acc.paid + r.budget.paid,
-      remaining: acc.remaining + r.budget.remaining
+      budgeted: acc.budgeted + (r.budget?.budgeted ?? 0),
+      spent: acc.spent + (r.budget?.spent ?? 0),
+      paid: acc.paid + (r.budget?.paid ?? 0),
+      remaining: acc.remaining + (r.budget?.remaining ?? 0)
     }),
     { budgeted: 0, spent: 0, paid: 0, remaining: 0 }
   )
@@ -137,20 +165,25 @@ dashboardRouter.get('/', asyncHandler(async (req, res) => {
   res.json({
     rows,
     totals,
-    kpis: config?.kpis ?? DEFAULT_KPIS,
-    availableKpis: KPI_IDS
+    kpis: visibleKpis(config?.kpis ?? DEFAULT_KPIS, canSeeBudget),
+    availableKpis: availableKpiIds(canSeeBudget)
   })
 }))
 
 dashboardRouter.get('/kpis', asyncHandler(async (req, res) => {
+  const canSeeBudget = canDo(req.user!, 'viewBudget')
   const config = await getItem<KpiConfig>(T.kpis, { userId: req.user!.userId })
-  res.json({ kpis: config?.kpis ?? DEFAULT_KPIS, availableKpis: KPI_IDS })
+  res.json({
+    kpis: visibleKpis(config?.kpis ?? DEFAULT_KPIS, canSeeBudget),
+    availableKpis: availableKpiIds(canSeeBudget)
+  })
 }))
 
 dashboardRouter.put('/kpis', asyncHandler(async (req, res) => {
   const requested = req.body?.kpis
   if (!Array.isArray(requested)) throw new HttpError(400, '"kpis" must be an array')
-  const kpis = requested.filter((k: unknown): k is KpiId => KPI_IDS.includes(k as KpiId))
+  const allowed = availableKpiIds(canDo(req.user!, 'viewBudget'))
+  const kpis = requested.filter((k: unknown): k is KpiId => allowed.includes(k as KpiId))
   if (kpis.length === 0) throw new HttpError(400, 'Select at least one KPI')
 
   await putItem(T.kpis, {

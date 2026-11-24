@@ -89,7 +89,8 @@ function Shell() {
   // Remembered per browser so a collapsed sidebar stays collapsed across reloads.
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(SIDEBAR_KEY) === '1')
 
-  // Reports are addressed to admins and managers; nobody else sees the inbox.
+  // Reports are addressed to admins and managers; nobody else sees the inbox
+  // or the field view they review.
   const reviewsReports = user?.role === 'admin' || user?.role === 'manager'
 
   useEffect(() => {
@@ -170,22 +171,24 @@ function Shell() {
                 badge={unread}
               />
             ) : null}
+            {/* Opens the real four-button capture screen a site inspector gets,
+                so an admin or a manager can see the field app first-hand. The
+                field header carries a "Back to office" link for anyone without
+                the inspector surface. */}
+            {reviewsReports ? (
+              <NavItem
+                to="/inspector"
+                icon={<IconCamera />}
+                label="Site inspector view"
+                pathname={location.pathname}
+              />
+            ) : null}
 
             {user?.role === 'admin' ? (
               <>
                 <div className="nav-label">Administration</div>
                 <NavItem to="/admin/invites" icon={<IconMail />} label="Invitations" pathname={location.pathname} />
                 <NavItem to="/admin/users" icon={<IconUsers />} label="Users & roles" pathname={location.pathname} />
-                {/* Opens the real four-button capture screen a site inspector gets,
-                    so an admin can see the field app first-hand. The field header
-                    carries a "Back to office" link for anyone without the
-                    inspector surface. */}
-                <NavItem
-                  to="/inspector"
-                  icon={<IconCamera />}
-                  label="Site inspector view"
-                  pathname={location.pathname}
-                />
               </>
             ) : null}
           </nav>
