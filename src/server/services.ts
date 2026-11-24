@@ -1,6 +1,6 @@
 import { T, getItem, queryAll, scanAll } from './db'
 import { HttpError } from './lib/http'
-import { ADMIN_ROLE, can } from './roles'
+import { ADMIN_ROLE, MANAGER_ROLE, can } from './roles'
 import type {
   BudgetCategoryRecord,
   BudgetGroup,
@@ -14,6 +14,15 @@ import type {
 
 export function isAdmin(user: SessionUser): boolean {
   return user.role === ADMIN_ROLE
+}
+
+/**
+ * The people a field report is addressed to: administrators, and the managers
+ * who run a project day to day. Site inspectors file the reports and viewers
+ * only read what is already filed, so neither is on the receiving list.
+ */
+export function canReviewReports(user: SessionUser): boolean {
+  return isAdmin(user) || user.role === MANAGER_ROLE
 }
 
 /** True when the user holds a permission (admins hold everything). */

@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { T, getItem, putItem, scanAll, updateFields } from '../db'
 import { HttpError, asyncHandler, optStr, str } from '../lib/http'
 import { requireAuth } from '../auth'
-import { accessibleSites, canWrite, requireSiteAccess } from '../services'
+import { accessibleSites, canReviewReports, canWrite, requireSiteAccess } from '../services'
 import { buildObjectKey, getObjectBytes, presignDownload, putObject } from '../s3'
 import { formatBytes, renderSiteReportPdf } from '../pdf'
 import type { AssetRecord, SiteRecord, SiteReportView } from '../types'
@@ -269,6 +269,39 @@ inspectionRouter.get('/reports', asyncHandler(async (req, res) => {
         asset.type === 'document' &&
         hasTag(asset, REPORT_TAG)
     )
+    .sort((a, b) => b.uploadedAt.localeCompare(a.uploadedAt))
+    .map((asset) => ({
+      assetId: asset.assetId,
+      siteId: asset.siteId,
+      siteName: names.get(asset.siteId) ?? 'Project',
+      name: asset.name,
+      size: asset.size,
+      sentAt: asset.uploadedAt,
+      sentByName: asset.uploadedByName
+    }))
+
+  res.json({ reports })
+}))
+
+/* ---------------------------- the office inbox ---------------------------- */
+
+/**
+ * Every site report filed on the projects this office user reaches — the list an
+ * admin or a manager opens to see what the field has sent. The worker's list
+ * above answers "what did I send"; this one answers "what came in", so it is
+ * scoped to the projects rather than to the uploader.
+ */
+inspectionRouter.get('/reports/inbox', asyncHandler(async (req, res) => {
+  if (!canReviewReports(req.user!)) {
+    throw new HttpError(403, 'Only admins and managers receive site reports')
+  }
+
+  const sites = await accessibleSites(req.user!)
+  const names = new Map(sites.map((site) => [site.siteId, site.name]))
+
+  const rows = await scanAll<AssetRecord>(T.assets)
+  const reports: SiteReportView[] = rows
+    .filter((asset) => names.has(asset.siteId) && asset.type === 'document' && hasTag(asset, REPORT_TAG))
     .sort((a, b) => b.uploadedAt.localeCompare(a.uploadedAt))
     .map((asset) => ({
       assetId: asset.assetId,

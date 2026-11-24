@@ -15,14 +15,25 @@ import { AdminInvitesPage } from './pages/AdminInvites'
 import { AdminUsersPage } from './pages/AdminUsers'
 import { InviteAcceptPage } from './pages/InviteAccept'
 import { InspectorCapturePage, InspectorReportsPage } from './pages/Inspector'
+import { SiteReportsPage } from './pages/SiteReports'
 
-function Protected({ children, admin = false }: { children: ReactNode; admin?: boolean }) {
+function Protected({
+  children,
+  admin = false,
+  roles
+}: {
+  children: ReactNode
+  admin?: boolean
+  /** Restrict to these role ids, e.g. the site-report inbox. */
+  roles?: string[]
+}) {
   const { user, loading } = useAuth()
   const location = useLocation()
 
   if (loading) return <Loading label="Checking your session…" />
   if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />
   if (admin && user.role !== 'admin') return <Navigate to="/" replace />
+  if (roles && !roles.includes(user.role)) return <Navigate to="/" replace />
   return <>{children}</>
 }
 
@@ -74,6 +85,14 @@ export default function App() {
           <Route path="/search" element={<SearchPage />} />
           <Route path="/regulations" element={<RegulationsPage />} />
           <Route path="/chat" element={<ChatPage />} />
+          <Route
+            path="/site-reports"
+            element={
+              <Protected roles={['admin', 'manager']}>
+                <SiteReportsPage />
+              </Protected>
+            }
+          />
           <Route
             path="/admin/invites"
             element={

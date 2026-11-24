@@ -441,6 +441,21 @@ p { margin: 0; }
 }
 .nav-item svg { flex-shrink: 0; opacity: 0.9; }
 
+/* The unread count on "Site reports". Pushed to the far end of the row so it
+   reads as a count on the whole row, not as part of the label. */
+.nav-badge {
+  margin-left: auto;
+  min-width: 20px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--green-300);
+  color: #05271b;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+
 .sidebar-footer {
   margin-top: auto;
   border-top: 1px solid rgba(255, 255, 255, 0.09);
@@ -2024,14 +2039,17 @@ tr.drop-target > td {
   box-shadow: inset var(--ring);
 }
 
-/* Users & roles / Invitations: table on desktop, tappable cards on phones. */
+/* Users & roles / Invitations / Site reports: table on desktop, cards on phones. */
 .users-cards,
-.invites-cards { display: none; }
+.invites-cards,
+.reports-cards { display: none; }
 @media (max-width: 860px) {
   .users-table,
-  .invites-table { display: none; }
+  .invites-table,
+  .reports-table { display: none; }
   .users-cards,
-  .invites-cards {
+  .invites-cards,
+  .reports-cards {
     display: flex;
     flex-direction: column;
     gap: 12px;

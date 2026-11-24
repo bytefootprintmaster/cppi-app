@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
+import { SiteReportsProvider, useSiteReports } from '../lib/siteReports'
 import { Avatar, Button } from './ui'
 import {
   IconBuilding,
@@ -8,6 +9,7 @@ import {
   IconChat,
   IconChevronLeft,
   IconDashboard,
+  IconFile,
   IconLogOut,
   IconMail,
   IconMenu,
@@ -37,13 +39,16 @@ function NavItem({
   end,
   icon,
   label,
-  pathname
+  pathname,
+  badge
 }: {
   to: string
   end?: boolean
   icon: ReactNode
   label: string
   pathname: string
+  /** Unread count, drawn as a pill at the far end of the row. */
+  badge?: number
 }) {
   const current = isCurrent(pathname, to, end)
   return (
@@ -57,17 +62,35 @@ function NavItem({
     >
       {icon}
       <span>{label}</span>
+      {badge && badge > 0 ? (
+        <span className="nav-badge">
+          {badge > 9 ? '9+' : badge}
+          <span className="sr-only"> new</span>
+        </span>
+      ) : null}
     </NavLink>
   )
 }
 
 export function Layout() {
+  return (
+    <SiteReportsProvider>
+      <Shell />
+    </SiteReportsProvider>
+  )
+}
+
+function Shell() {
   const { user, signOut } = useAuth()
+  const { unread } = useSiteReports()
   const navigate = useNavigate()
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
   // Remembered per browser so a collapsed sidebar stays collapsed across reloads.
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(SIDEBAR_KEY) === '1')
+
+  // Reports are addressed to admins and managers; nobody else sees the inbox.
+  const reviewsReports = user?.role === 'admin' || user?.role === 'manager'
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_KEY, collapsed ? '1' : '0')
@@ -135,6 +158,18 @@ export function Layout() {
             <NavItem to="/search" icon={<IconSearch />} label="Search" pathname={location.pathname} />
             <NavItem to="/regulations" icon={<IconScale />} label="Regulations" pathname={location.pathname} />
             <NavItem to="/chat" icon={<IconChat />} label="Assistant" pathname={location.pathname} />
+            {/* What the field has sent in. Shown to admins and managers, so it
+                cannot live in the admin-only group below — it carries the
+                unread count instead of a bell. */}
+            {reviewsReports ? (
+              <NavItem
+                to="/site-reports"
+                icon={<IconFile />}
+                label="Site reports"
+                pathname={location.pathname}
+                badge={unread}
+              />
+            ) : null}
 
             {user?.role === 'admin' ? (
               <>
