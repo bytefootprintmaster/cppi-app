@@ -1020,6 +1020,38 @@ tr.drop-target > td {
 }
 .empty-title { font-weight: 700; color: var(--ink-soft); margin-bottom: 4px; }
 
+/* ------------------------------- settings -------------------------------- */
+
+.section-heading { font-size: 15px; font-weight: 700; color: var(--ink-soft); margin: 0 0 4px; }
+
+/* The Drive picker list. Long file names truncate rather than wrap, so the
+   checkbox column stays aligned down the whole list. */
+.drive-list {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  max-height: 320px;
+  overflow-y: auto;
+}
+.drive-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+}
+.drive-row:last-child { border-bottom: none; }
+.drive-row:hover { background: var(--canvas); }
+.drive-icon { display: flex; color: var(--muted); }
+.drive-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13.5px;
+}
+
 .alert {
   border-radius: var(--radius-sm);
   padding: 12px 14px;

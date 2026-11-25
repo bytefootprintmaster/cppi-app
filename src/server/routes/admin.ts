@@ -1,19 +1,23 @@
 import { Router } from 'express'
+import type { Request } from 'express'
 import { randomUUID } from 'node:crypto'
 import { env } from '../env'
 import { T, deleteItem, getItem, putItem, scanAll, updateFields } from '../db'
 import { HttpError, asyncHandler, oneOf, optStr, str } from '../lib/http'
 import { findPasswordCredential, findUserByEmail, requireAdmin, upsertPasswordCredential } from '../auth'
-import { ADMIN_ROLE, isBuiltinRole, listRoles } from '../roles'
+import { orgIdOf } from '../services'
+import { queryByOrg } from '../orgs'
+import { ADMIN_ROLE, SUPER_ADMIN_ROLE, isBuiltinRole, isSuperAdmin, listRoles } from '../roles'
 import type {
   InviteRecord,
   PermissionOverrides,
   Permissions,
   RoleRecord,
+  SiteRecord,
   UploadLimits,
   UserRecord
 } from '../types'
-import { PERMISSION_KEYS } from '../types'
+import { DEFAULT_ORG_ID, PERMISSION_KEYS } from '../types'
 
 export const adminRouter = Router()
 
@@ -22,6 +26,24 @@ const STATUSES = ['active', 'disabled'] as const
 adminRouter.use(requireAdmin)
 
 const nowIso = () => new Date().toISOString()
+
+/**
+ * A super admin's account is platform-level: an org admin may not see it in a
+ * list they can edit, change its role, or delete it. Anything reaching one of
+ * those routes is refused here.
+ */
+function assertNotSuperAdmin(target: UserRecord): void {
+  if (target.role === SUPER_ADMIN_ROLE) {
+    throw new HttpError(403, 'A super admin account cannot be changed from here')
+  }
+}
+
+/** Throws unless `target` belongs to the caller's workspace. */
+function assertSameOrg(targetOrgId: string | undefined, callerOrgId: string): void {
+  if ((targetOrgId ?? DEFAULT_ORG_ID) !== callerOrgId) {
+    throw new HttpError(404, 'Not found')
+  }
+}
 
 /* ---------------------------- shared readers ---------------------------- */
 
@@ -81,6 +103,23 @@ function readLimits(value: unknown): Partial<UploadLimits> {
   return out
 }
 
+/**
+ * The project grants an org admin may hand out. Only projects inside the
+ * caller's own workspace count: handing someone a project from another
+ * workspace would cross the tenancy boundary, so any such id is refused rather
+ * than silently dropped.
+ */
+async function readOrgSiteIds(req: Request, value: unknown): Promise<string[]> {
+  if (!Array.isArray(value)) return []
+  const requested = value.filter((s): s is string => typeof s === 'string')
+  if (requested.length === 0) return []
+  const orgSites = await queryByOrg<SiteRecord>(T.sites, orgIdOf(req.user!))
+  const allowed = new Set(orgSites.map((site) => site.siteId))
+  const foreign = requested.find((id) => !allowed.has(id))
+  if (foreign) throw new HttpError(403, 'A project outside your workspace cannot be granted')
+  return requested
+}
+
 /* ------------------------------- roles ------------------------------- */
 
 adminRouter.get('/roles', asyncHandler(async (_req, res) => {
@@ -138,7 +177,7 @@ adminRouter.delete('/roles/:roleId', asyncHandler(async (req, res) => {
   const role = await getItem<RoleRecord>(T.roles, { roleId })
   if (!role) throw new HttpError(404, 'Role not found')
 
-  const users = await scanAll<UserRecord>(T.users)
+  const users = await queryByOrg<UserRecord>(T.users, orgIdOf(req.user!))
   const inUse = users.filter((u) => u.role === roleId).length
   if (inUse > 0) {
     throw new HttpError(409, `${inUse} user${inUse === 1 ? '' : 's'} still use "${role.name}". Reassign them first.`)
@@ -150,8 +189,8 @@ adminRouter.delete('/roles/:roleId', asyncHandler(async (req, res) => {
 
 /* ------------------------------- users ------------------------------- */
 
-adminRouter.get('/users', asyncHandler(async (_req, res) => {
-  const users = await scanAll<UserRecord>(T.users)
+adminRouter.get('/users', asyncHandler(async (req, res) => {
+  const users = await queryByOrg<UserRecord>(T.users, orgIdOf(req.user!))
   res.json({ users: users.sort((a, b) => a.name.localeCompare(b.name)) })
 }))
 
@@ -165,14 +204,14 @@ adminRouter.post('/users', asyncHandler(async (req, res) => {
   const existing = await findUserByEmail(email)
   if (existing) throw new HttpError(409, 'A user with this email already exists')
 
-  const siteIds = Array.isArray(req.body?.siteIds)
-    ? req.body.siteIds.filter((s: unknown): s is string => typeof s === 'string')
-    : []
+  const siteIds = await readOrgSiteIds(req, req.body?.siteIds)
   const permissions = readPermissionOverrides(req.body?.permissions)
   const limits = readLimits(req.body?.limits)
 
   const user: UserRecord = {
     userId: randomUUID(),
+    // The new account joins the workspace of the admin who created it.
+    orgId: orgIdOf(req.user!),
     email,
     name,
     role,
@@ -192,6 +231,8 @@ adminRouter.patch('/users/:userId', asyncHandler(async (req, res) => {
   const { userId } = req.params
   const target = await getItem<UserRecord>(T.users, { userId })
   if (!target) throw new HttpError(404, 'User not found')
+  assertSameOrg(target.orgId, orgIdOf(req.user!))
+  assertNotSuperAdmin(target)
 
   const patch: Record<string, unknown> = {}
   const nextName = req.body?.name !== undefined ? str(req.body.name, 'name', 200) : undefined
@@ -216,7 +257,7 @@ adminRouter.patch('/users/:userId', asyncHandler(async (req, res) => {
   if (req.body?.status !== undefined) patch.status = oneOf(req.body.status, STATUSES, 'status')
   if (req.body?.siteIds !== undefined) {
     if (!Array.isArray(req.body.siteIds)) throw new HttpError(400, '"siteIds" must be an array')
-    patch.siteIds = req.body.siteIds.filter((s: unknown): s is string => typeof s === 'string')
+    patch.siteIds = await readOrgSiteIds(req, req.body.siteIds)
   }
   if (req.body?.permissions !== undefined) patch.permissions = readPermissionOverrides(req.body.permissions)
   if (req.body?.limits !== undefined) patch.limits = readLimits(req.body.limits)
@@ -253,6 +294,8 @@ adminRouter.delete('/users/:userId', asyncHandler(async (req, res) => {
   }
   const target = await getItem<UserRecord>(T.users, { userId: req.params.userId })
   if (!target) throw new HttpError(404, 'User not found')
+  assertSameOrg(target.orgId, orgIdOf(req.user!))
+  assertNotSuperAdmin(target)
   await deleteItem(T.users, { userId: req.params.userId })
   await deleteItem(T.credentials, { email: target.email }).catch(() => undefined)
   res.json({ ok: true })
@@ -260,11 +303,25 @@ adminRouter.delete('/users/:userId', asyncHandler(async (req, res) => {
 
 /* ------------------------------ invites ------------------------------ */
 
-adminRouter.get('/invites', asyncHandler(async (_req, res) => {
-  const invites = await scanAll<InviteRecord>(T.invites)
+/** The link an invitee follows to join. */
+function inviteUrl(token: string): string {
+  return `${env.APP_URL.replace(/\/$/, '')}/invite/${token}`
+}
+
+/** An invitation's lifetime in days, clamped to 1–90; the default is two weeks. */
+function inviteDays(value: unknown): number {
+  const days = Number(value ?? 14)
+  if (!Number.isFinite(days)) return 14
+  return Math.min(Math.max(Math.round(days), 1), 90)
+}
+
+adminRouter.get('/invites', asyncHandler(async (req, res) => {
+  const invites = await queryByOrg<InviteRecord>(T.invites, orgIdOf(req.user!))
   const withUrls = invites
+    // Workspace invitations have their own list: they join nobody to this org.
+    .filter((invite) => (invite.kind ?? 'member') !== 'workspace')
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-    .map((invite) => ({ ...invite, url: `${env.APP_URL.replace(/\/$/, '')}/invite/${invite.token}` }))
+    .map((invite) => ({ ...invite, url: inviteUrl(invite.token) }))
   res.json({ invites: withUrls })
 }))
 
@@ -272,40 +329,100 @@ adminRouter.post('/invites', asyncHandler(async (req, res) => {
   const role = await requireRoleId(req.body?.role)
   const email = optStr(req.body?.email, 320)?.toLowerCase()
   const note = optStr(req.body?.note, 500)
-  const siteIds = Array.isArray(req.body?.siteIds)
-    ? req.body.siteIds.filter((s: unknown): s is string => typeof s === 'string')
-    : []
-  const days = Number(req.body?.expiresInDays ?? 14)
+  const siteIds = await readOrgSiteIds(req, req.body?.siteIds)
 
   const invite: InviteRecord = {
     token: randomUUID().replace(/-/g, ''),
+    kind: 'member',
     email,
+    // The invitee joins the workspace of the admin who issued it.
+    orgId: orgIdOf(req.user!),
     role,
     siteIds,
     note,
     status: 'pending',
     createdBy: req.user!.userId,
     createdAt: nowIso(),
-    expiresAt: new Date(Date.now() + Math.min(Math.max(days, 1), 90) * 86_400_000).toISOString()
+    expiresAt: new Date(Date.now() + inviteDays(req.body?.expiresInDays) * 86_400_000).toISOString()
   }
 
   await putItem(T.invites, invite)
-  res.json({ invite, url: `${env.APP_URL.replace(/\/$/, '')}/invite/${invite.token}` })
+  res.json({ invite, url: inviteUrl(invite.token) })
+}))
+
+/* ------------------------ workspace invitations ------------------------ */
+//
+// CPPI has no public sign-up: the only way a new customer comes in is a
+// workspace invitation, and only a platform super admin may issue one.
+// Accepting it creates the invitee's own workspace with them as its admin, so
+// they start from nothing — no projects, no files — and build their own.
+
+/** Refuse the request unless the caller is a platform super admin. */
+function requireSuperAdmin(req: Request): void {
+  if (!isSuperAdmin(req.user!)) {
+    throw new HttpError(403, 'Only a platform super admin can invite a new workspace')
+  }
+}
+
+adminRouter.get('/workspace-invites', asyncHandler(async (req, res) => {
+  requireSuperAdmin(req)
+  const invites = await scanAll<InviteRecord>(T.invites)
+  const withUrls = invites
+    .filter((invite) => invite.kind === 'workspace')
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .map((invite) => ({ ...invite, url: inviteUrl(invite.token) }))
+  res.json({ invites: withUrls })
+}))
+
+adminRouter.post('/workspace-invites', asyncHandler(async (req, res) => {
+  requireSuperAdmin(req)
+  const email = optStr(req.body?.email, 320)?.toLowerCase()
+  const orgName = str(req.body?.orgName, 'orgName', 200)
+  const note = optStr(req.body?.note, 500)
+
+  const invite: InviteRecord = {
+    token: randomUUID().replace(/-/g, ''),
+    kind: 'workspace',
+    email,
+    // No workspace yet: it is created when the invite is accepted, and named here.
+    orgName,
+    // The invitee administers the workspace this invitation brings into being.
+    role: ADMIN_ROLE,
+    siteIds: [],
+    note,
+    status: 'pending',
+    createdBy: req.user!.userId,
+    createdAt: nowIso(),
+    expiresAt: new Date(Date.now() + inviteDays(req.body?.expiresInDays) * 86_400_000).toISOString()
+  }
+
+  await putItem(T.invites, invite)
+  res.json({ invite, url: inviteUrl(invite.token) })
+}))
+
+adminRouter.delete('/workspace-invites/:token', asyncHandler(async (req, res) => {
+  requireSuperAdmin(req)
+  const invite = await getItem<InviteRecord>(T.invites, { token: req.params.token })
+  if (!invite || invite.kind !== 'workspace') throw new HttpError(404, 'Invite not found')
+  await updateFields(T.invites, { token: req.params.token }, { status: 'revoked' })
+  res.json({ ok: true })
 }))
 
 adminRouter.delete('/invites/:token', asyncHandler(async (req, res) => {
   const invite = await getItem<InviteRecord>(T.invites, { token: req.params.token })
-  if (!invite) throw new HttpError(404, 'Invite not found')
+  if (!invite || invite.kind === 'workspace') throw new HttpError(404, 'Invite not found')
+  assertSameOrg(invite.orgId, orgIdOf(req.user!))
   await updateFields(T.invites, { token: req.params.token }, { status: 'revoked' })
   res.json({ ok: true })
 }))
 
 /* ----------------------------- diagnostics ---------------------------- */
 
-adminRouter.get('/overview', asyncHandler(async (_req, res) => {
+adminRouter.get('/overview', asyncHandler(async (req, res) => {
+  const orgId = orgIdOf(req.user!)
   const [users, invites] = await Promise.all([
-    scanAll<UserRecord>(T.users),
-    scanAll<InviteRecord>(T.invites)
+    queryByOrg<UserRecord>(T.users, orgId),
+    queryByOrg<InviteRecord>(T.invites, orgId)
   ])
   res.json({
     users: users.length,

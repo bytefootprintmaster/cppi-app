@@ -12,9 +12,9 @@ import type {
 import { DEFAULT_UPLOAD_LIMITS } from './types'
 
 /**
- * Roles are named bundles of permissions. Four are built in — `admin`,
- * `manager`, `viewer` and `site_inspector` — and administrators may add custom
- * roles on top.
+ * Roles are named bundles of permissions. Five are built in — `super_admin`,
+ * `admin`, `manager`, `viewer` and `site_inspector` — and administrators may add
+ * custom roles on top.
  *
  * The built-ins live in code rather than the `roles` table so signing in never
  * depends on a read (and works before the table is provisioned). Custom roles
@@ -24,6 +24,12 @@ import { DEFAULT_UPLOAD_LIMITS } from './types'
 export const ADMIN_ROLE = 'admin'
 export const MANAGER_ROLE = 'manager'
 export const VIEWER_ROLE = 'viewer'
+/**
+ * A platform-level role: it sees every workspace and is the only role allowed to
+ * create one. It is deliberately not offered to an org admin as something to
+ * assign, so `listRoles()` leaves it out — see {@link listRoles}.
+ */
+export const SUPER_ADMIN_ROLE = 'super_admin'
 /**
  * A site worker with a phone and gloves. This role exists for the field capture
  * screen: it may add files and send site reports, and nothing else. Its `surface`
@@ -35,7 +41,8 @@ export const BUILTIN_ROLE_IDS: readonly string[] = [
   ADMIN_ROLE,
   MANAGER_ROLE,
   VIEWER_ROLE,
-  SITE_INSPECTOR_ROLE
+  SITE_INSPECTOR_ROLE,
+  SUPER_ADMIN_ROLE
 ]
 
 const ALL_PERMISSIONS: Permissions = {
@@ -84,6 +91,15 @@ export function builtinRoles(): RoleRecord[] {
   const now = new Date(0).toISOString()
   return [
     {
+      roleId: SUPER_ADMIN_ROLE,
+      name: 'Super admin',
+      builtin: true,
+      admin: true,
+      permissions: ALL_PERMISSIONS,
+      createdAt: now,
+      updatedAt: now
+    },
+    {
       roleId: ADMIN_ROLE,
       name: 'Admin',
       builtin: true,
@@ -122,7 +138,11 @@ export function builtinRoles(): RoleRecord[] {
 
 const BUILTIN_BY_ID = new Map(builtinRoles().map((role) => [role.roleId, role]))
 
-/** Every role, built-ins first and custom roles after, each group by name. */
+/**
+ * Every role an administrator may assign, built-ins first and custom roles after,
+ * each group by name. The platform-only `super_admin` role is left out: an org
+ * admin can never grant it, and it is not theirs to see.
+ */
 export async function listRoles(): Promise<RoleRecord[]> {
   let custom: RoleRecord[] = []
   try {
@@ -134,7 +154,8 @@ export async function listRoles(): Promise<RoleRecord[]> {
   const customs = custom
     .filter((role) => !isBuiltinRole(role.roleId))
     .sort((a, b) => a.name.localeCompare(b.name))
-  return [...builtinRoles(), ...customs]
+  const builtins = builtinRoles().filter((role) => role.roleId !== SUPER_ADMIN_ROLE)
+  return [...builtins, ...customs]
 }
 
 /** Resolve one role id to its definition, falling back to viewer. */
@@ -197,8 +218,18 @@ function clampLimit(value: number | undefined, fallback: number, min: number, ma
   return Math.min(Math.max(Math.round(value), min), max)
 }
 
-/** True when the user holds a permission, with the admin role bypassing checks. */
+/** True when the user holds a permission, with the admin roles bypassing checks. */
 export function can(user: SessionUser, key: PermissionKey): boolean {
-  if (user.role === ADMIN_ROLE) return true
+  if (user.role === ADMIN_ROLE || user.role === SUPER_ADMIN_ROLE) return true
   return user.permissions?.[key] === true
+}
+
+/** A platform-level account: manages every workspace and creates new ones. */
+export function isSuperAdmin(user: SessionUser): boolean {
+  return user.role === SUPER_ADMIN_ROLE
+}
+
+/** A workspace administrator. A super admin counts as one wherever they act. */
+export function isAdmin(user: SessionUser): boolean {
+  return user.role === ADMIN_ROLE || isSuperAdmin(user)
 }

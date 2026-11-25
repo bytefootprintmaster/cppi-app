@@ -9,6 +9,9 @@ import { IconCheck, IconMail } from '../components/icons'
 
 interface InvitePreview {
   invite: {
+    /** A workspace invitation founds a new workspace; a member one joins an existing one. */
+    kind: 'member' | 'workspace'
+    orgName?: string
     role: string
     email?: string
     siteIds: string[]
@@ -171,15 +174,18 @@ export function InviteAcceptPage() {
 
   const invite = data.invite
   const unusable = invite.status !== 'pending' || invite.expired
+  const isWorkspace = invite.kind === 'workspace'
 
   return (
     <div className="login-shell">
       <section className="login-hero">
         <img className="brand-logo brand-logo-hero" src="/cppi-logo.svg" alt="CPPI Management" />
         <div>
-          <h1>You have been invited.</h1>
+          <h1>{isWorkspace ? 'Your workspace is ready to set up.' : 'You have been invited.'}</h1>
           <p>
-            Accept the invitation to join the CPPI portal and access the building projects you are working on.
+            {isWorkspace
+              ? 'Accept the invitation to start your own CPPI workspace — add your projects, files and team from scratch.'
+              : 'Accept the invitation to join the CPPI portal and access the building projects you are working on.'}
           </p>
         </div>
         <div className="small login-hero-foot">
@@ -196,30 +202,43 @@ export function InviteAcceptPage() {
             <div className="card-body">
               <div className="row" style={{ gap: 10 }}>
                 <IconMail size={20} />
-                <h2 style={{ fontSize: 20 }}>Invitation details</h2>
+                <h2 style={{ fontSize: 20 }}>{isWorkspace ? 'Workspace invitation' : 'Invitation details'}</h2>
               </div>
 
               <div className="stack" style={{ gap: 12, marginTop: 18 }}>
                 <div className="row-between">
                   <span className="small muted">Role</span>
-                  <RoleBadge role={invite.role} />
+                  <RoleBadge role={invite.role} label={isWorkspace ? 'Workspace admin' : undefined} />
                 </div>
+                {isWorkspace ? (
+                  <div className="row-between">
+                    <span className="small muted">Workspace</span>
+                    <strong>{invite.orgName || 'To be named'}</strong>
+                  </div>
+                ) : null}
                 {invite.email ? (
                   <div className="row-between">
                     <span className="small muted">Issued for</span>
                     <strong>{invite.email}</strong>
                   </div>
                 ) : null}
-                <div className="row-between">
-                  <span className="small muted">Projects</span>
-                  <strong>
-                    {invite.role === 'admin'
-                      ? 'All projects'
-                      : invite.siteIds.length === 0
-                        ? 'None yet'
-                        : `${invite.siteIds.length} project(s)`}
-                  </strong>
-                </div>
+                {isWorkspace ? (
+                  <div className="row-between">
+                    <span className="small muted">Projects</span>
+                    <strong>Starts empty</strong>
+                  </div>
+                ) : (
+                  <div className="row-between">
+                    <span className="small muted">Projects</span>
+                    <strong>
+                      {invite.role === 'admin'
+                        ? 'All projects'
+                        : invite.siteIds.length === 0
+                          ? 'None yet'
+                          : `${invite.siteIds.length} project(s)`}
+                    </strong>
+                  </div>
+                )}
                 {invite.note ? (
                   <div className="row-between">
                     <span className="small muted">Note</span>

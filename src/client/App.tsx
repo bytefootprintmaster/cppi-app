@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
-import { useAuth } from './lib/auth'
+import { isAdminRole, useAuth } from './lib/auth'
 import { Layout } from './components/Layout'
 import { InstallPrompt } from './components/InstallPrompt'
 import { Loading } from './components/ui'
@@ -11,6 +11,7 @@ import { SiteDetailPage } from './pages/SiteDetail'
 import { SearchPage } from './pages/Search'
 import { RegulationsPage } from './pages/Regulations'
 import { ChatPage } from './pages/Chat'
+import { SettingsPage } from './pages/Settings'
 import { AdminInvitesPage } from './pages/AdminInvites'
 import { AdminUsersPage } from './pages/AdminUsers'
 import { InviteAcceptPage } from './pages/InviteAccept'
@@ -32,7 +33,7 @@ function Protected({
 
   if (loading) return <Loading label="Checking your session…" />
   if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />
-  if (admin && user.role !== 'admin') return <Navigate to="/" replace />
+  if (admin && !isAdminRole(user.role)) return <Navigate to="/" replace />
   if (roles && !roles.includes(user.role)) return <Navigate to="/" replace />
   return <>{children}</>
 }
@@ -85,6 +86,7 @@ export default function App() {
           <Route path="/search" element={<SearchPage />} />
           <Route path="/regulations" element={<RegulationsPage />} />
           <Route path="/chat" element={<ChatPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
           <Route
             path="/site-reports"
             element={

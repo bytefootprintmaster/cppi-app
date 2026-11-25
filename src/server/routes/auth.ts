@@ -15,6 +15,8 @@ import {
   verifyPassword,
   verifyGoogleCredential
 } from '../auth'
+import { ADMIN_ROLE, SUPER_ADMIN_ROLE } from '../roles'
+import { DEFAULT_ORG_ID } from '../types'
 import type { InviteRecord, UserRecord } from '../types'
 
 export const authRouter = Router()
@@ -57,7 +59,9 @@ authRouter.post('/auth/google', asyncHandler(async (req, res) => {
         throw new HttpError(403, 'This invitation was issued for a different email address')
       }
     }
+    const isSuperAdminEmail = env.SUPER_ADMIN_EMAILS.includes(profile.email)
     const isAdminEmail =
+      isSuperAdminEmail ||
       env.ADMIN_EMAILS.includes(profile.email) ||
       env.BOOTSTRAP_ADMIN_EMAIL?.toLowerCase() === profile.email
     const invites = await findPendingInvites(profile.email)
@@ -66,10 +70,12 @@ authRouter.post('/auth/google', asyncHandler(async (req, res) => {
     }
     user = {
       userId: randomUUID(),
+      // A pending invite decides the workspace when applyPendingInvites runs below.
+      orgId: tokenInvite?.orgId ?? DEFAULT_ORG_ID,
       email: profile.email,
       name: profile.name,
       picture: profile.picture,
-      role: isAdminEmail ? 'admin' : 'viewer',
+      role: isSuperAdminEmail ? SUPER_ADMIN_ROLE : isAdminEmail ? ADMIN_ROLE : 'viewer',
       status: 'active',
       siteIds: [],
       createdAt: now

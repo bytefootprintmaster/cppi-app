@@ -1,6 +1,8 @@
-import { T, getItem, queryAll, scanAll } from './db'
+import { T, getItem, queryAll } from './db'
 import { HttpError } from './lib/http'
-import { ADMIN_ROLE, MANAGER_ROLE, can } from './roles'
+import { MANAGER_ROLE, can, isAdmin, isSuperAdmin } from './roles'
+import { queryByOrg } from './orgs'
+import { DEFAULT_ORG_ID } from './types'
 import type {
   BudgetCategoryRecord,
   BudgetGroup,
@@ -12,8 +14,11 @@ import type {
   StageRecord
 } from './types'
 
-export function isAdmin(user: SessionUser): boolean {
-  return user.role === ADMIN_ROLE
+export { isAdmin, isSuperAdmin }
+
+/** The workspace a session is confined to. Always from the session, never input. */
+export function orgIdOf(user: SessionUser): string {
+  return user.orgId ?? DEFAULT_ORG_ID
 }
 
 /**
@@ -44,6 +49,11 @@ export async function loadSite(siteId: string): Promise<SiteRecord> {
 /** Throws unless the user may see this site. Returns the site record. */
 export async function requireSiteAccess(user: SessionUser, siteId: string): Promise<SiteRecord> {
   const site = await loadSite(siteId)
+  // The workspace is the hard boundary: a project in another workspace is not
+  // yours, not even for an administrator.
+  if ((site.orgId ?? DEFAULT_ORG_ID) !== orgIdOf(user)) {
+    throw new HttpError(403, 'You do not have access to this project')
+  }
   if (isAdmin(user)) return site
   if (!(user.siteIds ?? []).includes(site.siteId)) {
     throw new HttpError(403, 'You do not have access to this project')
@@ -51,9 +61,10 @@ export async function requireSiteAccess(user: SessionUser, siteId: string): Prom
   return site
 }
 
+/** The projects a user may see: every project in their workspace, or the ones they were granted. */
 export async function accessibleSites(user: SessionUser): Promise<SiteRecord[]> {
-  const all = await scanAll<SiteRecord>(T.sites)
-  const list = isAdmin(user) ? all : all.filter((s) => (user.siteIds ?? []).includes(s.siteId))
+  const sites = await queryByOrg<SiteRecord>(T.sites, orgIdOf(user))
+  const list = isAdmin(user) ? sites : sites.filter((s) => (user.siteIds ?? []).includes(s.siteId))
   return list.sort((a, b) => a.name.localeCompare(b.name))
 }
 

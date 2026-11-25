@@ -18,9 +18,13 @@ export const ddb = DynamoDBDocumentClient.from(base, {
 
 /** Table names (single prefix, several purpose-built tables). */
 export const T = {
+  /** Workspaces. One row per tenant; the boundary every other table is scoped by. */
+  orgs: `${env.TABLE_PREFIX}orgs`,
   users: `${env.TABLE_PREFIX}users`,
   credentials: `${env.TABLE_PREFIX}credentials`,
   invites: `${env.TABLE_PREFIX}invites`,
+  /** Connected Google accounts (Gmail read + Drive import). One row per user. */
+  googleConnections: `${env.TABLE_PREFIX}google_connections`,
   /** Role definitions: the three built-ins plus any custom roles an admin adds. */
   roles: `${env.TABLE_PREFIX}roles`,
   sites: `${env.TABLE_PREFIX}sites`,

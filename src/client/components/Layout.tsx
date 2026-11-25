@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { useAuth } from '../lib/auth'
+import { isAdminRole, useAuth } from '../lib/auth'
 import { SiteReportsProvider, useSiteReports } from '../lib/siteReports'
 import { Avatar, Button } from './ui'
 import {
@@ -15,6 +15,7 @@ import {
   IconMenu,
   IconScale,
   IconSearch,
+  IconSettings,
   IconUsers,
   IconX
 } from './icons'
@@ -184,7 +185,12 @@ function Shell() {
               />
             ) : null}
 
-            {user?.role === 'admin' ? (
+            {/* Per-user connections (Gmail read, Drive import), so every role
+                gets its own Settings page, not only an administrator. */}
+            <div className="nav-label">Workspace</div>
+            <NavItem to="/settings" icon={<IconSettings />} label="Settings" pathname={location.pathname} />
+
+            {isAdminRole(user?.role) ? (
               <>
                 <div className="nav-label">Administration</div>
                 <NavItem to="/admin/invites" icon={<IconMail />} label="Invitations" pathname={location.pathname} />

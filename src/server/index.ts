@@ -4,6 +4,7 @@ import { env } from './env'
 import { authenticate } from './auth'
 import { backfillMissingFrameworks } from './framework'
 import { ensureBuiltinRoles } from './roles'
+import { ensureSuperAdmins } from './orgs'
 import { HttpError } from './lib/http'
 import { authRouter } from './routes/auth'
 import { adminRouter } from './routes/admin'
@@ -14,6 +15,7 @@ import { searchRouter } from './routes/search'
 import { dashboardRouter } from './routes/dashboard'
 import { chatRouter } from './routes/chat'
 import { regulationsRouter } from './routes/regulations'
+import { integrationsRouter } from './routes/integrations'
 
 const app = express()
 app.disable('x-powered-by')
@@ -34,6 +36,7 @@ app.use('/api/search', searchRouter)
 app.use('/api/dashboard', dashboardRouter)
 app.use('/api/regulations', regulationsRouter)
 app.use('/api/chat', chatRouter)
+app.use('/api/integrations', integrationsRouter)
 
 app.use('/api', (_req, res) => {
   res.status(404).json({ error: 'Not found' })
@@ -74,4 +77,6 @@ app.listen(env.PORT, () => {
   void backfillMissingFrameworks()
   // Seed the built-in role rows (admin/manager/viewer) if the table is fresh.
   void ensureBuiltinRoles().catch((err) => console.warn('[cppi] could not seed roles:', err))
+  // Make sure the default workspace exists and the platform super admins own it.
+  void ensureSuperAdmins().catch((err) => console.warn('[cppi] could not initialise workspaces:', err))
 })

@@ -18,8 +18,86 @@ export type MilestoneStatus = 'pending' | 'in_progress' | 'completed'
 export type AssetType = 'image' | 'document'
 export type AssetCategory = 'progress' | 'plan' | 'permit' | 'invoice' | 'other'
 export type InviteStatus = 'pending' | 'accepted' | 'revoked'
+/**
+ * What an invitation does. A `member` invite adds someone to a workspace that
+ * already exists; a `workspace` invite — which only a platform super admin may
+ * issue — creates a brand new workspace and hands it to the invitee as its
+ * admin. Rows written before kinds existed are treated as `member`.
+ */
+export type InviteKind = 'member' | 'workspace'
 /** Kind of cost a budget line belongs to. Land is bought, the other two are built. */
 export type BudgetGroup = 'land' | 'soft' | 'hard'
+
+/* --------------------------------- tenancy --------------------------------- */
+
+/**
+ * The workspace every account and project belongs to. Today's single-tenant data
+ * lives under this id; a workspace created by a workspace invitation gets its
+ * own. The value is stable and hard-coded so bootstrap and backfill agree.
+ */
+export const DEFAULT_ORG_ID = 'org_default'
+
+export type OrgStatus = 'active' | 'suspended'
+
+/** Whether a workspace's product limits refill each month, or never. */
+export type LimitPeriod = 'lifetime' | 'monthly'
+
+/** What a workspace may use, set when it is created and editable by a super admin. */
+export interface OrgLimits {
+  /** Documents the workspace may store, per period. */
+  docs: number
+  /** Images the workspace may store, per period. */
+  images: number
+  /** Assistant questions the workspace may ask, per period. */
+  assistantAsks: number
+  /** When the counters refill. */
+  period: LimitPeriod
+}
+
+/** Running tallies kept on the org row, so a limit check needs no scan. */
+export interface OrgCounters {
+  docs: number
+  images: number
+  assistantAsks: number
+  /** Start of the window the counters belong to. */
+  periodStartedAt: string
+}
+
+/** One workspace — the hard boundary between two customers. */
+export interface OrgRecord {
+  orgId: string
+  name: string
+  slug: string
+  /** The user who owns it: the admin a workspace invite created. */
+  ownerUserId: string
+  status: OrgStatus
+  limits: OrgLimits
+  counters: OrgCounters
+  createdAt: string
+  updatedAt: string
+}
+
+/* ------------------------------- integrations ------------------------------ */
+
+/**
+ * A user's connected Google account. It carries the refresh token that lets CPPI
+ * read their Gmail and pull files from their Drive on their behalf. The token is
+ * stored encrypted and is only ever decrypted on the server, never sent to the
+ * browser. One row per user.
+ */
+export interface GoogleConnectionRecord {
+  userId: string
+  /** Workspace the user belongs to, so an isolation audit can see the owner. */
+  orgId: string
+  /** The Google address that was connected. */
+  email: string
+  /** The scopes Google actually granted. */
+  scopes: string[]
+  /** AES-256-GCM ciphertext of the refresh token. Never logged, never returned. */
+  refreshToken: string
+  connectedAt: string
+  updatedAt: string
+}
 
 /** The permissions an administrator can grant, on top of the role's defaults. */
 export interface Permissions {
@@ -85,6 +163,8 @@ export interface RoleRecord {
 
 export interface SessionUser {
   userId: string
+  /** The workspace this session is confined to. Never taken from the request. */
+  orgId: string
   email: string
   name: string
   picture?: string
@@ -100,6 +180,8 @@ export interface SessionUser {
 
 export interface UserRecord {
   userId: string
+  /** Workspace this account belongs to. */
+  orgId: string
   email: string
   name: string
   picture?: string
@@ -116,6 +198,8 @@ export interface UserRecord {
 
 export interface SiteRecord {
   siteId: string
+  /** Workspace that owns this project. */
+  orgId: string
   name: string
   code?: string
   description?: string
@@ -548,6 +632,12 @@ export interface RegulationsMetaRecord {
   place: string
   placeName: string
   placeType?: string
+  /**
+   * The upper-tier region or county this jurisdiction sits inside, for Ontario's
+   * two-tier structure (e.g. `ajax` -> `durham-region`). Absent for a single-tier
+   * city (Toronto) or for an upper tier itself. Written by the ingest.
+   */
+  parentRegion?: string
   jurisdiction?: string
   sourceSite?: string
   seedUrls?: string[]
@@ -562,7 +652,19 @@ export interface RegulationsMetaRecord {
 
 export interface InviteRecord {
   token: string
+  /**
+   * What accepting this invite does. Absent means `member`, so invitations
+   * issued before kinds existed keep working unchanged.
+   */
+  kind?: InviteKind
   email?: string
+  /**
+   * Workspace the invitee joins. Absent on a workspace invitation, which has no
+   * workspace yet — one is created when the invite is accepted.
+   */
+  orgId?: string
+  /** Name of the workspace a `workspace` invitation will create. */
+  orgName?: string
   role: Role
   siteIds: string[]
   note?: string

@@ -20,6 +20,7 @@ interface PlaceSummary {
   place: string
   placeName: string
   placeType?: string
+  parentRegion?: string
   sourceSite?: string
   seedUrls: string[]
   pageCount: number
@@ -35,20 +36,34 @@ interface Listing extends PlaceSummary {
   documents: RegulationSummary[]
 }
 
+/** Local is the town's own by-law; regional is the upper-tier region above it. */
+type RegulationTier = 'local' | 'regional'
+
 interface SearchHit {
   docId: string
   title: string
   kind: RegulationKind
   sourceUrl: string
   sourceType: 'page' | 'document'
+  place: string
+  placeName: string
+  tier: RegulationTier
   matched: string[]
   snippet: string
   score: number
 }
 
+interface SearchTarget {
+  place: string
+  placeName: string
+  tier: RegulationTier
+}
+
 interface SearchResponse {
   place: string
   placeName: string
+  /** Every jurisdiction searched — the town, then the region above it, if any. */
+  places?: SearchTarget[]
   query: string
   count: number
   results: SearchHit[]
@@ -70,6 +85,8 @@ interface SiteMatch {
   siteId: string
   siteName: string
   match: PlaceMatch | null
+  /** The upper-tier region the matched town sits inside, if one has a corpus. */
+  region: PlaceMatch | null
 }
 
 /* --------------------------------- kinds --------------------------------- */
@@ -490,6 +507,12 @@ export function RegulationsPage() {
   }, [selected, setDoc])
 
   const current = places.data?.places.find((place) => place.place === selected)
+  // The upper-tier region this jurisdiction sits inside, when one has a corpus.
+  // Ontario is two-tier, so Ajax's rules and Durham Region's both apply.
+  const region = current?.parentRegion
+    ? places.data?.places.find((place) => place.place === current.parentRegion)
+    : undefined
+  const twoTier = Boolean(region)
   const counts = listing.data?.kinds ?? current?.kinds ?? {}
   const shelves = KIND_META.filter((entry) => (counts[entry.key] ?? 0) > 0)
   const totalDocuments = (listing.data?.pageCount ?? 0) + (listing.data?.documentCount ?? 0)
@@ -503,6 +526,14 @@ export function RegulationsPage() {
     const rows = search.data?.results ?? []
     return kind ? rows.filter((row) => row.kind === kind) : rows
   }, [search.data, kind])
+
+  // The scope a search actually covered: the town alone, or the town and its
+  // region. With two, each hit is badged with the jurisdiction it came from.
+  const searchScope = search.data?.places ?? []
+  const scopeLabel =
+    searchScope.length > 1
+      ? searchScope.map((entry) => entry.placeName).join(' and ')
+      : search.data?.placeName ?? ''
 
   // The reader's body and outline, derived once per open document.
   const openDocument = reader.data?.document ?? null
@@ -575,6 +606,16 @@ export function RegulationsPage() {
           <div className="alert alert-info" style={{ marginBottom: 16 }}>
             No regulations are loaded for {siteMatch.data.siteName} yet — showing the library instead. Add a city
             to the project, or pick its jurisdiction, to link it directly.
+          </div>
+        ) : null}
+
+        {/* Ontario is two-tier. Say so, so a regional rule in the results never
+            surprises — and so the local/regional badges below have a meaning. */}
+        {twoTier && region && current ? (
+          <div className="alert alert-info" style={{ marginBottom: 16 }}>
+            {current.placeName} sits inside {region.placeName}. Searches here cover both: {current.placeName}’s
+            by-laws, permits and forms are labelled <strong>local</strong>, and {region.placeName}’s official
+            plan, development charges and servicing rules are labelled <strong>regional</strong>.
           </div>
         ) : null}
 
@@ -682,9 +723,12 @@ export function RegulationsPage() {
                   <div className="card-header">
                     <div>
                       <div className="card-title">
-                        {results.length} result{results.length === 1 ? '' : 's'} in {search.data.placeName}
+                        {results.length} result{results.length === 1 ? '' : 's'} in {scopeLabel}
                       </div>
-                      <div className="card-sub">Matching “{search.data.query}”</div>
+                      <div className="card-sub">
+                        Matching “{search.data.query}”
+                        {searchScope.length > 1 ? ' · local and regional rules' : ''}
+                      </div>
                     </div>
                   </div>
                   {results.length === 0 ? (
@@ -698,6 +742,9 @@ export function RegulationsPage() {
                           <div className="reg-doc-main">
                             <div className="reg-doc-head">
                               <Badge tone={kindTone(hit.kind)}>{kindLabel(hit.kind)}</Badge>
+                              {searchScope.length > 1 ? (
+                                <Badge tone={hit.tier === 'regional' ? 'blue' : 'gray'}>{hit.placeName}</Badge>
+                              ) : null}
                               <button type="button" className="reg-doc-title" onClick={() => setDoc(hit.docId)}>
                                 {hit.title}
                               </button>

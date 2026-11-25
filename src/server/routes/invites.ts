@@ -10,6 +10,8 @@ import {
   upsertPasswordCredential
 } from '../auth'
 import { ADMIN_ROLE } from '../roles'
+import { createWorkspaceForInvite } from '../orgs'
+import { DEFAULT_ORG_ID } from '../types'
 import type { InviteRecord, Role, UserRecord } from '../types'
 
 export const inviteRouter = Router()
@@ -22,12 +24,44 @@ function mergeRole(current: Role, invited: Role): Role {
   return current
 }
 
+/**
+ * Work out what an invitation does to an account.
+ *
+ * A `workspace` invitation founds a new workspace — this is the moment it comes
+ * into being — and makes the invitee its admin. A `member` invitation merges a
+ * role and project access into the workspace it names. Returns only the fields
+ * that change, so the caller can either build a new account around them or patch
+ * an existing one.
+ */
+async function inviteEffect(
+  invite: InviteRecord,
+  user: UserRecord,
+  name?: string
+): Promise<Partial<UserRecord>> {
+  if (invite.kind === 'workspace') {
+    const org = await createWorkspaceForInvite(invite, user.userId)
+    return { orgId: org.orgId, role: ADMIN_ROLE, name }
+  }
+
+  const siteIds = new Set(user.siteIds ?? [])
+  for (const id of invite.siteIds ?? []) siteIds.add(id)
+  return {
+    // The invite names the workspace being joined, when it names one at all.
+    ...(invite.orgId ? { orgId: invite.orgId } : {}),
+    role: mergeRole(user.role, invite.role),
+    siteIds: [...siteIds],
+    name
+  }
+}
+
 /** Public: show what an invite is for, so the join page can render before sign-in. */
 inviteRouter.get('/:token', asyncHandler(async (req, res) => {
   const invite = await getItem<InviteRecord>(T.invites, { token: req.params.token })
   if (!invite) throw new HttpError(404, 'This invitation link is not valid')
   res.json({
     invite: {
+      kind: invite.kind ?? 'member',
+      orgName: invite.orgName,
       role: invite.role,
       email: invite.email,
       siteIds: invite.siteIds,
@@ -74,23 +108,20 @@ inviteRouter.post('/:token/register', asyncHandler(async (req, res) => {
   if (!user) {
     user = {
       userId: randomUUID(),
+      // Replaced below when the invite founds or names a workspace.
+      orgId: DEFAULT_ORG_ID,
       email,
       name,
       role: invite.role,
       status: 'active',
-      siteIds: invite.siteIds ?? [],
-      createdAt: now,
-      lastLoginAt: now
+      siteIds: [],
+      createdAt: now
     }
+    Object.assign(user, await inviteEffect(invite, user, name), { lastLoginAt: now })
     await putItem(T.users, user)
   } else {
-    const siteIds = new Set(user.siteIds ?? [])
-    for (const id of invite.siteIds ?? []) siteIds.add(id)
-    const patch: Partial<UserRecord> = { siteIds: [...siteIds], lastLoginAt: now }
-    const role = mergeRole(user.role, invite.role)
-    if (role !== user.role) patch.role = role
     // The name typed on the claim form is what the project records show.
-    if (name && name !== user.name) patch.name = name
+    const patch = { ...(await inviteEffect(invite, user, name)), lastLoginAt: now }
     await updateFields(T.users, { userId: user.userId }, patch)
     user = { ...user, ...patch }
   }
@@ -123,17 +154,15 @@ inviteRouter.post('/:token/accept', requireAuth, asyncHandler(async (req, res) =
   const user = await getItem<UserRecord>(T.users, { userId: req.user!.userId })
   if (!user) throw new HttpError(404, 'User not found')
 
-  const siteIds = new Set(user.siteIds ?? [])
-  for (const id of invite.siteIds ?? []) siteIds.add(id)
+  const patch = await inviteEffect(invite, user)
 
-  const role = mergeRole(user.role, invite.role)
-
-  await updateFields(T.users, { userId: user.userId }, { role, siteIds: [...siteIds] })
+  await updateFields(T.users, { userId: user.userId }, patch)
   await updateFields(T.invites, { token: invite.token }, {
     status: 'accepted',
     acceptedBy: user.userId,
     acceptedAt: new Date().toISOString()
   })
 
-  res.json({ ok: true, role, siteIds: [...siteIds] })
+  const next = { ...user, ...patch }
+  res.json({ ok: true, role: next.role, siteIds: next.siteIds })
 }))

@@ -90,3 +90,13 @@ export function useAuth(): AuthValue {
   if (!ctx) throw new Error('useAuth must be used inside <AuthProvider>')
   return ctx
 }
+
+/** A platform super admin: manages every workspace and is the only one who may create one. */
+export function isSuperAdminRole(role: string | undefined | null): boolean {
+  return role === 'super_admin'
+}
+
+/** True for the roles allowed into the administration pages. A super admin counts as an admin. */
+export function isAdminRole(role: string | undefined | null): boolean {
+  return role === 'admin' || isSuperAdminRole(role)
+}

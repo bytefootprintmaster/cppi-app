@@ -6,7 +6,9 @@ import type { NextFunction, Request, RequestHandler, Response } from 'express'
 import { env } from './env'
 import { T, getItem, putItem, queryAll, updateFields } from './db'
 import { HttpError } from './lib/http'
-import { ADMIN_ROLE, can, loadRole, resolveLimits, resolvePermissions, resolveSurface } from './roles'
+import { ADMIN_ROLE, can, isAdmin, loadRole, resolveLimits, resolvePermissions, resolveSurface } from './roles'
+import { createWorkspaceForInvite } from './orgs'
+import { DEFAULT_ORG_ID } from './types'
 import type { InviteRecord, PermissionKey, Role, SessionUser, UserRecord } from './types'
 
 const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID)
@@ -81,6 +83,9 @@ export async function toSession(user: UserRecord): Promise<SessionUser> {
   const role = await loadRole(user.role)
   return {
     userId: user.userId,
+    // Rows written before tenancy carry no workspace; they belong to the
+    // default one until the backfill stamps them.
+    orgId: user.orgId ?? DEFAULT_ORG_ID,
     email: user.email,
     name: user.name,
     picture: user.picture,
@@ -137,6 +142,7 @@ export async function ensureBootstrapAdmin(): Promise<void> {
   if (!user) {
     user = {
       userId: randomUUID(),
+      orgId: DEFAULT_ORG_ID,
       email,
       name: env.BOOTSTRAP_ADMIN_NAME || email,
       role: ADMIN_ROLE,
@@ -149,6 +155,7 @@ export async function ensureBootstrapAdmin(): Promise<void> {
     const patch: Partial<UserRecord> = {}
     if (user.role !== ADMIN_ROLE) patch.role = ADMIN_ROLE
     if (user.status !== 'active') patch.status = 'active'
+    if (!user.orgId) patch.orgId = DEFAULT_ORG_ID
     if (!user.name && env.BOOTSTRAP_ADMIN_NAME) patch.name = env.BOOTSTRAP_ADMIN_NAME
     if (Object.keys(patch).length > 0) {
       await updateFields(T.users, { userId: user.userId }, patch)
@@ -173,23 +180,43 @@ export async function findPendingInvites(email: string): Promise<InviteRecord[]>
   return rows.filter((i) => i.status === 'pending' && i.expiresAt > now)
 }
 
-/** Merge every pending invite for this address into the user record (role + site access). */
+/** Merge every pending invite for this address into the user record (org + role + site access). */
 export async function applyPendingInvites(user: UserRecord): Promise<UserRecord> {
   const invites = await findPendingInvites(user.email)
   if (invites.length === 0) return user
 
   const siteIds = new Set(user.siteIds ?? [])
+  let orgId = user.orgId ?? DEFAULT_ORG_ID
   let role: Role = user.role
+
+  // A workspace invitation founds a new workspace and hands it to the invitee as
+  // its admin. That is the strongest thing an invite can do, so it decides both
+  // the workspace and the role; any other invite only adds project access.
+  const workspaceInvite = invites.find((invite) => invite.kind === 'workspace')
+  if (workspaceInvite) {
+    const org = await createWorkspaceForInvite(workspaceInvite, user.userId)
+    orgId = org.orgId
+    role = ADMIN_ROLE
+  }
+
   // An invite upgrades the account it was issued to: admin wins outright,
   // otherwise a viewer joining via an invite takes that invite's role.
   for (const invite of invites) {
+    if (invite === workspaceInvite) continue
+    // A member invite joins the workspace it names — unless a workspace invite
+    // has already moved this account into one of its own.
+    if (invite.orgId && !workspaceInvite) orgId = invite.orgId
     if (invite.role === ADMIN_ROLE) role = ADMIN_ROLE
     else if (role !== ADMIN_ROLE && role === 'viewer' && invite.role !== 'viewer') role = invite.role
     for (const id of invite.siteIds ?? []) siteIds.add(id)
   }
 
-  const next: UserRecord = { ...user, role, siteIds: [...siteIds] }
-  await updateFields(T.users, { userId: user.userId }, { role: next.role, siteIds: next.siteIds })
+  const next: UserRecord = { ...user, orgId, role, siteIds: [...siteIds] }
+  await updateFields(T.users, { userId: user.userId }, {
+    orgId: next.orgId,
+    role: next.role,
+    siteIds: next.siteIds
+  })
 
   const now = new Date().toISOString()
   for (const invite of invites) {
@@ -225,7 +252,7 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction): v
 
 export function requireAdmin(req: Request, _res: Response, next: NextFunction): void {
   if (!req.user) throw new HttpError(401, 'Authentication required')
-  if (req.user.role !== ADMIN_ROLE) throw new HttpError(403, 'Admin access required')
+  if (!isAdmin(req.user)) throw new HttpError(403, 'Admin access required')
   next()
 }
 

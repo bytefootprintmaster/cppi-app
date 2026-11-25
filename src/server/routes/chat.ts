@@ -4,7 +4,8 @@ import { T, deleteItem, getItem, putItem, queryAll, tableIsActive, updateFields 
 import { env } from '../env'
 import { HttpError, asyncHandler, optStr, str } from '../lib/http'
 import { requireAuth } from '../auth'
-import { canWrite, requireSiteAccess } from '../services'
+import { canWrite, orgIdOf, requireSiteAccess } from '../services'
+import { assertWithinLimit, bumpOrgCounter } from '../orgs'
 import { placeForSite } from './regulations'
 import type {
   AssetRecord,
@@ -264,6 +265,8 @@ chatRouter.get('/thread', asyncHandler(async (req, res) => {
 /** Append one turn to the conversation and return the agent's reply. */
 chatRouter.post('/messages', asyncHandler(async (req, res) => {
   if (!canWrite(req.user!)) throw new HttpError(403, 'You do not have permission to use the assistant')
+  // One turn is one Assistant question against the workspace's monthly allowance.
+  await assertWithinLimit(orgIdOf(req.user!), 'assistantAsks')
   const thread = await ensureThread(req.user!.userId)
   const body = (req.body ?? {}) as Record<string, unknown>
 
@@ -321,6 +324,7 @@ chatRouter.post('/messages', asyncHandler(async (req, res) => {
     createdAt: now()
   }
   await putItem(T.chatMessages, userMessage)
+  await bumpOrgCounter(orgIdOf(req.user!), 'assistantAsks')
 
   const siteName = site?.name
 

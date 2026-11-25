@@ -14,11 +14,13 @@ import {
   listBudgetCategories,
   listMilestones,
   listStages,
+  orgIdOf,
   requireSiteAccess
 } from '../services'
 import { applyStandardFramework } from '../framework'
 import { geocodeAddress } from '../geocode'
 import { assertUploadAllowed } from '../limits'
+import { assertWithinLimit, bumpOrgCounter, type LimitKind } from '../orgs'
 import { buildObjectKey, deleteObject, presignDownload, presignUpload } from '../s3'
 import type {
   AssetCategory,
@@ -217,6 +219,8 @@ siteRouter.post('/', requireAdmin, asyncHandler(async (req, res) => {
   const lng = coord(body.lng, 'lng', -180, 180)
   const site: SiteRecord = {
     siteId: randomUUID(),
+    // The project belongs to the workspace of the admin who created it.
+    orgId: orgIdOf(req.user!),
     name: str(body.name, 'name', 160),
     code: optStr(body.code, 40),
     description: optStr(body.description, 4000),
@@ -919,6 +923,9 @@ siteRouter.delete('/:siteId/folders/:folderId', requirePermission('editDetails')
 
 /* ------------------------------ assets ------------------------------- */
 
+/** Which workspace counter a file of this kind feeds. */
+const assetLimitKind = (type: AssetType): LimitKind => (type === 'image' ? 'images' : 'docs')
+
 siteRouter.get('/:siteId/assets', asyncHandler(async (req, res) => {
   await requireSiteAccess(req.user!, req.params.siteId)
   const rows = await queryAll<AssetRecord>(T.assets, {
@@ -937,8 +944,10 @@ siteRouter.post('/:siteId/assets/presign', asyncHandler(async (req, res) => {
   const contentType = str(body.contentType, 'contentType', 160)
   const type = oneOf<AssetType>(body.type, ASSET_TYPES, 'type')
   const size = body.size === undefined ? undefined : Number(body.size)
-  // Refuse oversized files and runaway daily volume before any bytes move.
+  // Refuse oversized files, runaway daily volume, and a workspace that has used
+  // up its storage before any bytes move.
   await assertUploadAllowed(req.user!, size)
+  await assertWithinLimit(orgIdOf(req.user!), assetLimitKind(type))
 
   const key = buildObjectKey(site.siteId, type, fileName)
   res.json({ key, uploadUrl: await presignUpload(key, contentType) })
@@ -951,6 +960,8 @@ siteRouter.post('/:siteId/assets', asyncHandler(async (req, res) => {
   const body = (req.body ?? {}) as Record<string, unknown>
   const size = body.size !== undefined ? Number(body.size) : undefined
   await assertUploadAllowed(req.user!, size)
+  const type = oneOf<AssetType>(body.type, ASSET_TYPES, 'type')
+  await assertWithinLimit(orgIdOf(req.user!), assetLimitKind(type))
   const folderId = optStr(body.folderId, 60)
   if (folderId) {
     const folder = await getItem<AssetFolderRecord>(T.folders, { siteId: site.siteId, folderId })
@@ -961,7 +972,7 @@ siteRouter.post('/:siteId/assets', asyncHandler(async (req, res) => {
     siteId: site.siteId,
     assetId: randomUUID(),
     name: str(body.name, 'name', 240),
-    type: oneOf<AssetType>(body.type, ASSET_TYPES, 'type'),
+    type,
     category: body.category ? oneOf<AssetCategory>(body.category, ASSET_CATEGORIES, 'category') : 'other',
     s3Key: str(body.key, 'key', 500),
     contentType: optStr(body.contentType, 160),
@@ -974,6 +985,7 @@ siteRouter.post('/:siteId/assets', asyncHandler(async (req, res) => {
     uploadedAt: nowIso()
   }
   await putItem(T.assets, asset)
+  await bumpOrgCounter(orgIdOf(req.user!), assetLimitKind(type))
   await updateFields(T.sites, { siteId: site.siteId }, { updatedAt: asset.uploadedAt })
   res.json({ asset })
 }))
@@ -1019,6 +1031,8 @@ siteRouter.delete('/:siteId/assets/:assetId', asyncHandler(async (req, res) => {
   }
   await deleteItem(T.assets, { siteId: site.siteId, assetId: asset.assetId })
   await deleteObject(asset.s3Key).catch(() => undefined)
+  // Free the workspace slot the file occupied, so deleting makes room again.
+  await bumpOrgCounter(orgIdOf(req.user!), assetLimitKind(asset.type), -1)
   res.json({ ok: true })
 }))
 

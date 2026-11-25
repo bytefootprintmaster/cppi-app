@@ -11,8 +11,10 @@ import path from 'node:path'
 import dotenv from 'dotenv'
 import {
   CreateTableCommand,
+  DescribeTableCommand,
   DynamoDBClient,
-  ListTablesCommand
+  ListTablesCommand,
+  UpdateTableCommand
 } from '@aws-sdk/client-dynamodb'
 import {
   CreateBucketCommand,
@@ -38,13 +40,32 @@ const ddb = new DynamoDBClient({ region })
 const s3 = new S3Client({ region })
 
 const TABLE_DEFS = [
-  { name: `${prefix}users`, hash: 'userId', gsis: [{ name: 'email-index', hash: 'email' }] },
+  // Workspaces. One row per tenant; users, sites and invites carry its `orgId`.
+  { name: `${prefix}orgs`, hash: 'orgId' },
+  {
+    name: `${prefix}users`,
+    hash: 'userId',
+    gsis: [
+      { name: 'email-index', hash: 'email' },
+      { name: 'orgId-index', hash: 'orgId' }
+    ]
+  },
   { name: `${prefix}credentials`, hash: 'email' },
-  { name: `${prefix}invites`, hash: 'token', gsis: [{ name: 'email-index', hash: 'email' }] },
-  // Role definitions. The three built-in roles are seeded on first server start;
+  // Connected Google accounts (Gmail read + Drive import). One row per user;
+  // the refresh token inside is encrypted at rest.
+  { name: `${prefix}google_connections`, hash: 'userId' },
+  {
+    name: `${prefix}invites`,
+    hash: 'token',
+    gsis: [
+      { name: 'email-index', hash: 'email' },
+      { name: 'orgId-index', hash: 'orgId' }
+    ]
+  },
+  // Role definitions. The built-in roles are seeded on first server start;
   // admins can add custom roles with their own permission bundles.
   { name: `${prefix}roles`, hash: 'roleId' },
-  { name: `${prefix}sites`, hash: 'siteId' },
+  { name: `${prefix}sites`, hash: 'siteId', gsis: [{ name: 'orgId-index', hash: 'orgId' }] },
   { name: `${prefix}stages`, hash: 'siteId', range: 'stageId' },
   { name: `${prefix}milestones`, hash: 'siteId', range: 'milestoneId' },
   { name: `${prefix}folders`, hash: 'siteId', range: 'folderId' },
@@ -128,6 +149,49 @@ async function ensureTables() {
   }
 }
 
+/**
+ * The `orgId-index` GSI on the tables that predate multi-tenancy. `ensureTables`
+ * only creates missing tables, so a pre-existing one has to have the index added
+ * in place. No-op when the index is already there.
+ */
+const ORG_INDEX_TABLES = ['users', 'sites', 'invites']
+
+async function ensureOrgIndexes() {
+  for (const table of ORG_INDEX_TABLES) {
+    const name = `${prefix}${table}`
+    let desc
+    try {
+      desc = await ddb.send(new DescribeTableCommand({ TableName: name }))
+    } catch {
+      console.log(`• no index needed yet, table not created: ${name}`)
+      continue
+    }
+
+    const has = (desc.Table?.GlobalSecondaryIndexes ?? []).some((g) => g.IndexName === 'orgId-index')
+    if (has) {
+      console.log(`• index exists: ${name}.orgId-index`)
+      continue
+    }
+
+    await ddb.send(
+      new UpdateTableCommand({
+        TableName: name,
+        AttributeDefinitions: [{ AttributeName: 'orgId', AttributeType: 'S' }],
+        GlobalSecondaryIndexUpdates: [
+          {
+            Create: {
+              IndexName: 'orgId-index',
+              KeySchema: [{ AttributeName: 'orgId', KeyType: 'HASH' }],
+              Projection: { ProjectionType: 'ALL' }
+            }
+          }
+        ]
+      })
+    )
+    console.log(`✔ created index: ${name}.orgId-index`)
+  }
+}
+
 async function ensureBucket() {
   try {
     await s3.send(new HeadBucketCommand({ Bucket: bucket }))
@@ -181,5 +245,6 @@ async function ensureBucket() {
 }
 
 await ensureTables()
+await ensureOrgIndexes()
 await ensureBucket()
 console.log('\n✅ Infrastructure ready.')
