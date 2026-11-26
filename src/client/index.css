@@ -3056,6 +3056,27 @@ tr.drop-target > td {
   flex-direction: column;
   align-items: flex-start;
   gap: 6px;
+  /* Barrie ships ten layers across four categories; cap the list so it never
+     spills past a short locator map, and let it scroll instead. */
+  max-height: calc(100% - 20px);
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+/* Barrie's layers, gathered under a heading per category. */
+.map-layer-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+.map-layer-group {
+  margin: 5px 0 0 2px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 .map-layer-toggle {

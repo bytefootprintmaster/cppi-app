@@ -408,6 +408,7 @@ function OverviewTab({
     name: site.name,
     code: site.code,
     location: site.location,
+    city: site.city,
     status: site.status,
     lat: site.lat as number,
     lng: site.lng as number,

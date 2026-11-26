@@ -1,7 +1,19 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import type { FeatureCollection } from 'geojson'
-import type { GeoJSONSource, Map as MapLibreMap, MapGeoJSONFeature } from 'maplibre-gl'
+import type {
+  ExpressionSpecification,
+  GeoJSONSource,
+  Map as MapLibreMap,
+  MapGeoJSONFeature
+} from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import {
+  OVERLAY_GROUPS,
+  OVERLAY_PACKS,
+  type OverlayLayerConfig,
+  type OverlayPack,
+  type PlaceKey
+} from './mapOverlays'
 // MapLibre parses tiles in a web worker and, once bundled, looks for the worker
 // file sitting beside its own chunk — a file Vite never emits. Importing it as
 // a URL gives us an asset Vite does emit, so the worker loads in dev and prod.
@@ -15,6 +27,8 @@ export interface MapSite {
   name: string
   code?: string
   location?: string
+  /** Town/city the project sits in, used to pick which municipal overlays to show. */
+  city?: string
   status: SiteStatus
   lat: number
   lng: number
@@ -134,6 +148,218 @@ function bindHover(map: MapLibreMap, source: string, layer: string): void {
   })
 }
 
+/**
+ * Which municipality's overlays a set of projects calls for. The portal holds
+ * data for several towns, so the map shows the pack that matches the pins — and
+ * falls back to Ajax when nothing matches, which is how the map behaved before
+ * any other town existed.
+ */
+function placeOf(site: MapSite): PlaceKey | null {
+  const where = `${site.city ?? ''} ${site.location ?? ''}`.toLowerCase()
+  if (/\bajax\b/.test(where)) return 'ajax'
+  if (/\bbarrie\b/.test(where)) return 'barrie'
+  if (/\bmilton\b/.test(where)) return 'milton'
+  if (/\bcambridge\b/.test(where)) return 'cambridge'
+  if (/\boshawa\b/.test(where)) return 'oshawa'
+  return null
+}
+
+function detectPlace(sites: MapSite[]): PlaceKey {
+  for (const site of sites) {
+    const match = placeOf(site)
+    if (match) return match
+  }
+  return 'ajax'
+}
+
+/** The renderer's layer ids for one overlay, so add/show/hide agree on names. */
+function overlayLayerIds(cfg: OverlayLayerConfig): string[] {
+  const ids =
+    cfg.kind === 'fill'
+      ? [`${cfg.id}-fill`, `${cfg.id}-line`]
+      : cfg.kind === 'line'
+        ? [`${cfg.id}-line`]
+        : [`${cfg.id}-circle`]
+  if (cfg.labelField) ids.push(`${cfg.id}-label`)
+  return ids
+}
+
+/** ArcGIS caps a response at 1,000 features; a full load pages through them. */
+const ARCGIS_PAGE = 1000
+const ARCGIS_MAX_PAGES = 40
+
+const EMPTY_FC: FeatureCollection = { type: 'FeatureCollection', features: [] }
+
+/**
+ * Read one overlay layer. A static file is read whole; ArcGIS layers are paged
+ * in full, or — with `bounds` — asked for just the features inside the current
+ * view, which is what keeps the pipe networks and the tens of thousands of
+ * address points affordable to draw live.
+ */
+async function fetchOverlayLayer(
+  cfg: OverlayLayerConfig,
+  bounds?: [[number, number], [number, number]]
+): Promise<FeatureCollection> {
+  if (cfg.static) {
+    const data = await fetchGeo(cfg.url)
+    return data ?? EMPTY_FC
+  }
+  const url = cfg.url
+  const headers = { Accept: 'application/geo+json, application/json' }
+  try {
+    if (bounds) {
+      const params = new URLSearchParams({
+        where: '1=1',
+        geometry: `${bounds[0][0]},${bounds[0][1]},${bounds[1][0]},${bounds[1][1]}`,
+        geometryType: 'esriGeometryEnvelope',
+        inSR: '4326',
+        spatialRel: 'esriSpatialRelIntersects',
+        outFields: '*',
+        outSR: '4326',
+        f: 'geojson',
+        resultRecordCount: String(ARCGIS_PAGE)
+      })
+      const res = await fetch(`${url}/query?${params}`, { headers })
+      if (!res.ok) return EMPTY_FC
+      const data = (await res.json()) as FeatureCollection
+      return data?.type === 'FeatureCollection' ? data : EMPTY_FC
+    }
+    const features: FeatureCollection['features'] = []
+    for (let page = 0; page < ARCGIS_MAX_PAGES; page += 1) {
+      const params = new URLSearchParams({
+        where: '1=1',
+        outFields: '*',
+        outSR: '4326',
+        f: 'geojson',
+        resultOffset: String(features.length),
+        resultRecordCount: String(ARCGIS_PAGE)
+      })
+      const res = await fetch(`${url}/query?${params}`, { headers })
+      if (!res.ok) break
+      const data = (await res.json()) as FeatureCollection
+      const batch = Array.isArray(data?.features) ? data.features : []
+      features.push(...batch)
+      if (batch.length < ARCGIS_PAGE) break
+    }
+    return { type: 'FeatureCollection', features }
+  } catch {
+    return EMPTY_FC
+  }
+}
+
+/**
+ * Add a municipality's layers to the map, empty and hidden. Sources exist up
+ * front so switching packs later only flips visibility — no add/remove churn
+ * mid-view.
+ */
+function addOverlays(map: MapLibreMap, maplibre: MapLibre, pack: OverlayPack): void {
+  const hover: ExpressionSpecification = ['boolean', ['feature-state', 'hover'], false]
+  for (const cfg of pack.layers) {
+    map.addSource(cfg.id, {
+      type: 'geojson',
+      data: EMPTY_FC,
+      promoteId: cfg.promoteId ?? 'OBJECTID'
+    })
+
+    if (cfg.kind === 'fill') {
+      map.addLayer({
+        id: `${cfg.id}-fill`,
+        type: 'fill',
+        source: cfg.id,
+        minzoom: cfg.minZoom,
+        paint: {
+          'fill-color': cfg.color,
+          'fill-opacity': ['case', hover, Math.min((cfg.fillOpacity ?? 0.25) + 0.14, 0.7), cfg.fillOpacity ?? 0.25]
+        }
+      })
+      map.addLayer({
+        id: `${cfg.id}-line`,
+        type: 'line',
+        source: cfg.id,
+        minzoom: cfg.minZoom,
+        paint: {
+          'line-color': cfg.color,
+          'line-width': ['case', hover, 1.8, 0.8],
+          'line-opacity': ['case', hover, 0.95, 0.5]
+        }
+      })
+      bindHover(map, cfg.id, `${cfg.id}-fill`)
+    } else if (cfg.kind === 'line') {
+      map.addLayer({
+        id: `${cfg.id}-line`,
+        type: 'line',
+        source: cfg.id,
+        minzoom: cfg.minZoom,
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': cfg.color,
+          'line-width': ['case', hover, 2.6, 1.4],
+          'line-opacity': 0.85,
+          ...(cfg.dash ? { 'line-dasharray': cfg.dash } : {})
+        }
+      })
+      const target = `${cfg.id}-line`
+      map.on('mouseenter', target, () => {
+        map.getCanvas().style.cursor = 'pointer'
+      })
+      map.on('mouseleave', target, () => {
+        map.getCanvas().style.cursor = ''
+      })
+    } else {
+      map.addLayer({
+        id: `${cfg.id}-circle`,
+        type: 'circle',
+        source: cfg.id,
+        minzoom: cfg.minZoom,
+        paint: {
+          'circle-color': cfg.color,
+          'circle-radius': ['case', hover, (cfg.radius ?? 3) + 1.5, cfg.radius ?? 3],
+          'circle-stroke-color': '#ffffff',
+          'circle-stroke-width': 1
+        }
+      })
+      bindHover(map, cfg.id, `${cfg.id}-circle`)
+    }
+
+    if (cfg.labelField) {
+      const field = cfg.labelField
+      map.addLayer({
+        id: `${cfg.id}-label`,
+        type: 'symbol',
+        source: cfg.id,
+        minzoom: cfg.labelMinZoom ?? 14,
+        layout: {
+          'text-field': ['coalesce', ['get', field], ''],
+          'text-size': 10.5,
+          'text-max-width': 9
+        },
+        paint: { 'text-color': cfg.color, 'text-halo-color': '#ffffff', 'text-halo-width': 1.4 }
+      })
+      const target =
+        cfg.kind === 'fill' ? `${cfg.id}-fill` : cfg.kind === 'line' ? `${cfg.id}-line` : `${cfg.id}-circle`
+      map.on('click', target, (event) => {
+        const value = String(event.features?.[0]?.properties?.[field] ?? '').trim()
+        if (!value) return
+        const root = document.createElement('div')
+        root.className = 'map-pop'
+        const name = document.createElement('div')
+        name.className = 'map-pop-name'
+        name.textContent = value
+        const meta = document.createElement('div')
+        meta.className = 'map-pop-meta'
+        meta.textContent = cfg.label
+        root.append(name, meta)
+        new maplibre.Popup({ offset: 12, closeButton: true })
+          .setLngLat(event.lngLat)
+          .setDOMContent(root)
+          .addTo(map)
+      })
+    }
+
+    for (const id of overlayLayerIds(cfg)) map.setLayoutProperty(id, 'visibility', 'none')
+  }
+}
+
 function popupContent(sites: MapSite[], onSelect?: (siteId: string) => void): HTMLElement {
   const root = document.createElement('div')
   root.className = 'map-pop'
@@ -223,6 +449,24 @@ export function MapView({ sites, mode = 'portfolio', height = 460, onSelect }: M
   const overlayBoundsRef = useRef<[[number, number], [number, number]] | null>(null)
   const siteSignature = JSON.stringify(sites)
 
+  // Which municipality's overlays the pins call for: Ajax today, Barrie when a
+  // project sits there. Defaults to Ajax so maps with no located pins are unchanged.
+  const place = useMemo(() => detectPlace(sites), [siteSignature])
+  const pack = OVERLAY_PACKS[place]
+  // One toggle state spans both packs; the ids never collide, so a single record
+  // survives a change of municipality without any extra bookkeeping.
+  const [overlayOn, setOverlayOn] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(
+      [...OVERLAY_PACKS.ajax.layers, ...OVERLAY_PACKS.barrie.layers].map((layer) => [
+        layer.id,
+        layer.defaultOn === true
+      ])
+    )
+  )
+  const overlayOnSig = JSON.stringify(overlayOn)
+  /** Layers whose full geometry has already been fetched, so a re-toggle is free. */
+  const overlayLoadedRef = useRef<Set<string>>(new Set())
+
   // Keep the latest callback without forcing a redraw when the parent re-renders.
   const selectRef = useRef(onSelect)
   selectRef.current = onSelect
@@ -235,18 +479,29 @@ export function MapView({ sites, mode = 'portfolio', height = 460, onSelect }: M
       if (cancelled || !containerRef.current || mapRef.current) return
       moduleRef.current = maplibre
       maplibre.setWorkerUrl(workerUrl)
-      // Both overlays load together so the map is created once, with its extent known.
-      const [wards, neighbourhoods] = await Promise.all([fetchGeo(WARDS_URL), fetchGeo(NEIGHBOURHOODS_URL)])
+      // Ajax's wards and neighbourhoods are static files, so they are only worth
+      // loading when the map is showing Ajax; every other town draws its layers
+      // straight from its own server.
+      const startPlace = detectPlace(sitesRef.current)
+      const [wards, neighbourhoods] =
+        startPlace === 'ajax'
+          ? await Promise.all([fetchGeo(WARDS_URL), fetchGeo(NEIGHBOURHOODS_URL)])
+          : [null, null]
       if (cancelled || !containerRef.current || mapRef.current) return
       // Wards cover the whole Town, so they frame it; neighbourhoods are the fallback.
       overlayBoundsRef.current =
         (wards ? geoBounds(wards) : null) ?? (neighbourhoods ? geoBounds(neighbourhoods) : null)
       if (wards) setHasWards(true)
       if (neighbourhoods) setHasNeighbourhoods(true)
+      // Open on the middle of the town whose overlays are about to draw.
+      const startBounds = OVERLAY_PACKS[startPlace].bounds
       const map = new maplibre.Map({
         container: containerRef.current,
         style: STYLE_URL,
-        center: [-79.02, 43.87],
+        center: [
+          (startBounds[0][0] + startBounds[1][0]) / 2,
+          (startBounds[0][1] + startBounds[1][1]) / 2
+        ],
         zoom: 11,
         attributionControl: { compact: true }
       })
@@ -343,6 +598,9 @@ export function MapView({ sites, mode = 'portfolio', height = 460, onSelect }: M
           })
           bindHover(map, WARD_SOURCE, WARD_FILL)
         }
+
+        // The pins' town's live layers, added hidden so the toggles only flip visibility.
+        addOverlays(map, maplibre, OVERLAY_PACKS[startPlace])
 
         map.addSource(PROJECT_SOURCE, {
           type: 'geojson',
@@ -461,8 +719,8 @@ export function MapView({ sites, mode = 'portfolio', height = 460, onSelect }: M
 
     if (currentSites.length === 0) {
       void source.setData({ type: 'FeatureCollection', features: [] })
-      // No pins yet — frame the Town instead so the overlays have context.
-      const bounds = overlayBoundsRef.current
+      // No pins yet — frame the municipality instead so the overlays have context.
+      const bounds = overlayBoundsRef.current ?? pack.bounds
       if (bounds) {
         const box = new maplibre.LngLatBounds(bounds[0], bounds[1])
         map.fitBounds(box, { padding: 40, duration: 0 })
@@ -493,19 +751,75 @@ export function MapView({ sites, mode = 'portfolio', height = 460, onSelect }: M
       for (const site of currentSites) bounds.extend([site.lng, site.lat])
       map.fitBounds(bounds, { padding: 60, maxZoom: 13, duration: 0 })
     }
-  }, [siteSignature, mode, ready])
+  }, [siteSignature, mode, ready, place])
 
-  // Show or hide each overlay from the on-map toggles.
+  // Show or hide each overlay from the on-map toggles. Only the pack matching the
+  // pins is ever visible: Ajax wards never draw over a Barrie project, and vice versa.
   useEffect(() => {
     const map = mapRef.current
     if (!map || !ready) return
+    const ajaxActive = place === 'ajax'
     for (const id of WARD_LAYERS) {
-      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', wardsOn ? 'visible' : 'none')
+      if (map.getLayer(id)) {
+        map.setLayoutProperty(id, 'visibility', ajaxActive && wardsOn ? 'visible' : 'none')
+      }
     }
     for (const id of NEIGHBOURHOOD_LAYERS) {
-      if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', neighbourhoodsOn ? 'visible' : 'none')
+      if (map.getLayer(id)) {
+        map.setLayoutProperty(id, 'visibility', ajaxActive && neighbourhoodsOn ? 'visible' : 'none')
+      }
     }
-  }, [wardsOn, neighbourhoodsOn, ready])
+  }, [wardsOn, neighbourhoodsOn, place, ready])
+
+  // Each overlay's visibility follows its own toggle. Only the current pack's
+  // layers exist on the map, so the other town's pack is never drawn.
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !ready) return
+    for (const cfg of pack.layers) {
+      const visible = overlayOn[cfg.id] === true
+      for (const id of overlayLayerIds(cfg)) {
+        if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', visible ? 'visible' : 'none')
+      }
+    }
+  }, [place, overlayOnSig, ready])
+
+  // Load whichever layers are on. Full layers fetch once and are cached; the
+  // heavy ones re-query the visible extent as the map settles.
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !ready) return
+    let cancelled = false
+    const load = async () => {
+      for (const cfg of pack.layers) {
+        if (overlayOn[cfg.id] !== true) continue
+        if (map.getZoom() < (cfg.minZoom ?? 0)) continue
+        if (!cfg.bbox && overlayLoadedRef.current.has(cfg.id)) continue
+        if (cfg.bbox) {
+          const b = map.getBounds()
+          const bounds: [[number, number], [number, number]] = [
+            [b.getWest(), b.getSouth()],
+            [b.getEast(), b.getNorth()]
+          ]
+          const data = await fetchOverlayLayer(cfg, bounds)
+          if (cancelled) return
+          ;(map.getSource(cfg.id) as GeoJSONSource | undefined)?.setData(data)
+        } else {
+          const data = await fetchOverlayLayer(cfg)
+          if (cancelled) return
+          overlayLoadedRef.current.add(cfg.id)
+          ;(map.getSource(cfg.id) as GeoJSONSource | undefined)?.setData(data)
+        }
+      }
+    }
+    void load()
+    const onMove = () => void load()
+    map.on('moveend', onMove)
+    return () => {
+      cancelled = true
+      map.off('moveend', onMove)
+    }
+  }, [place, overlayOnSig, ready])
 
   // MapLibre measures its container once; tell it when the box changes (e.g.
   // the map is inside a tab that was hidden when the page first rendered).
@@ -521,32 +835,64 @@ export function MapView({ sites, mode = 'portfolio', height = 460, onSelect }: M
     // The height is handed to CSS so phones can cap it against the viewport.
     <div className="map-shell" style={{ '--map-h': `${height}px` } as CSSProperties}>
       <div className="map-canvas" ref={containerRef} />
-      {hasWards || hasNeighbourhoods ? (
-        <div className="map-layer-toggles">
-          {hasWards ? (
-            <button
-              type="button"
-              className="map-layer-toggle"
-              aria-pressed={wardsOn}
-              onClick={() => setWardsOn((on) => !on)}
-            >
-              <span className="map-layer-swatch" aria-hidden="true" />
-              Ward boundaries
-            </button>
-          ) : null}
-          {hasNeighbourhoods ? (
-            <button
-              type="button"
-              className="map-layer-toggle map-layer-toggle-neigh"
-              aria-pressed={neighbourhoodsOn}
-              onClick={() => setNeighbourhoodsOn((on) => !on)}
-            >
-              <span className="map-layer-swatch" aria-hidden="true" />
-              Neighbourhoods
-            </button>
-          ) : null}
-        </div>
-      ) : null}
+      <div className="map-layer-toggles">
+        {OVERLAY_GROUPS.map((group) => {
+          const layers = pack.layers.filter((layer) => layer.group === group)
+          if (!layers.length) return null
+          return (
+            <div className="map-layer-section" key={group}>
+              <div className="map-layer-group">{group}</div>
+              {layers.map((layer) => (
+                <button
+                  key={layer.id}
+                  type="button"
+                  className="map-layer-toggle"
+                  aria-pressed={overlayOn[layer.id] === true}
+                  onClick={() => setOverlayOn((on) => ({ ...on, [layer.id]: !on[layer.id] }))}
+                >
+                  <span
+                    className="map-layer-swatch"
+                    style={{
+                      borderColor: layer.color,
+                      background: `${layer.color}33`,
+                      ...(layer.dash ? { borderStyle: 'dashed' } : {})
+                    }}
+                    aria-hidden="true"
+                  />
+                  {layer.label}
+                </button>
+              ))}
+            </div>
+          )
+        })}
+        {place === 'ajax' && (hasWards || hasNeighbourhoods) ? (
+          <div className="map-layer-section">
+            <div className="map-layer-group">Administration</div>
+            {hasWards ? (
+              <button
+                type="button"
+                className="map-layer-toggle"
+                aria-pressed={wardsOn}
+                onClick={() => setWardsOn((on) => !on)}
+              >
+                <span className="map-layer-swatch" aria-hidden="true" />
+                Ward boundaries
+              </button>
+            ) : null}
+            {hasNeighbourhoods ? (
+              <button
+                type="button"
+                className="map-layer-toggle map-layer-toggle-neigh"
+                aria-pressed={neighbourhoodsOn}
+                onClick={() => setNeighbourhoodsOn((on) => !on)}
+              >
+                <span className="map-layer-swatch" aria-hidden="true" />
+                Neighbourhoods
+              </button>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
     </div>
   )
 }

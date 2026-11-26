@@ -281,6 +281,7 @@ export function DashboardPage() {
       name: row.site.name,
       code: row.site.code,
       location: row.site.location,
+      city: row.site.city,
       status: row.site.status,
       lat: row.site.lat as number,
       lng: row.site.lng as number,
